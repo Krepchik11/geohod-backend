@@ -1,0 +1,68 @@
+package me.geohod.geohodbackend.data;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Data
+@NoArgsConstructor
+@Table("events")
+public class Event {
+    @Id
+    private UUID id;
+    private UUID authorId;
+    private String name;
+    private String description;
+    private Instant date;
+    private int maxParticipants;
+    private int currentParticipants;
+    private Status status;
+    private Instant createdAt;
+    private Instant updatedAt;
+
+    public Event(String name, String description, Instant date, int maxParticipants, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.description = description;
+        this.date = date;
+        this.maxParticipants = maxParticipants;
+        this.currentParticipants = 0;
+        this.status = Status.ACTIVE;
+        this.authorId = authorId;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public void cancelEvent() {
+        this.status = Status.CANCELED;
+        this.updatedAt = Instant.now();
+    }
+
+    public void addParticipantCount() {
+        if (isFull()) {
+            throw new IllegalStateException("Event is full. Cannot add more participants.");
+        }
+        this.currentParticipants++;
+        this.updatedAt = Instant.now();
+    }
+
+    public void removeParticipantCount() {
+        if (currentParticipants == 0) {
+            throw new IllegalStateException("Event has zero participants. Cannot remove more participants.");
+        }
+        this.currentParticipants--;
+        this.updatedAt = Instant.now();
+    }
+
+    public boolean isFull() {
+        return currentParticipants >= maxParticipants;
+    }
+
+    public enum Status {
+        ACTIVE, CANCELED
+    }
+}
