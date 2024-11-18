@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=geohod'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_USER=geohod'
+    ports:
+      - '54321'

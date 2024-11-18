@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: geohod-backend
+  main:
+    banner-mode: "off"
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:54321/geohod}
+    username: ${SPRING_DATASOURCE_USERNAME:geohod}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret}
