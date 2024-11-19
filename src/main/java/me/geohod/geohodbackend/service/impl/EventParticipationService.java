@@ -24,7 +24,7 @@ public class EventParticipationService implements IEventParticipationService {
     @Transactional
     public void registerForEvent(UUID userId, UUID eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
 
         if (event.getStatus() == Event.Status.CANCELED) {
             throw new IllegalStateException("Can not register for cancelled event");
@@ -48,7 +48,7 @@ public class EventParticipationService implements IEventParticipationService {
         eventParticipantRepository.delete(participant);
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
         event.decreaseParticipantCount();
         eventRepository.save(event);
     }

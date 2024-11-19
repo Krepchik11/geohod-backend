@@ -1,6 +1,9 @@
 package me.geohod.geohodbackend.data;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -29,7 +32,8 @@ public class User {
         this.updatedAt = Instant.now();
     }
 
-    public void updateDetails(String name, String imageUrl) {
+    public void updateDetails(String username, String name, String imageUrl) {
+        this.username = username;
         this.name = name;
         this.imageUrl = imageUrl;
         this.updatedAt = Instant.now();

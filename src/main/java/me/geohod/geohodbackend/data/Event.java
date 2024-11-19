@@ -1,6 +1,9 @@
 package me.geohod.geohodbackend.data;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -37,7 +40,15 @@ public class Event {
         this.updatedAt = Instant.now();
     }
 
-    public void cancelEvent() {
+    public void updateDetails(String name, String description, Instant date, int maxParticipants) {
+        this.name = name;
+        this.description = description;
+        this.date = date;
+        this.maxParticipants = maxParticipants;
+        this.updatedAt = Instant.now();
+    }
+
+    public void cancel() {
         this.status = Status.CANCELED;
         this.updatedAt = Instant.now();
     }
