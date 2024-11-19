@@ -1,14 +1,14 @@
 package me.geohod.geohodbackend.data;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("users")
 public class User {

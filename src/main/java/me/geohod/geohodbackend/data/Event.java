@@ -1,14 +1,14 @@
 package me.geohod.geohodbackend.data;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("events")
 public class Event {
@@ -42,7 +42,7 @@ public class Event {
         this.updatedAt = Instant.now();
     }
 
-    public void addParticipantCount() {
+    public void increaseParticipantCount() {
         if (isFull()) {
             throw new IllegalStateException("Event is full. Cannot add more participants.");
         }
@@ -50,9 +50,9 @@ public class Event {
         this.updatedAt = Instant.now();
     }
 
-    public void removeParticipantCount() {
-        if (currentParticipants == 0) {
-            throw new IllegalStateException("Event has zero participants. Cannot remove more participants.");
+    public void decreaseParticipantCount() {
+        if (currentParticipants <= 0) {
+            throw new IllegalStateException("Event has zero participants, cannot remove more participants");
         }
         this.currentParticipants--;
         this.updatedAt = Instant.now();

@@ -21,7 +21,7 @@ public class EventService implements IEventService {
 
     public Event createEvent(UUID authorId, String name, String description, Instant date, int maxParticipants) {
         if (!userRepository.existsById(authorId)) {
-            throw new IllegalArgumentException("User does not exist.");
+            throw new IllegalArgumentException("User does not exist");
         }
 
         Event event = new Event(name, description, date, maxParticipants, authorId);
