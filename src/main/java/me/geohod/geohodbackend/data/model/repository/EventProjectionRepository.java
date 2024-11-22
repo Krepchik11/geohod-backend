@@ -3,6 +3,7 @@ package me.geohod.geohodbackend.data.model.repository;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
 import me.geohod.geohodbackend.data.model.Event;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -62,7 +63,7 @@ public class EventProjectionRepository {
         );
     }
 
-    public List<EventDetailedProjection> events(UUID participantUserId) {
+    public List<EventDetailedProjection> events(UUID participantUserId, Pageable pageable) {
         String sql = """
                     SELECT
                         e.id AS event_id,
@@ -83,10 +84,14 @@ public class EventProjectionRepository {
                         event_participants ep ON e.id = ep.event_id
                     WHERE
                         (COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
+                    OFFSET :offset
+                    LIMIT :pageSize;
                 """;
 
         Map<String, Object> params = new HashMap<>();
         params.put("participantUserId", participantUserId);
+        params.put("offset", pageable.getOffset());
+        params.put("pageSize", pageable.getPageSize());
 
         return jdbcTemplate.query(
                 sql,
