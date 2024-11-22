@@ -1,14 +1,13 @@
 package me.geohod.geohodbackend;
 
-import me.geohod.geohodbackend.data.Event;
-import me.geohod.geohodbackend.data.EventParticipant;
-import me.geohod.geohodbackend.data.repository.EventParticipantRepository;
-import me.geohod.geohodbackend.data.repository.EventRepository;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.EventParticipant;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.impl.EventParticipationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 
 import java.time.Instant;
 import java.util.Optional;

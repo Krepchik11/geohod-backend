@@ -1,0 +1,54 @@
+package me.geohod.geohodbackend.api.controller;
+
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
+import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
+import me.geohod.geohodbackend.api.dto.response.EventUnregisterResponse;
+import me.geohod.geohodbackend.data.dto.EventDto;
+import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.service.IEventParticipationService;
+import me.geohod.geohodbackend.service.IEventService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/events")
+@RequiredArgsConstructor
+public class EventParticipationController {
+    private final IEventParticipationService participationService;
+    private final IEventService eventService;
+
+    @PostMapping("/{eventId}/register")
+    public ResponseEntity<EventRegisterResponse> registerForEvent(@PathVariable UUID eventId,
+                                                                  @AuthenticationPrincipal TelegramPrincipal principal) {
+        UUID loggedUserId = principal.userId();
+        participationService.registerForEvent(loggedUserId, eventId);
+        return ResponseEntity.ok(new EventRegisterResponse("success"));
+    }
+
+    @DeleteMapping("/{eventId}/unregister")
+    public ResponseEntity<EventUnregisterResponse> unregisterFromEvent(@PathVariable UUID eventId,
+                                                                       @AuthenticationPrincipal TelegramPrincipal principal) {
+        UUID loggedUserId = principal.userId();
+        participationService.unregisterFromEvent(loggedUserId, eventId);
+        return ResponseEntity.ok(new EventUnregisterResponse("success"));
+    }
+
+    @DeleteMapping("/{eventId}/participants/{participantId}")
+    public ResponseEntity<EventRemoveParticipant> removeParticipant(@PathVariable UUID eventId,
+                                                                    @PathVariable UUID participantId,
+                                                                    @AuthenticationPrincipal TelegramPrincipal principal) {
+        UUID loggedUserId = principal.userId();
+        EventDto event = eventService.event(eventId);
+        if (!event.authorId().equals(loggedUserId)) {
+            throw new AccessDeniedException("You do not have permission to remove participants from this event");
+        }
+
+        participationService.unregisterFromEvent(participantId, eventId);
+        return ResponseEntity.ok(new EventRemoveParticipant("success"));
+    }
+}

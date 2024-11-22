@@ -1,9 +1,10 @@
 package me.geohod.geohodbackend.service.impl;
 
-import me.geohod.geohodbackend.data.Event;
-import me.geohod.geohodbackend.data.EventParticipant;
-import me.geohod.geohodbackend.data.repository.EventParticipantRepository;
-import me.geohod.geohodbackend.data.repository.EventRepository;
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.EventParticipant;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,18 +12,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class EventParticipationService implements IEventParticipationService {
     private final EventParticipantRepository eventParticipantRepository;
     private final EventRepository eventRepository;
 
-    public EventParticipationService(EventParticipantRepository eventParticipantRepository, EventRepository eventRepository) {
-        this.eventParticipantRepository = eventParticipantRepository;
-        this.eventRepository = eventRepository;
-    }
-
     @Override
     @Transactional
     public void registerForEvent(UUID userId, UUID eventId) {
+        boolean userAlreadyParticipated = eventParticipantRepository.existsByEventIdAndUserId(eventId, userId);
+
+        if (userAlreadyParticipated) {
+            throw new IllegalArgumentException("User already participated");
+        }
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
 

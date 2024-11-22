@@ -1,14 +1,17 @@
 package me.geohod.geohodbackend.service;
 
-import me.geohod.geohodbackend.data.Event;
+import me.geohod.geohodbackend.data.dto.CreateEventDto;
+import me.geohod.geohodbackend.data.dto.EventDto;
+import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 
-import java.time.Instant;
 import java.util.UUID;
 
 public interface IEventService {
-    Event createEvent(UUID authorId, String name, String description, Instant date, int maxParticipants);
+    EventDto event(UUID eventId);
 
-    void updateEventDetails(UUID id, String name, String description, Instant date, int maxParticipants);
+    EventDto createEvent(CreateEventDto createDto);
+
+    void updateEventDetails(UpdateEventDto updateDto);
 
     void cancelEvent(UUID eventId);
 }
