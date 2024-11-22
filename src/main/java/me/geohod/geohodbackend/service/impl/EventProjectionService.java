@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.model.repository.EventProjectionRepository;
 import me.geohod.geohodbackend.service.IEventProjectionService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +21,10 @@ public class EventProjectionService implements IEventProjectionService {
     }
 
     @Override
-    public List<EventDetailedProjection> events(UUID participantUserId) {
-        return eventProjectionRepository.events(participantUserId);
+    public List<EventDetailedProjection> events(EventsDetailedProjectionFilter filter, Pageable pageable) {
+        return eventProjectionRepository.events(
+                filter.participantUserId(),
+                pageable
+        );
     }
 }
