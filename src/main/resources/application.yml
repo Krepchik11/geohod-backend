@@ -1,3 +1,5 @@
+server:
+  port: 8080
 spring:
   application:
     name: geohod-backend
@@ -8,3 +10,10 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:54321/geohod}
     username: ${SPRING_DATASOURCE_USERNAME:geohod}
     password: ${SPRING_DATASOURCE_PASSWORD:secret}
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+geohod:
+  telegram-bot:
+    token: 7966864729:AAFJdUnBGR7qw_jVn-rWX3y1dp97S5HVPSc

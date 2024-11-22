@@ -1,6 +1,6 @@
-package me.geohod.geohodbackend.data.repository;
+package me.geohod.geohodbackend.data.model.repository;
 
-import me.geohod.geohodbackend.data.Event;
+import me.geohod.geohodbackend.data.model.Event;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

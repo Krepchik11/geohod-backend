@@ -1,10 +1,11 @@
-package me.geohod.geohodbackend.data;
+package me.geohod.geohodbackend.data.model;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -15,6 +16,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table("events")
 public class Event {
+    @Version
+    private Long version;
     @Id
     private UUID id;
     private UUID authorId;

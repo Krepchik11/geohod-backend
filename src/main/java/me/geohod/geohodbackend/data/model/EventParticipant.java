@@ -1,10 +1,11 @@
-package me.geohod.geohodbackend.data;
+package me.geohod.geohodbackend.data.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -12,16 +13,18 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table("event_participants")
 public class EventParticipant {
+    @Version
+    private Long version;
     @Id
     private UUID id;
     private UUID eventId;
     private UUID userId;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public EventParticipant(UUID eventId, UUID userId) {
         this.id = UUID.randomUUID();
         this.eventId = eventId;
         this.userId = userId;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = Instant.now();
     }
 }
