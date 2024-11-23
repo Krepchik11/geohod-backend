@@ -15,6 +15,8 @@ import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -40,17 +42,15 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean registeredOnly,
-                                                                   @PageableDefault(size = 30) Pageable pageable,
-                                                                   @AuthenticationPrincipal TelegramPrincipal principal) {
+    public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean registeredOnly,
+                                                                       @PageableDefault(size = 30) Pageable pageable,
+                                                                       @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByParticipantUserId = registeredOnly ? principal.userId() : null;
-        List<EventDetailedProjection> events = eventProjectionService.events(
+        Page<EventDetailedProjection> events = eventProjectionService.events(
                 new IEventProjectionService.EventsDetailedProjectionFilter(filterByParticipantUserId),
                 pageable
         );
-        var result = events.stream()
-                .map(mapper::response)
-                .toList();
+        Page<EventDetailsResponse> result = events.map(mapper::response);
         return ResponseEntity.ok(result);
     }
 
