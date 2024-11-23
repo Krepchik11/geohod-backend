@@ -16,12 +16,15 @@ public class ParticipantProjectionRepository {
 
     public List<TelegramUserDetails> participants(UUID eventId) {
         String sql = """
-                SELECT u.tg_username as author_username,
-                u.tg_name as author_name,
-                u.tg_image_url as author_image_url
-                FROM event_participants ep
-                JOIN users u on u.id = ep.user_id
-                WHERE ep.event_id = :eventId
+                SELECT
+                  u.tg_username AS author_username,
+                  u.tg_name AS author_name,
+                  u.tg_image_url AS author_image_url
+                FROM
+                  event_participants ep
+                  JOIN users u ON u.id = ep.user_id
+                WHERE
+                  ep.event_id =:eventId
                 """;
 
         HashMap<String, Object> params = new HashMap<>();
