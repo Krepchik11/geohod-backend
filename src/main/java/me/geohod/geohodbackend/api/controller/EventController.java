@@ -16,7 +16,6 @@ import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,8 +41,8 @@ public class EventController {
 
     @GetMapping
     public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean registeredOnly,
-                                                                       @PageableDefault(size = 30) Pageable pageable,
-                                                                       @AuthenticationPrincipal TelegramPrincipal principal) {
+                                                                   @PageableDefault(size = 30) Pageable pageable,
+                                                                   @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByParticipantUserId = registeredOnly ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(
                 new IEventProjectionService.EventsDetailedProjectionFilter(filterByParticipantUserId),
