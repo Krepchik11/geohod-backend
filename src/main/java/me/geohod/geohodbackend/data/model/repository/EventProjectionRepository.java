@@ -1,8 +1,11 @@
 package me.geohod.geohodbackend.data.model.repository;
 
+import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
 import me.geohod.geohodbackend.data.model.Event;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -14,13 +17,9 @@ import java.util.Map;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class EventProjectionRepository {
-
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    public EventProjectionRepository(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public EventDetailedProjection event(UUID eventId) {
         String sql = """
@@ -63,7 +62,7 @@ public class EventProjectionRepository {
         );
     }
 
-    public List<EventDetailedProjection> events(UUID participantUserId, Pageable pageable) {
+    public Page<EventDetailedProjection> events(UUID participantUserId, Pageable pageable) {
         String sql = """
                     SELECT
                         e.id AS event_id,
@@ -88,12 +87,23 @@ public class EventProjectionRepository {
                     LIMIT :pageSize;
                 """;
 
+        String countSql = """
+                    SELECT COUNT(DISTINCT e.id)
+                    FROM
+                        events e
+                    LEFT JOIN
+                        event_participants ep ON e.id = ep.event_id
+                    WHERE
+                        (COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
+                """;
+
         Map<String, Object> params = new HashMap<>();
         params.put("participantUserId", participantUserId);
         params.put("offset", pageable.getOffset());
         params.put("pageSize", pageable.getPageSize());
 
-        return jdbcTemplate.query(
+        Integer totalElements = jdbcTemplate.queryForObject(countSql, params, Integer.class);
+        List<EventDetailedProjection> events = jdbcTemplate.query(
                 sql,
                 params,
                 (ResultSet rs, int rowNum) -> new EventDetailedProjection(
@@ -111,5 +121,7 @@ public class EventProjectionRepository {
                         Event.Status.valueOf(rs.getString("event_status"))
                 )
         );
+
+        return new PageImpl<>(events, pageable, totalElements == null ? 0 : totalElements);
     }
 }
