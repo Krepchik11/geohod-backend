@@ -29,8 +29,12 @@ public class EventParticipationService implements IEventParticipationService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
 
-        if (event.getStatus() == Event.Status.CANCELED) {
-            throw new IllegalStateException("Can not register for cancelled event");
+        if (event.isCanceled()) {
+            throw new IllegalStateException("Registration closed, event cancelled");
+        }
+
+        if (event.isFinished()) {
+            throw new IllegalStateException("Registration closed, event finished");
         }
 
         event.increaseParticipantCount();
@@ -48,10 +52,15 @@ public class EventParticipationService implements IEventParticipationService {
                 .findByEventIdAndUserId(eventId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found for this event"));
 
-        eventParticipantRepository.delete(participant);
-
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
+
+        if (event.isCanceled() || event.isFinished()) {
+            throw new IllegalStateException("Event already closed");
+        }
+
+        eventParticipantRepository.delete(participant);
+
         event.decreaseParticipantCount();
         eventRepository.save(event);
     }
