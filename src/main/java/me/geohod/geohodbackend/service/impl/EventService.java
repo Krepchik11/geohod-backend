@@ -3,6 +3,7 @@ package me.geohod.geohodbackend.service.impl;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDto;
+import me.geohod.geohodbackend.data.dto.FinishEventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 import me.geohod.geohodbackend.data.mapper.EventModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
@@ -41,6 +42,7 @@ public class EventService implements IEventService {
                 createDto.maxParticipants(),
                 createDto.authorId()
         );
+
         eventRepository.save(event);
 
         return mapper.map(event);
@@ -57,6 +59,7 @@ public class EventService implements IEventService {
                 updateDto.date(),
                 updateDto.maxParticipants()
         );
+
         eventRepository.save(event);
     }
 
@@ -65,7 +68,27 @@ public class EventService implements IEventService {
     public void cancelEvent(UUID eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
+
+        if (event.isCanceled()) {
+            throw new IllegalStateException("Event already cancelled");
+        }
+
         event.cancel();
+
+        eventRepository.save(event);
+    }
+
+    @Override
+    @Transactional
+    public void finishEvent(FinishEventDto finishDto) {
+        Event event = eventRepository.findById(finishDto.eventId())
+                .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
+
+        if (event.isFinished()) {
+            throw new IllegalStateException("Event already finished");
+        }
+
+        event.finish();
 
         eventRepository.save(event);
     }

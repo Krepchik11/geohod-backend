@@ -2,11 +2,9 @@ package me.geohod.geohodbackend.api.controller;
 
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
+import me.geohod.geohodbackend.api.dto.request.EventFinishRequest;
 import me.geohod.geohodbackend.api.dto.request.EventUpdateRequest;
-import me.geohod.geohodbackend.api.dto.response.EventCancelResponse;
-import me.geohod.geohodbackend.api.dto.response.EventCreateResponse;
-import me.geohod.geohodbackend.api.dto.response.EventDetailsResponse;
-import me.geohod.geohodbackend.api.dto.response.EventUpdateResponse;
+import me.geohod.geohodbackend.api.dto.response.*;
 import me.geohod.geohodbackend.api.mapper.EventApiMapper;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
@@ -87,5 +85,19 @@ public class EventController {
 
         eventService.cancelEvent(eventId);
         return ResponseEntity.ok(new EventCancelResponse("success"));
+    }
+
+    @PatchMapping("/{eventId}/finish")
+    public ResponseEntity<EventFinishResponse> finishEvent(@PathVariable UUID eventId,
+                                                           @RequestBody EventFinishRequest request,
+                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+        UUID loggedUserId = principal.userId();
+        EventDto event = eventService.event(eventId);
+        if (!event.authorId().equals(loggedUserId)) {
+            throw new AccessDeniedException("You do not have permission to finish this event");
+        }
+
+        eventService.finishEvent(mapper.map(request, eventId));
+        return ResponseEntity.ok(new EventFinishResponse("success"));
     }
 }

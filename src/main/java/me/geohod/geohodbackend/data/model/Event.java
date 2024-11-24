@@ -51,11 +51,6 @@ public class Event {
         this.updatedAt = Instant.now();
     }
 
-    public void cancel() {
-        this.status = Status.CANCELED;
-        this.updatedAt = Instant.now();
-    }
-
     public void increaseParticipantCount() {
         if (isFull()) {
             throw new IllegalStateException("Event is full. Cannot add more participants.");
@@ -76,7 +71,29 @@ public class Event {
         return currentParticipants >= maxParticipants;
     }
 
+    public void cancel() {
+        this.status = Status.CANCELED;
+        this.updatedAt = Instant.now();
+    }
+
+    public void finish() {
+        this.status = Status.FINISHED;
+        this.updatedAt = Instant.now();
+    }
+
     public enum Status {
-        ACTIVE, CANCELED
+        ACTIVE, CANCELED, FINISHED
+    }
+
+    public boolean isActive() {
+        return status == Status.ACTIVE;
+    }
+
+    public boolean isCanceled() {
+        return status == Status.CANCELED;
+    }
+
+    public boolean isFinished() {
+        return status == Status.FINISHED;
     }
 }
