@@ -1,9 +1,9 @@
 name: Build and Deploy
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
         with:
           context: .
           file: ./.github/Dockerfile
-          tags: geohod:${{ github.sha }}
+          tags: geohod:${{ github.event.release.tag_name }}
           outputs: type=docker,dest=/tmp/image.tar
 
       - name: Upload artifacts
@@ -81,4 +81,4 @@ jobs:
               --name geohod \
               -p 80:8080 \
               -e SPRING_DATASOURCE_URL='jdbc:postgresql://postgres:5432/geohod' \
-              geohod:${{ github.sha }}
+              geohod:${{ github.event.release.tag_name }}
