@@ -7,9 +7,8 @@ on:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
@@ -19,6 +18,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '23'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Cache Gradle Dependencies
         uses: actions/cache@v3
@@ -30,8 +32,18 @@ jobs:
       - name: Build
         run: ./gradlew clean build --no-daemon -x test
 
-      - name: Build Docker Image
-        run: docker build -t geohod:${{ github.sha }} .
+      - name: Build and export
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./.github/Dockerfile
+          tags: geohod:${{ github.sha }}
+          outputs: type=oci,dest=/tmp/image.tar
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-app-image
+          path: /tmp/image.tar
 
   deploy:
     name: Deploy to VPS
@@ -44,12 +56,13 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-      - name: Create tag
-        run: docker tag geohod:${{ github.sha }} geohod:latest
-      - name: Save image
-        run: docker save geohod:latest
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-app-image
+          path: ./image.tar
       - name: SSH docker load
-        run: ssh ${{ secrets.VPS_USER }}@${{ vars.VPS_HOST }} 'docker load'
+        run: cat image.tar | ssh ${{ secrets.VPS_USER }}@${{ vars.VPS_HOST }} 'docker load'
       - name: VPS launch
         uses: appleboy/ssh-action@v0.1.7
         with:
