@@ -45,7 +45,7 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
       - name: Create tag
-        run: docker tag geohod:${{ gihub.sha }} geohod:latest
+        run: docker tag geohod:${{ github.sha }} geohod:latest
       - name: Save image
         run: docker save geohod:latest
       - name: SSH docker load
