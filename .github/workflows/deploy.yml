@@ -18,16 +18,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '23'
+          cache: 'gradle'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
 
       - name: Build
         run: ./gradlew clean build --no-daemon -x test
@@ -77,8 +71,8 @@ jobs:
             docker stop geohod || true
             docker rm geohod || true
             docker run -d --restart always \
-            --network=geohod \
-            --name geohod \
-            -p 80:8080 \
-            -e SPRING_DATASOURCE_URL='jdbc:postgresql://postgres:5432/geohod' \
-            geohod:latest
+              --network=geohod \
+              --name geohod \
+              -p 80:8080 \
+              -e SPRING_DATASOURCE_URL='jdbc:postgresql://postgres:5432/geohod' \
+              geohod:${{ github.sha }}
