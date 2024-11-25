@@ -38,7 +38,7 @@ jobs:
           context: .
           file: ./.github/Dockerfile
           tags: geohod:${{ github.sha }}
-          outputs: type=oci,dest=/tmp/image.tar
+          outputs: type=docker,dest=/tmp/image.tar
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
