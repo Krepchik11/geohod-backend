@@ -38,6 +38,7 @@ jobs:
           file: ./.github/Dockerfile
           tags: geohod:${{ github.sha }}
           outputs: type=docker,dest=/tmp/image.tar
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -55,12 +56,16 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: docker-app-image
-      - name: SSH docker load
-        run: cat image.tar | ssh ${{ secrets.VPS_USER }}@${{ vars.VPS_HOST }} 'docker load'
+
+      - name: Transfer image to VPS
+        run: |
+          scp image.tar ${{ secrets.VPS_USER }}@${{ vars.VPS_HOST }}:/tmp/image.tar
+
       - name: VPS launch
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -68,6 +73,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            docker load < /tmp/image.tar
             docker stop geohod || true
             docker rm geohod || true
             docker run -d --restart always \
