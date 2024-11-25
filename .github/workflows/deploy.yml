@@ -1,0 +1,67 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: JDK
+        uses: actions/setup-java@v4.5.0
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Build
+        run: ./gradlew clean build --no-daemon -x test
+
+      - name: Build Docker Image
+        run: docker build -t geohod:${{ github.sha }} .
+
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Create SSH key
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Create tag
+        run: docker tag geohod:${{ gihub.sha }} geohod:latest
+      - name: Save image
+        run: docker save geohod:latest
+      - name: SSH docker load
+        run: ssh ${{ secrets.VPS_USER }}@${{ vars.VPS_HOST }} 'docker load'
+      - name: VPS launch
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker stop geohod || true
+            docker rm geohod || true
+            docker run -d --restart always \
+            --network=geohod \
+            --name geohod \
+            -p 80:8080 \
+            -e SPRING_DATASOURCE_URL='jdbc:postgresql://postgres:5432/geohod' \
+            geohod:latest
