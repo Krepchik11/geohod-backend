@@ -25,6 +25,7 @@ public class EventProjectionService implements IEventProjectionService {
     public Page<EventDetailedProjection> events(EventsDetailedProjectionFilter filter, Pageable pageable) {
         return eventProjectionRepository.events(
                 filter.participantUserId(),
+                filter.authorUserId(),
                 pageable
         );
     }

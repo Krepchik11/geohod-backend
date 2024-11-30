@@ -62,7 +62,11 @@ public class EventProjectionRepository {
         );
     }
 
-    public Page<EventDetailedProjection> events(UUID participantUserId, Pageable pageable) {
+    public Page<EventDetailedProjection> events(
+            UUID participantUserId,
+            UUID authorUserId,
+            Pageable pageable
+    ) {
         String sql = """
                     SELECT
                         e.id AS event_id,
@@ -83,6 +87,7 @@ public class EventProjectionRepository {
                         event_participants ep ON e.id = ep.event_id
                     WHERE
                         (COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
+                        and (COALESCE(:authorUserId) IS NULL OR ep.author_id = :authorUserId)
                     OFFSET :offset
                     LIMIT :pageSize;
                 """;
@@ -95,10 +100,12 @@ public class EventProjectionRepository {
                         event_participants ep ON e.id = ep.event_id
                     WHERE
                         (COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
+                        and (COALESCE(:authorUserId) IS NULL OR ep.author_id = :authorUserId)
                 """;
 
         Map<String, Object> params = new HashMap<>();
         params.put("participantUserId", participantUserId);
+        params.put("authorUserId", authorUserId);
         params.put("offset", pageable.getOffset());
         params.put("pageSize", pageable.getPageSize());
 
