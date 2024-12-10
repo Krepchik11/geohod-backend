@@ -16,4 +16,4 @@ spring:
 
 geohod:
   telegram-bot:
-    token: 7966864729:AAFJdUnBGR7qw_jVn-rWX3y1dp97S5HVPSc
+    token:
