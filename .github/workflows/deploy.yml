@@ -82,9 +82,9 @@ jobs:
             ENV_ARGS=""
             IFS=',' read -r -a vars <<< "$SECRET_VARS"
             for var in "${vars[@]}"; do
-              ENV_ARGS="$ENV_ARGS -e $key='$value'"
+              ENV_ARGS="$ENV_ARGS -e $var"
             done
-
+            
             docker run -d --restart always \
               --network=geohod \
               --name geohod \
