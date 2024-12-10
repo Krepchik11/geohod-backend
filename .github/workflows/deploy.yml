@@ -76,9 +76,19 @@ jobs:
             docker load < /tmp/image.tar
             docker stop geohod || true
             docker rm geohod || true
+            
+            # Extract and pass environment variables
+            SECRET_VARS="${{ secrets.SECRET_VARS }}"
+            ENV_ARGS=""
+            IFS=',' read -r -a vars <<< "$SECRET_VARS"
+            for var in "${vars[@]}"; do
+              ENV_ARGS="$ENV_ARGS -e $var"
+            done
+            
             docker run -d --restart always \
               --network=geohod \
               --name geohod \
               -p 80:8080 \
               -e SPRING_DATASOURCE_URL='jdbc:postgresql://postgres:5432/geohod' \
+              $ENV_ARGS \
               geohod:${{ github.event.release.tag_name }}
