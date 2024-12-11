@@ -27,7 +27,7 @@ public class EventProjectionService implements IEventProjectionService {
         return eventProjectionRepository.events(
                 filter.participantUserId(),
                 filter.authorUserId(),
-                filter.statuses() == null ? Collections.emptyList() : filter.statuses(),
+                filter.statuses(),
                 pageable
         );
     }
