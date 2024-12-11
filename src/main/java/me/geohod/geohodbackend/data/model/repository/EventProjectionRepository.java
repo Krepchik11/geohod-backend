@@ -136,14 +136,8 @@ public class EventProjectionRepository {
     }
 
     private List<String> prepareStatusesFilter(List<Event.Status> statuses) {
-        if (statuses == null) {
-            return Arrays.stream(Event.Status.values()).map(Objects::toString).toList();
-        }
-
-        if (statuses.isEmpty()) {
-            return Arrays.stream(Event.Status.values()).map(Objects::toString).toList();
-        }
-
-        return statuses.stream().map(Objects::toString).toList();
+        return (statuses == null || statuses.isEmpty())
+                ? Arrays.stream(Event.Status.values()).map(Enum::name).toList()
+                : statuses.stream().map(Enum::name).toList();
     }
 }
