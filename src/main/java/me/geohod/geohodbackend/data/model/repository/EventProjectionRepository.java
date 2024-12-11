@@ -11,10 +11,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -65,6 +62,7 @@ public class EventProjectionRepository {
     public Page<EventDetailedProjection> events(
             UUID participantUserId,
             UUID authorUserId,
+            List<Event.Status> statuses,
             Pageable pageable
     ) {
         String sql = """
@@ -86,8 +84,9 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants ep ON e.id = ep.event_id
                     WHERE
-                        (COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
-                        and (COALESCE(:authorUserId) IS NULL OR ep.author_id = :authorUserId)
+                        ((COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
+                        AND (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
+                        AND (e.status IN (:statuses))
                     OFFSET :offset
                     LIMIT :pageSize;
                 """;
@@ -99,13 +98,17 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants ep ON e.id = ep.event_id
                     WHERE
-                        (COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
-                        and (COALESCE(:authorUserId) IS NULL OR ep.author_id = :authorUserId)
+                        ((COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
+                        AND (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
+                        AND (e.status IN (:statuses))
                 """;
+
+        List<String> statusesFilter = prepareStatusesFilter(statuses);
 
         Map<String, Object> params = new HashMap<>();
         params.put("participantUserId", participantUserId);
         params.put("authorUserId", authorUserId);
+        params.put("statuses", statusesFilter);
         params.put("offset", pageable.getOffset());
         params.put("pageSize", pageable.getPageSize());
 
@@ -130,5 +133,17 @@ public class EventProjectionRepository {
         );
 
         return new PageImpl<>(events, pageable, totalElements == null ? 0 : totalElements);
+    }
+
+    private List<String> prepareStatusesFilter(List<Event.Status> statuses) {
+        if (statuses == null) {
+            return Arrays.stream(Event.Status.values()).map(Objects::toString).toList();
+        }
+
+        if (statuses.isEmpty()) {
+            return Arrays.stream(Event.Status.values()).map(Objects::toString).toList();
+        }
+
+        return statuses.stream().map(Objects::toString).toList();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ public class EventProjectionService implements IEventProjectionService {
         return eventProjectionRepository.events(
                 filter.participantUserId(),
                 filter.authorUserId(),
+                filter.statuses(),
                 pageable
         );
     }

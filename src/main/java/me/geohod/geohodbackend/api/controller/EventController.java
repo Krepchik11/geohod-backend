@@ -10,6 +10,7 @@ import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
+import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
@@ -21,6 +22,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,12 +42,13 @@ public class EventController {
     @GetMapping
     public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
                                                                    @RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
+                                                                   @RequestParam(required = false) List<Event.Status> statuses,
                                                                    @PageableDefault(size = 30) Pageable pageable,
                                                                    @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByParticipantUserId = iamParticipant ? principal.userId() : null;
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(
-                new IEventProjectionService.EventsDetailedProjectionFilter(filterByParticipantUserId, filterByAuthorUserId),
+                new IEventProjectionService.EventsDetailedProjectionFilter(filterByParticipantUserId, filterByAuthorUserId, statuses),
                 pageable
         );
         Page<EventDetailsResponse> result = events.map(mapper::response);
