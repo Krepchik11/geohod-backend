@@ -9,12 +9,10 @@ import me.geohod.geohodbackend.security.token.TelegramTokenAuthentication;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Service
 @RequiredArgsConstructor
 public class TelegramInitDataAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;

@@ -12,9 +12,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@Service
 public class LoggingFilter implements Filter {
-
     private static final Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
 
     @Override

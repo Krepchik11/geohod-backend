@@ -38,6 +38,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
+                .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tgInitDataAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(sessionConfigurer -> sessionConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -46,5 +47,9 @@ public class SecurityConfiguration {
 
     private TelegramInitDataAuthenticationFilter tgInitDataAuthFilter() {
         return new TelegramInitDataAuthenticationFilter(providerManager);
+    }
+
+    private LoggingFilter loggingFilter() {
+        return new LoggingFilter();
     }
 }
