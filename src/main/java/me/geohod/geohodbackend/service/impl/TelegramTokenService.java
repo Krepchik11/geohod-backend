@@ -1,11 +1,14 @@
 package me.geohod.geohodbackend.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.TelegramInitDataDto;
 import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -22,7 +25,9 @@ import java.util.Map;
 public class TelegramTokenService {
     private final GeohodProperties properties;
     private static final String ALGORITHM = "HmacSHA256";
-    private static final ObjectMapper objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public boolean verifyTelegramWebAppData(String tgInitData) {
         try {
@@ -81,6 +86,14 @@ public class TelegramTokenService {
     }
 
     private String calculateHash(String dataToCheck) throws Exception {
+        String botTokenData = "WebAppData";
+        byte[] hmacSecret = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, botTokenData).hmac(properties.telegramBot().token());
+
+        String calculatedHash = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, hmacSecret).hmacHex(dataToCheck);
+        if (true) {
+            return calculatedHash;
+        }
+
         Mac hmac = Mac.getInstance(ALGORITHM);
         hmac.init(new SecretKeySpec(createSecretKey(), ALGORITHM));
         byte[] hashBytes = hmac.doFinal(dataToCheck.getBytes(StandardCharsets.UTF_8));
