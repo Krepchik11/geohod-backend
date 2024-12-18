@@ -1,6 +1,7 @@
 package me.geohod.geohodbackend.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,9 @@ import java.util.Map;
 public class TelegramTokenService {
     private final GeohodProperties properties;
     private static final String ALGORITHM = "HmacSHA256";
-    private static final ObjectMapper objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public boolean verifyTelegramWebAppData(String tgInitData) {
         try {
