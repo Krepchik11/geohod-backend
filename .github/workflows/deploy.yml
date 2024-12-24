@@ -7,24 +7,19 @@ on:
 
 jobs:
   generate-changelog:
-    name: Generate Changelog
+    name: Build and Generate Changelog
     runs-on: ubuntu-latest
-    outputs:
-      changelog: ${{ steps.changelog.outputs.log }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Git
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-
-      - name: Switch to Target Branch
-        run: |
-          git checkout ${{ github.ref_name }}
 
       - name: Generate Changelog
         run: |
@@ -37,20 +32,9 @@ jobs:
         run: |
           git add CHANGELOG.md
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}"
-          git push origin HEAD:${{ github.ref_name }}
-
-      - name: Update Release Notes
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const releaseId = context.payload.release.id;
-            const changelog = `### Changelog\n\n${{ steps.changelog.outputs.log }}`;
-            await github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: releaseId,
-              body: changelog,
-            });
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     name: Build
