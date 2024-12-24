@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: JDK
-        uses: actions/setup-java@v4.5.0
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '23'
@@ -36,7 +36,7 @@ jobs:
         with:
           context: .
           file: ./.github/Dockerfile
-          tags: geohod:${{ github.event.release.tag_name }}
+          tags: ${{ github.repository }}:${{ github.ref_name }}
           outputs: type=docker,dest=/tmp/image.tar
 
       - name: Upload artifacts
@@ -67,7 +67,7 @@ jobs:
           scp image.tar ${{ secrets.VPS_USER }}@${{ vars.VPS_HOST }}:/tmp/image.tar
 
       - name: VPS launch
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -77,18 +77,19 @@ jobs:
             docker stop geohod || true
             docker rm geohod || true
             
-            # Extract and pass environment variables
+            # Extract and pass environment variables securely
             SECRET_VARS="${{ secrets.SECRET_VARS }}"
             ENV_ARGS=""
             IFS=',' read -r -a vars <<< "$SECRET_VARS"
             for var in "${vars[@]}"; do
-              ENV_ARGS="$ENV_ARGS -e $var"
+              IFS='=' read -r key value <<< "$var"
+              ENV_ARGS="$ENV_ARGS -e $key='$value'"
             done
-            
+
             docker run -d --restart always \
               --network=geohod \
               --name geohod \
               -p 80:8080 \
               -e SPRING_DATASOURCE_URL='jdbc:postgresql://postgres:5432/geohod' \
               $ENV_ARGS \
-              geohod:${{ github.event.release.tag_name }}
+              ${{ github.repository }}:${{ github.ref_name }}
