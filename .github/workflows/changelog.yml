@@ -1,43 +1,39 @@
 name: Update Changelog
 
 on:
-  pull_request:
-    branches: [main]
-    types: [closed, synchronize, reopened] # Include synchronize and reopened
-  pull_request_target: # Needed for accessing secrets from forks
-    branches: [main]
-    types: [closed]
+  pull_request_target:
+    branches: [ main ]
+    types: [ closed ]
 
 jobs:
   update_changelog:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write # Important for creating PRs from forks
-    if: github.event_name == 'pull_request_target' || github.event.pull_request.merged == true
+      pull-requests: write
+    if: github.event.pull_request.merged == true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
         with:
-          cache: 'npm'
-
-      - name: Install Changelog Generator
-        run: npm install conventional-changelog-cli @angular/conventional-changelog
+          fetch-depth: 0
 
       - name: Generate Changelog Entry
-        id: generate_entry
-        run: |
-          touch CHANGELOG.md
-          conventional-changelog -p angular -i CHANGELOG.md -s -u
+        uses: metcalfc/changelog-generator@v4
+        with:
+          mytoken: ${{ secrets.GITHUB_TOKEN }}
+          base-ref: ${{ github.base_ref }}
+          head-ref: ${{ github.sha }}
+
+      - name: Save to CHANGELOG
+        run: echo "${{ steps.changelog.outputs.changelog }}" > CHANGELOG.md
 
       - name: Check for Changes
         run: |
-          git diff --cached CHANGELOG.md
-          # Exit code 0 indicates a change, non-zero indicates no change
-          exit $?
+          if [ -z "${{ steps.changelog.outputs.changelog }}" ]; then
+          echo "No changelog changes detected."
+          exit 0
+          fi
 
       - name: Commit Changelog Changes (if any)
         uses: EndBug/add-and-commit@v2
