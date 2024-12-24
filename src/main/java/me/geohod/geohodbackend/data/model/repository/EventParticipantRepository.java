@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface EventParticipantRepository extends CrudRepository<EventParticipant, UUID> {
     Optional<EventParticipant> findByEventIdAndUserId(UUID eventId, UUID userId);
+
     boolean existsByEventIdAndUserId(UUID eventId, UUID userId);
 }

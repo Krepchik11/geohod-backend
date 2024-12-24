@@ -6,6 +6,43 @@ on:
       - published
 
 jobs:
+  generate-changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.log }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          npx conventional-changelog-cli -p angular -r 0 -n -s
+          echo "::set-output name=log::$(cat CHANGELOG.md)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Changelog
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}"
+          git push
+            - name: Update Release Notes
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const releaseId = context.payload.release.id;
+            const changelog = `### Changelog\n\n${{ needs.generate-changelog.outputs.changelog }}`;
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              body: changelog,
+            });
+
   build:
     name: Build
     runs-on: ubuntu-latest
