@@ -1,0 +1,41 @@
+name: Update Changelog
+
+on:
+  pull_request:
+    branches: [ main ]
+    actions: [ closed ]
+
+jobs:
+  update_changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      write:
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: 'npm'
+
+      - name: Install Changelog Generator
+        run: npm install conventional-changelog-cli @angular/conventional-changelog
+
+      - name: Generate Changelog Entry
+        id: generate_entry
+        run: |
+          touch CHANGELOG.md
+          conventional-changelog -p angular -i CHANGELOG.md -s -u
+
+      - name: Check for Changes
+        run: |
+          git diff --cached CHANGELOG.md
+          # Exit code 0 indicates a change, non-zero indicates no change
+          exit $?
+
+      - name: Commit Changelog Changes (if any)
+        uses: EndBug/add-and-commit@v2
+        with:
+          message: 'Update CHANGELOG.md for PR # ${{ github.event.number }}'
