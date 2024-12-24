@@ -83,7 +83,7 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants ep ON e.id = ep.event_id
                     WHERE
-                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
+                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId)
                         AND (e.status IN (:statuses))
                     OFFSET :offset
                     LIMIT :pageSize;
@@ -96,7 +96,7 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants ep ON e.id = ep.event_id
                     WHERE
-                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
+                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId)
                         AND (e.status IN (:statuses))
                 """;
 
