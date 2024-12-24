@@ -15,6 +15,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class ApplicationConfiguration implements InitializingBean {
     private final GeohodProperties properties;
+
     @Override
     public void afterPropertiesSet() {
         String botToken = properties.telegramBot().token();
