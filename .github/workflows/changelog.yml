@@ -2,15 +2,19 @@ name: Update Changelog
 
 on:
   pull_request:
-    branches: [ main ]
-    actions: [ closed ]
+    branches: [main]
+    types: [closed, synchronize, reopened] # Include synchronize and reopened
+  pull_request_target: # Needed for accessing secrets from forks
+    branches: [main]
+    types: [closed]
 
 jobs:
   update_changelog:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: github.event.pull_request.merged == true
+      pull-requests: write # Important for creating PRs from forks
+    if: github.event_name == 'pull_request_target' || github.event.pull_request.merged == true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
