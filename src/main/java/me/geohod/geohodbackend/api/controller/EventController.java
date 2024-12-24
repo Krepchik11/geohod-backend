@@ -40,15 +40,13 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
-                                                                   @RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
+    public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
                                                                    @RequestParam(required = false) List<Event.Status> statuses,
                                                                    @PageableDefault(size = 30) Pageable pageable,
                                                                    @AuthenticationPrincipal TelegramPrincipal principal) {
-        UUID filterByParticipantUserId = iamParticipant ? principal.userId() : null;
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(
-                new IEventProjectionService.EventsDetailedProjectionFilter(filterByParticipantUserId, filterByAuthorUserId, statuses),
+                new IEventProjectionService.EventsDetailedProjectionFilter(filterByAuthorUserId, statuses),
                 pageable
         );
         Page<EventDetailsResponse> result = events.map(mapper::response);

@@ -60,7 +60,6 @@ public class EventProjectionRepository {
     }
 
     public Page<EventDetailedProjection> events(
-            UUID participantUserId,
             UUID authorUserId,
             List<Event.Status> statuses,
             Pageable pageable
@@ -84,8 +83,7 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants ep ON e.id = ep.event_id
                     WHERE
-                        ((COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
-                        AND (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
+                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
                         AND (e.status IN (:statuses))
                     OFFSET :offset
                     LIMIT :pageSize;
@@ -98,15 +96,13 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants ep ON e.id = ep.event_id
                     WHERE
-                        ((COALESCE(:participantUserId) IS NULL OR ep.user_id = :participantUserId)
-                        AND (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
+                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId))
                         AND (e.status IN (:statuses))
                 """;
 
         List<String> statusesFilter = prepareStatusesFilter(statuses);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("participantUserId", participantUserId);
         params.put("authorUserId", authorUserId);
         params.put("statuses", statusesFilter);
         params.put("offset", pageable.getOffset());

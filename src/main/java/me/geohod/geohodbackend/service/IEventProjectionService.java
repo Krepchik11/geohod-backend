@@ -15,7 +15,6 @@ public interface IEventProjectionService {
     Page<EventDetailedProjection> events(EventsDetailedProjectionFilter filter, Pageable pageable);
 
     record EventsDetailedProjectionFilter(
-            @Nullable UUID participantUserId,
             @Nullable UUID authorUserId,
             @Nullable List<Event.Status> statuses
     ) {
