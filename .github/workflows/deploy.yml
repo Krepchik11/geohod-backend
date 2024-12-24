@@ -19,8 +19,7 @@ jobs:
         id: changelog
         run: |
           touch CHANGELOG.md
-          npx conventional-changelog-cli -p angular -r 0 -n -s
-          echo "::set-output name=log::$(cat CHANGELOG.md)"
+          npx conventional-changelog-cli -p angular -i CHANGELOG.md -s -r 0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
