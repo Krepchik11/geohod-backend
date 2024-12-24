@@ -18,6 +18,7 @@ jobs:
       - name: Generate Changelog
         id: changelog
         run: |
+          touch CHANGELOG.md
           npx conventional-changelog-cli -p angular -r 0 -n -s
           echo "::set-output name=log::$(cat CHANGELOG.md)"
         env:
