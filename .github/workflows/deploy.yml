@@ -30,12 +30,13 @@ jobs:
           git add CHANGELOG.md
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}"
           git push
-            - name: Update Release Notes
+
+      - name: Update Release Notes
         uses: actions/github-script@v6
         with:
           script: |
             const releaseId = context.payload.release.id;
-            const changelog = `### Changelog\n\n${{ needs.generate-changelog.outputs.changelog }}`;
+            const changelog = `### Changelog\n\n${{ steps.changelog.outputs.log }}`;
             await github.rest.repos.updateRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
