@@ -14,22 +14,30 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Switch to Target Branch
+        run: |
+          git checkout ${{ github.ref_name }}
 
       - name: Generate Changelog
-        id: changelog
         run: |
           touch CHANGELOG.md
           npx conventional-changelog-cli -p angular -i CHANGELOG.md -s -r 0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit Changelog
+      - name: Commit and Push Changes
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
           git add CHANGELOG.md
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}"
-          git push
+          git push origin HEAD:${{ github.ref_name }}
 
       - name: Update Release Notes
         uses: actions/github-script@v6
