@@ -77,12 +77,11 @@ jobs:
             docker stop geohod || true
             docker rm geohod || true
             
-            # Extract and pass environment variables securely
+            # Extract and pass environment variables
             SECRET_VARS="${{ secrets.SECRET_VARS }}"
             ENV_ARGS=""
             IFS=',' read -r -a vars <<< "$SECRET_VARS"
             for var in "${vars[@]}"; do
-              IFS='=' read -r key value <<< "$var"
               ENV_ARGS="$ENV_ARGS -e $key='$value'"
             done
 
