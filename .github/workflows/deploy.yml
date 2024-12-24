@@ -28,21 +28,11 @@ jobs:
 
       - name: Commit and Push Changelog
         run: |
-          git checkout -b update-changelog
           git add CHANGELOG.md
           git commit -m "docs: update changelog for ${{ github.event.release.tag_name }}"
-          git push origin update-changelog
+          git push origin HEAD
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: update changelog for ${{ github.event.release.tag_name }}"
-          branch: update-changelog
-          title: "Changelog update for ${{ github.event.release.tag_name }}"
-          body: "This PR updates the changelog for the release ${{ github.event.release.tag_name }}."
 
   build:
     name: Build
