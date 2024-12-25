@@ -103,4 +103,23 @@
                 constraintName="fk_event_participants_user_id_users"/>
     </changeSet>
 
+    <changeSet id="1735148381684-1" author="nabor (generated)">
+        <createTable tableName="tg_outbox_messages">
+            <column name="version" type="BIGINT"/>
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="recipient_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(1024)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed" type="BOOL">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
