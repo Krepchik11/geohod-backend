@@ -12,6 +12,7 @@ import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.service.IEventManager;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EventController {
     private final EventApiMapper mapper;
+    private final IEventManager eventManager;
     private final IEventService eventService;
     private final IEventProjectionService eventProjectionService;
 
@@ -86,7 +88,7 @@ public class EventController {
             throw new AccessDeniedException("You do not have permission to cancel this event");
         }
 
-        eventService.cancelEvent(eventId);
+        eventManager.cancelEvent(eventId);
         return ResponseEntity.ok(new EventCancelResponse("success"));
     }
 

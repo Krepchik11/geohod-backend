@@ -7,7 +7,8 @@ public record GeohodProperties(
         TelegramBot telegramBot
 ) {
     public record TelegramBot(
-            String token
+            String token,
+            String username
     ) {
     }
 }
