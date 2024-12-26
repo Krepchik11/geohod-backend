@@ -6,4 +6,7 @@ COPY ./build/libs/*.jar geohod.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "geohod.jar"]
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "geohod.jar"]
