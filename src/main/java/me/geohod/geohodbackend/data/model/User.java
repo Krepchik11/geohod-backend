@@ -22,25 +22,28 @@ public class User {
     private UUID id;
     private String tgId;
     private String tgUsername;
-    private String tgName;
+    private String firstName;
+    private String lastName;
     private String tgImageUrl;
     private Instant createdAt;
     private Instant updatedAt;
 
-    public User(String tgId, String tgUsername, String tgName, String tgImageUrl) {
+    public User(String tgId, String tgUsername, String firstName, String lastName, String tgImageUrl) {
         Instant now = Instant.now();
         this.id = UUID.randomUUID();
         this.tgId = tgId;
         this.tgUsername = tgUsername;
-        this.tgName = tgName;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.tgImageUrl = tgImageUrl;
         this.createdAt = now;
         this.updatedAt = now;
     }
 
-    public void updateDetails(String username, String name, String imageUrl) {
+    public void updateDetails(String username, String firstName, String lastName, String imageUrl) {
         this.tgUsername = username;
-        this.tgName = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.tgImageUrl = imageUrl;
         this.updatedAt = Instant.now();
     }

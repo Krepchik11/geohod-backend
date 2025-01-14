@@ -22,9 +22,9 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public User createOrUpdateUser(String tgId, String tgUsername, String tgName, String tgImageUrl) {
+    public User createOrUpdateUser(String tgId, String tgUsername, String firstName, String lastName, String tgImageUrl) {
         return userRepository.findByTgId(tgId).orElseGet(() -> {
-            User newUser = new User(tgId, tgUsername, tgName, tgImageUrl);
+            User newUser = new User(tgId, tgUsername, firstName, lastName, tgImageUrl);
             return userRepository.save(newUser);
         });
     }

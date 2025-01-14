@@ -7,6 +7,8 @@ import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.service.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
@@ -21,7 +23,10 @@ public class EventNotificationService implements IEventNotificationService {
     public void notifyEventCancelled(UUID eventId) {
         EventDto event = eventService.event(eventId);
         User author = userService.getUser(event.authorId());
-        String message = "Мероприятие отмененно: " + event.name() + " (" + author.getTgName() + ")";
+        String message = """
+                Организатор отменил мероприятие %s (%s)
+                Дополнительную информацию вы можете уточнить у организатора: %s @%s
+                """.formatted(event.name(), LocalDate.ofInstant(event.date(), ZoneId.systemDefault()), String.join(" ", author.getFirstName(), author.getLastName()), author.getTgUsername());
 
         participationService.getParticipantsForEvent(eventId).stream()
                 .map(EventParticipantDto::userId)
