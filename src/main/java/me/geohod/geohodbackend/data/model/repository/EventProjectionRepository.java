@@ -80,8 +80,6 @@ public class EventProjectionRepository {
                         events e
                     JOIN
                         users u ON e.author_id = u.id
-                    LEFT JOIN
-                        event_participants ep ON e.id = ep.event_id
                     WHERE
                         (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId)
                         AND (e.status IN (:statuses))
