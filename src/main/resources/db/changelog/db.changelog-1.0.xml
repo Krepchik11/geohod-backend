@@ -122,4 +122,11 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="1736879708963-1" author="nabor (generated)">
+        <renameColumn tableName="users" oldColumnName="tg_name" newColumnName="first_name"/>
+        <addColumn tableName="users">
+            <column name="last_name" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

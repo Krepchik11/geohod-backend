@@ -30,7 +30,8 @@ public class TelegramTokenAuthenticationProvider implements AuthenticationProvid
             User user = userService.createOrUpdateUser(
                     tgInitData.id(),
                     tgInitData.username(),
-                    tgInitData.firstName() + tgInitData.lastName(),
+                    tgInitData.firstName(),
+                    tgInitData.lastName(),
                     tgInitData.photoUrl()
             );
             return new TelegramTokenAuthentication(new TelegramPrincipal(user.getId(), user.getTgId()), token);
