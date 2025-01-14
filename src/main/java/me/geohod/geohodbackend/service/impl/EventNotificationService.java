@@ -7,7 +7,6 @@ import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.service.*;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,16 +21,11 @@ public class EventNotificationService implements IEventNotificationService {
     public void notifyEventCancelled(UUID eventId) {
         EventDto event = eventService.event(eventId);
         User author = userService.getUser(event.authorId());
-
-
-        List<UUID> participantUserIds = participationService.getParticipantsForEvent(eventId).stream()
-                .map(EventParticipantDto::userId)
-                .toList();
-
         String message = "Мероприятие отмененно: " + event.name() + " (" + author.getTgName() + ")";
-        participantUserIds.forEach(userId -> {
-            outboxMessagePublisher.publish(userId, message);
-        });
+
+        participationService.getParticipantsForEvent(eventId).stream()
+                .map(EventParticipantDto::userId)
+                .forEach(userId -> outboxMessagePublisher.publish(userId, message));
     }
 
 

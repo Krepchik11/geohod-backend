@@ -16,11 +16,11 @@ public class TelegramNotificationService implements INotificationService {
 
     @Override
     public void sendNotification(UUID userId, String message) {
-        Long chatId = findChatIdByUserId(userId);
-        botService.sendMessage(chatId, message);
+        Long tgId = getUserTgId(userId);
+        botService.sendMessage(tgId, message);
     }
 
-    private Long findChatIdByUserId(UUID userId) {
+    private Long getUserTgId(UUID userId) {
         return Long.valueOf(userService.getUser(userId).getTgId());
     }
 }
