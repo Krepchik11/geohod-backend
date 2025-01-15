@@ -17,6 +17,6 @@ public class EventManager implements IEventManager {
     @Override
     public void cancelEvent(UUID eventId) {
         eventService.cancelEvent(eventId);
-        eventNotificationService.notifyEventCancelled(eventId);
+        eventNotificationService.notifyParticipantsEventCancelled(eventId);
     }
 }

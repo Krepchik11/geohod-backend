@@ -7,6 +7,7 @@ import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
+import me.geohod.geohodbackend.service.IEventNotificationService;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ public class EventParticipationService implements IEventParticipationService {
     private final EventParticipantModelMapper participantModelMapper;
     private final EventParticipantRepository eventParticipantRepository;
     private final EventRepository eventRepository;
+    private final IEventNotificationService notificationService;
 
     @Override
     @Transactional
@@ -47,6 +49,8 @@ public class EventParticipationService implements IEventParticipationService {
 
         EventParticipant participant = new EventParticipant(eventId, userId);
         eventParticipantRepository.save(participant);
+
+        notificationService.notifyParticipantRegisteredOnEvent(participant.getUserId(), participant.getEventId());
     }
 
     @Override
@@ -67,6 +71,8 @@ public class EventParticipationService implements IEventParticipationService {
 
         event.decreaseParticipantCount();
         eventRepository.save(event);
+
+        notificationService.notifyParticipantUnregisteredFromEvent(participant.getUserId(), participant.getEventId());
     }
 
     @Override

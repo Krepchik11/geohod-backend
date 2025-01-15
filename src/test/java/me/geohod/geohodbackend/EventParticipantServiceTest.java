@@ -5,6 +5,7 @@ import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
+import me.geohod.geohodbackend.service.IEventNotificationService;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.impl.EventParticipationService;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,8 @@ class EventParticipantServiceTest {
         IEventParticipationService service = new EventParticipationService(
                 Mockito.mock(EventParticipantModelMapper.class),
                 Mockito.mock(EventParticipantRepository.class),
-                eventRepository
+                eventRepository,
+                Mockito.mock(IEventNotificationService.class)
         );
 
         UUID userId = UUID.randomUUID();
@@ -47,7 +49,8 @@ class EventParticipantServiceTest {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
         EventParticipantModelMapper participantModelMapper = Mockito.mock(EventParticipantModelMapper.class);
         EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
-        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository);
+        IEventNotificationService notificationService = mock(IEventNotificationService.class);
+        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository, notificationService);
 
         UUID userId = UUID.randomUUID();
 
@@ -66,5 +69,54 @@ class EventParticipantServiceTest {
         verify(participantRepository, times(1)).delete(participant);
         verify(eventRepository, times(1)).save(event);
         verify(event, times(1)).decreaseParticipantCount();
+    }
+
+    @Test
+    void shouldNotifyParticipantRegisteredOnEvent() {
+        EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        EventParticipantModelMapper participantModelMapper = Mockito.mock(EventParticipantModelMapper.class);
+        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
+        IEventNotificationService notificationService = mock(IEventNotificationService.class);
+        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository, notificationService);
+
+        UUID userId = UUID.randomUUID();
+
+        Event event = new Event("Test Event", "Description", Instant.now(), 10, userId);
+        UUID eventId = event.getId();
+        EventParticipant participant = new EventParticipant(eventId, userId);
+
+        when(participantRepository.findByEventIdAndUserId(eventId, userId))
+                .thenReturn(Optional.of(participant));
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(event));
+
+        service.registerForEvent(userId, eventId);
+
+        verify(notificationService, times(1)).notifyParticipantRegisteredOnEvent(userId, eventId);
+    }
+
+    @Test
+    void shouldNotifyParticipantUnregisteredFromEvent() {
+        EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        EventParticipantModelMapper participantModelMapper = Mockito.mock(EventParticipantModelMapper.class);
+        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
+        IEventNotificationService notificationService = mock(IEventNotificationService.class);
+        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository, notificationService);
+
+        UUID userId = UUID.randomUUID();
+
+        Event event = new Event("Test Event", "Description", Instant.now(), 10, userId);
+        UUID eventId = event.getId();
+        EventParticipant participant = new EventParticipant(eventId, userId);
+        event.increaseParticipantCount();
+
+        when(participantRepository.findByEventIdAndUserId(eventId, userId))
+                .thenReturn(Optional.of(participant));
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(event));
+
+        service.unregisterFromEvent(userId, eventId);
+
+        verify(notificationService, times(1)).notifyParticipantUnregisteredFromEvent(userId, eventId);
     }
 }

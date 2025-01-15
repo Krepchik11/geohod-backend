@@ -9,6 +9,7 @@ import me.geohod.geohodbackend.data.mapper.EventModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.data.model.repository.UserRepository;
+import me.geohod.geohodbackend.service.IEventNotificationService;
 import me.geohod.geohodbackend.service.IEventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class EventService implements IEventService {
     private final EventModelMapper mapper;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final IEventNotificationService notificationService;
 
     @Override
     public EventDto event(UUID eventId) {
@@ -45,7 +47,10 @@ public class EventService implements IEventService {
 
         eventRepository.save(event);
 
-        return mapper.map(event);
+        EventDto result = mapper.map(event);
+
+        notifyEventCreated(result);
+        return result;
     }
 
     @Override
@@ -91,5 +96,17 @@ public class EventService implements IEventService {
         event.finish();
 
         eventRepository.save(event);
+
+        notifyEventFinished(mapper.map(event), finishDto.notifyParticipants());
+    }
+
+    private void notifyEventCreated(EventDto event) {
+        notificationService.notifyAuthorEventCreated(event.id());
+    }
+
+    private void notifyEventFinished(EventDto event, boolean notifyParticipants) {
+        if (notifyParticipants) {
+            notificationService.notifyParticipantsEventFinished(event.id());
+        }
     }
 }
