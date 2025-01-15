@@ -2,7 +2,11 @@ package me.geohod.geohodbackend;
 
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.EventParticipantDto;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.User;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.*;
 import me.geohod.geohodbackend.service.impl.EventNotificationService;
 import org.junit.jupiter.api.Test;
@@ -11,6 +15,7 @@ import org.mockito.Mockito;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -18,22 +23,22 @@ import static org.mockito.Mockito.when;
 class NotifyEventCancelledTest {
     @Test
     void checkNotificationMessageCorrect() {
-        IEventService eventService = Mockito.mock(IEventService.class);
+        EventRepository eventRepository = Mockito.mock(EventRepository.class);
         UUID eventId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         LocalDate date = LocalDate.of(2025, 1, 9);
-        when(eventService.event(eventId)).thenReturn(new EventDto(null, authorId, "Grand holidays", null, date.atStartOfDay().toInstant(ZoneOffset.UTC), 1, 1, null));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(new Event("Grand holidays", null, date.atStartOfDay().toInstant(ZoneOffset.UTC), 1, authorId)));
 
         IUserService userService = Mockito.mock(IUserService.class);
         when(userService.getUser(authorId)).thenReturn(new User(null, "buxbanner", "Matew", "Kozlov", null));
 
         UUID participantId = UUID.randomUUID();
-        IEventParticipationService participationService = Mockito.mock(IEventParticipationService.class);
-        when(participationService.getParticipantsForEvent(eventId)).thenReturn(List.of(new EventParticipantDto(eventId, participantId)));
+        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
+        when(participantRepository.findEventParticipantByEventId(eventId)).thenReturn(List.of(new EventParticipant(eventId, participantId)));
 
         ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.spy(ITelegramOutboxMessagePublisher.class);
 
-        IEventNotificationService eventNotificationService = new EventNotificationService(participationService, outboxMessagePublisher, eventService, userService);
+        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
 
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher).publish(participantId, """
