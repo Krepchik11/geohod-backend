@@ -23,7 +23,8 @@ public class EventProjectionRepository {
                     SELECT
                         e.id AS event_id,
                         u.tg_username AS author_username,
-                        u.tg_name AS author_name,
+                        u.first_name AS author_first_name,
+                        u.last_name AS author_last_name,
                         u.tg_image_url AS author_image_url,
                         e.name AS event_name,
                         e.description AS event_description,
@@ -46,7 +47,8 @@ public class EventProjectionRepository {
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
                                 rs.getString("author_username"),
-                                rs.getString("author_name"),
+                                rs.getString("author_first_name"),
+                                rs.getString("author_last_name"),
                                 rs.getString("author_image_url")
                         ),
                         rs.getString("event_name"),
@@ -68,7 +70,8 @@ public class EventProjectionRepository {
                     SELECT
                         e.id AS event_id,
                         u.tg_username AS author_username,
-                        u.tg_name AS author_name,
+                        u.first_name AS author_first_name,
+                        u.last_name AS author_last_name,
                         u.tg_image_url AS author_image_url,
                         e.name AS event_name,
                         e.description AS event_description,
@@ -114,7 +117,8 @@ public class EventProjectionRepository {
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
                                 rs.getString("author_username"),
-                                rs.getString("author_name"),
+                                rs.getString("author_first_name"),
+                                rs.getString("author_last_name"),
                                 rs.getString("author_image_url")
                         ),
                         rs.getString("event_name"),

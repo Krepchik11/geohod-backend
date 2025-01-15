@@ -4,6 +4,7 @@ import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
 import me.geohod.geohodbackend.api.dto.request.EventFinishRequest;
 import me.geohod.geohodbackend.api.dto.request.EventUpdateRequest;
 import me.geohod.geohodbackend.api.dto.response.EventDetailsResponse;
+import me.geohod.geohodbackend.api.dto.response.TelegramUserDetails;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.FinishEventDto;
@@ -22,4 +23,8 @@ public interface EventApiMapper {
     FinishEventDto map(EventFinishRequest request, UUID eventId);
 
     EventDetailsResponse response(EventDetailedProjection projection);
+
+    default TelegramUserDetails map(me.geohod.geohodbackend.data.dto.TelegramUserDetails dto) {
+        return new TelegramUserDetails(dto.username(), String.join(" ", dto.firstName(), dto.lastName()), dto.imageUrl());
+    }
 }

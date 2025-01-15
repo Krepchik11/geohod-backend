@@ -2,7 +2,8 @@ package me.geohod.geohodbackend.data.dto;
 
 public record TelegramUserDetails(
         String username,
-        String name,
+        String firstName,
+        String lastName,
         String imageUrl
 ) {
 }

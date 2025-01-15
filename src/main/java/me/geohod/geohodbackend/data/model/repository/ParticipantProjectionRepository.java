@@ -18,7 +18,8 @@ public class ParticipantProjectionRepository {
         String sql = """
                 SELECT
                   u.tg_username AS author_username,
-                  u.tg_name AS author_name,
+                  u.first_name AS author_first_name,
+                  u.last_name AS author_last_name,
                   u.tg_image_url AS author_image_url
                 FROM
                   event_participants ep
@@ -35,7 +36,8 @@ public class ParticipantProjectionRepository {
                 params,
                 (rs, rowNum) -> new TelegramUserDetails(
                         rs.getString("author_username"),
-                        rs.getString("author_name"),
+                        rs.getString("author_first_name"),
+                        rs.getString("author_last_name"),
                         rs.getString("author_image_url")
                 ));
     }
