@@ -35,7 +35,7 @@ class NotifyEventCancelledTest {
 
         IEventNotificationService eventNotificationService = new EventNotificationService(participationService, outboxMessagePublisher, eventService, userService);
 
-        eventNotificationService.notifyEventCancelled(eventId);
+        eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher).publish(participantId, """
                 Организатор отменил мероприятие Grand holidays (2025-01-09)
                 Дополнительную информацию вы можете уточнить у организатора: Matew Kozlov @buxbanner

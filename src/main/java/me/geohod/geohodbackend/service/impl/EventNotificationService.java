@@ -20,7 +20,7 @@ public class EventNotificationService implements IEventNotificationService {
     private final IUserService userService;
 
     @Override
-    public void notifyEventCancelled(UUID eventId) {
+    public void notifyParticipantsEventCancelled(UUID eventId) {
         EventDto event = eventService.event(eventId);
         User author = userService.getUser(event.authorId());
         String message = """
@@ -33,5 +33,55 @@ public class EventNotificationService implements IEventNotificationService {
                 .forEach(userId -> outboxMessagePublisher.publish(userId, message));
     }
 
+    @Override
+    public void notifyParticipantRegisteredOnEvent(UUID userId, UUID eventId) {
+        EventDto event = eventService.event(eventId);
+        User author = userService.getUser(event.authorId());
+        String message = """
+                Вы зарегистрировались на мероприятие %s (%s)
+                Организатор: %s @%s
+                """.formatted(event.name(), LocalDate.ofInstant(event.date(), ZoneId.systemDefault()), String.join(" ", author.getFirstName(), author.getLastName()), author.getTgUsername());
 
+        outboxMessagePublisher.publish(userId, message);
+    }
+
+    @Override
+    public void notifyParticipantUnregisteredFromEvent(UUID userId, UUID eventId) {
+        EventDto event = eventService.event(eventId);
+        String message = """
+                Вы отменили регистрацию на мероприятие %s (%s)
+                """.formatted(event.name(), LocalDate.ofInstant(event.date(), ZoneId.systemDefault()));
+
+        outboxMessagePublisher.publish(userId, message);
+    }
+
+    @Override
+    public void notifyParticipantsEventFinished(UUID eventId) {
+        EventDto event = eventService.event(eventId);
+        String message = """
+                Мероприятие %s (%s) завершено
+                """.formatted(event.name(), LocalDate.ofInstant(event.date(), ZoneId.systemDefault()));
+
+        participationService.getParticipantsForEvent(eventId).stream()
+                .map(EventParticipantDto::userId)
+                .forEach(userId -> outboxMessagePublisher.publish(userId, message));
+    }
+
+    @Override
+    public void notifyAuthorEventCreated(UUID eventId) { // TODO: add link to registration
+        EventDto event = eventService.event(eventId);
+        User author = userService.getUser(event.authorId());
+        String message = """
+                Вы создали мероприятие:
+                ```
+                %s
+                %s
+                Организатор: %s @%s
+                
+                Ссылка на регистрацию будет тут!
+                ```
+                """.formatted(event.name(), LocalDate.ofInstant(event.date(), ZoneId.systemDefault()), String.join(" ", author.getFirstName()), author.getLastName(), author.getTgUsername());
+
+        outboxMessagePublisher.publish(author.getId(), message);
+    }
 }
