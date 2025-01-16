@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 class NotifyEventCancelledTest {
@@ -34,14 +36,14 @@ class NotifyEventCancelledTest {
 
         UUID participantId = UUID.randomUUID();
         EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
-        when(participantRepository.findEventParticipantByEventId(eventId)).thenReturn(List.of(new EventParticipant(eventId, participantId)));
+        when(participantRepository.findEventParticipantByEventId(any())).thenReturn(List.of(new EventParticipant(eventId, participantId)));
 
-        ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.spy(ITelegramOutboxMessagePublisher.class);
+        ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
 
         IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
 
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
-        Mockito.verify(outboxMessagePublisher).publish(participantId, """
+        Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
                 Организатор отменил мероприятие Grand holidays (2025-01-09)
                 Дополнительную информацию вы можете уточнить у организатора: Matew Kozlov @buxbanner
                 """);
