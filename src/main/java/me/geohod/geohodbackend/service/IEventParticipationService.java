@@ -1,8 +1,5 @@
 package me.geohod.geohodbackend.service;
 
-import me.geohod.geohodbackend.data.dto.EventParticipantDto;
-
-import java.util.List;
 import java.util.UUID;
 
 public interface IEventParticipationService {
@@ -10,5 +7,5 @@ public interface IEventParticipationService {
 
     void unregisterFromEvent(UUID userId, UUID eventId);
 
-    List<EventParticipantDto> getParticipantsForEvent(UUID eventId);
+    void unregisterParticipantFromEvent(UUID participantId, UUID eventId);
 }

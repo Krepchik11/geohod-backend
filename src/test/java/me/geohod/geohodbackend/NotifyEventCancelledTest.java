@@ -1,7 +1,5 @@
 package me.geohod.geohodbackend;
 
-import me.geohod.geohodbackend.data.dto.EventDto;
-import me.geohod.geohodbackend.data.dto.EventParticipantDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.User;

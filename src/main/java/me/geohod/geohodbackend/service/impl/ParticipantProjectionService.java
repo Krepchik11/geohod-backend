@@ -1,6 +1,7 @@
 package me.geohod.geohodbackend.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.dto.EventParticipantDto;
 import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
 import me.geohod.geohodbackend.data.model.repository.ParticipantProjectionRepository;
 import me.geohod.geohodbackend.service.IParticipantProjectionService;
@@ -15,7 +16,7 @@ public class ParticipantProjectionService implements IParticipantProjectionServi
     private final ParticipantProjectionRepository repository;
 
     @Override
-    public List<TelegramUserDetails> participantsTelegramUserProjection(UUID eventId) {
+    public List<EventParticipantDto> eventParticipants(UUID eventId) {
         return repository.participants(eventId);
     }
 }
