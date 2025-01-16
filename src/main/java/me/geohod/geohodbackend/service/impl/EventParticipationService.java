@@ -1,8 +1,6 @@
 package me.geohod.geohodbackend.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.data.dto.EventParticipantDto;
-import me.geohod.geohodbackend.data.mapper.EventParticipantModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
@@ -12,13 +10,11 @@ import me.geohod.geohodbackend.service.IEventParticipationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class EventParticipationService implements IEventParticipationService {
-    private final EventParticipantModelMapper participantModelMapper;
     private final EventParticipantRepository eventParticipantRepository;
     private final EventRepository eventRepository;
     private final IEventNotificationService notificationService;
@@ -73,12 +69,5 @@ public class EventParticipationService implements IEventParticipationService {
         eventRepository.save(event);
 
         notificationService.notifyParticipantUnregisteredFromEvent(participant.getUserId(), participant.getEventId());
-    }
-
-    @Override
-    public List<EventParticipantDto> getParticipantsForEvent(UUID eventId) {
-        return eventParticipantRepository.findEventParticipantByEventId(eventId)
-                .stream().map(participantModelMapper::map)
-                .toList();
     }
 }

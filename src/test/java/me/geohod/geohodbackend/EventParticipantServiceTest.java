@@ -1,6 +1,5 @@
 package me.geohod.geohodbackend;
 
-import me.geohod.geohodbackend.data.mapper.EventParticipantModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
@@ -23,7 +22,6 @@ class EventParticipantServiceTest {
     void shouldThrowExceptionWhenEventIsFull() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
         IEventParticipationService service = new EventParticipationService(
-                Mockito.mock(EventParticipantModelMapper.class),
                 Mockito.mock(EventParticipantRepository.class),
                 eventRepository,
                 Mockito.mock(IEventNotificationService.class)
@@ -47,10 +45,9 @@ class EventParticipantServiceTest {
     @Test
     void shouldUnregisterParticipant() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        EventParticipantModelMapper participantModelMapper = Mockito.mock(EventParticipantModelMapper.class);
         EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
         IEventNotificationService notificationService = mock(IEventNotificationService.class);
-        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository, notificationService);
+        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, notificationService);
 
         UUID userId = UUID.randomUUID();
 
@@ -74,10 +71,9 @@ class EventParticipantServiceTest {
     @Test
     void shouldNotifyParticipantRegisteredOnEvent() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        EventParticipantModelMapper participantModelMapper = Mockito.mock(EventParticipantModelMapper.class);
         EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
         IEventNotificationService notificationService = mock(IEventNotificationService.class);
-        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository, notificationService);
+        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, notificationService);
 
         UUID userId = UUID.randomUUID();
 
@@ -98,10 +94,9 @@ class EventParticipantServiceTest {
     @Test
     void shouldNotifyParticipantUnregisteredFromEvent() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        EventParticipantModelMapper participantModelMapper = Mockito.mock(EventParticipantModelMapper.class);
         EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
         IEventNotificationService notificationService = mock(IEventNotificationService.class);
-        IEventParticipationService service = new EventParticipationService(participantModelMapper, participantRepository, eventRepository, notificationService);
+        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, notificationService);
 
         UUID userId = UUID.randomUUID();
 
