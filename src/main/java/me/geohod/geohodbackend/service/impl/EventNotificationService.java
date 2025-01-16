@@ -107,13 +107,12 @@ public class EventNotificationService implements IEventNotificationService {
     private String formatAuthorEventCreatedMessage(EventContext context) {
         return String.format("""
                 Вы создали мероприятие:
-                ```
+                
                 %s
                 %s
                 Организатор: %s @%s
                 
                 Ссылка на регистрацию будет тут!
-                ```
                 """, context.event().getName(), getFormattedEventDate(context.event()), context.authorFullName(), context.authorTgUsername());
     }
 
