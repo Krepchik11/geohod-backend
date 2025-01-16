@@ -16,6 +16,7 @@ public interface IEventProjectionService {
 
     record EventsDetailedProjectionFilter(
             @Nullable UUID authorUserId,
+            @Nullable UUID participantUserId,
             @Nullable List<Event.Status> statuses
     ) {
     }

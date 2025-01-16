@@ -63,11 +63,12 @@ public class EventProjectionRepository {
 
     public Page<EventDetailedProjection> events(
             UUID authorUserId,
+            UUID participantUserId,
             List<Event.Status> statuses,
             Pageable pageable
     ) {
         String sql = """
-                    SELECT
+                    SELECT DISTINCT
                         e.id AS event_id,
                         u.tg_username AS author_username,
                         u.first_name AS author_first_name,
@@ -79,32 +80,31 @@ public class EventProjectionRepository {
                         e.max_participants AS event_max_participants,
                         e.current_participants AS event_current_participants,
                         e.status AS event_status
-                    FROM
-                        events e
-                    JOIN
-                        users u ON e.author_id = u.id
-                    WHERE
-                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId)
-                        AND (e.status IN (:statuses))
+                    FROM events e
+                        JOIN users u ON e.author_id = u.id
+                        LEFT JOIN event_participants p ON e.id = p.event_id AND p.user_id = :participantUserId
+                    WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
+                        OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
+                        AND e.status IN (:statuses);
                     OFFSET :offset
                     LIMIT :pageSize;
                 """;
 
         String countSql = """
                     SELECT COUNT(DISTINCT e.id)
-                    FROM
-                        events e
-                    LEFT JOIN
-                        event_participants ep ON e.id = ep.event_id
-                    WHERE
-                        (COALESCE(:authorUserId) IS NULL OR e.author_id = :authorUserId)
-                        AND (e.status IN (:statuses))
+                    FROM events e
+                        JOIN users u ON e.author_id = u.id
+                        LEFT JOIN event_participants p ON e.id = p.event_id AND p.user_id = :participantUserId
+                    WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
+                        OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
+                        AND e.status IN (:statuses);
                 """;
 
         List<String> statusesFilter = prepareStatusesFilter(statuses);
 
         Map<String, Object> params = new HashMap<>();
         params.put("authorUserId", authorUserId);
+        params.put("participantUserId", participantUserId);
         params.put("statuses", statusesFilter);
         params.put("offset", pageable.getOffset());
         params.put("pageSize", pageable.getPageSize());
