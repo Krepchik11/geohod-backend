@@ -52,7 +52,7 @@ public class EventParticipationController {
             throw new AccessDeniedException("You do not have permission to remove participants from this event");
         }
 
-        participationService.unregisterFromEvent(participantId, eventId);
+        participationService.unregisterParticipantFromEvent(participantId, eventId);
         return ResponseEntity.ok(new EventRemoveParticipant("success"));
     }
 

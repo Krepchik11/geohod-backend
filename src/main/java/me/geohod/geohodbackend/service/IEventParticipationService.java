@@ -6,4 +6,6 @@ public interface IEventParticipationService {
     void registerForEvent(UUID userId, UUID eventId);
 
     void unregisterFromEvent(UUID userId, UUID eventId);
+
+    void unregisterParticipantFromEvent(UUID participantId, UUID eventId);
 }

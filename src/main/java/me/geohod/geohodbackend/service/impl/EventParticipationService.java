@@ -70,4 +70,25 @@ public class EventParticipationService implements IEventParticipationService {
 
         notificationService.notifyParticipantUnregisteredFromEvent(participant.getUserId(), participant.getEventId());
     }
+
+    @Override
+    @Transactional
+    public void unregisterParticipantFromEvent(UUID participantId, UUID eventId) {
+        EventParticipant participant = eventParticipantRepository.findByEventIdAndId(eventId, participantId)
+                .orElseThrow(() -> new IllegalArgumentException("Participant not found for this event"));
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
+
+        if (event.isCanceled() || event.isFinished()) {
+            throw new IllegalStateException("Event already closed");
+        }
+
+        eventParticipantRepository.delete(participant);
+
+        event.decreaseParticipantCount();
+        eventRepository.save(event);
+
+        notificationService.notifyParticipantUnregisteredFromEvent(participant.getUserId(), participant.getEventId());
+    }
 }
