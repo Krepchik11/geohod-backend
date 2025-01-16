@@ -24,9 +24,9 @@ public class GeohodTelegramBotService implements ITelegramBotService {
     public void sendMessage(Long chatId, String message) {
         try {
             SendMessage request = new SendMessage(chatId.toString(), message);
+            request.enableMarkdownV2(true);
             telegramBot.execute(request);
         } catch (TelegramApiException e) {
-            log.error("Error sending Telegram message to chatId {}: {}", chatId, e.getMessage());
             throw new TelegramNotificationException("Error sending Telegram message", e);
         }
     }

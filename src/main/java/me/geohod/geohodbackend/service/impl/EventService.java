@@ -96,17 +96,9 @@ public class EventService implements IEventService {
         event.finish();
 
         eventRepository.save(event);
-
-        notifyEventFinished(mapper.map(event), finishDto.notifyParticipants());
     }
 
     private void notifyEventCreated(EventDto event) {
         notificationService.notifyAuthorEventCreated(event.id());
-    }
-
-    private void notifyEventFinished(EventDto event, boolean notifyParticipants) {
-        if (notifyParticipants) {
-            notificationService.notifyParticipantsEventFinished(event.id());
-        }
     }
 }
