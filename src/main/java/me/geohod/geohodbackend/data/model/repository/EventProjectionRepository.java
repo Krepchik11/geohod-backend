@@ -43,7 +43,7 @@ public class EventProjectionRepository {
         return jdbcTemplate.queryForObject(
                 sql,
                 Map.of("eventId", eventId),
-                (ResultSet rs, int rowNum) -> new EventDetailedProjection(
+                (ResultSet rs, int _) -> new EventDetailedProjection(
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
                                 rs.getString("author_username"),
@@ -113,7 +113,7 @@ public class EventProjectionRepository {
         List<EventDetailedProjection> events = jdbcTemplate.query(
                 sql,
                 params,
-                (ResultSet rs, int rowNum) -> new EventDetailedProjection(
+                (ResultSet rs, int _) -> new EventDetailedProjection(
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
                                 rs.getString("author_username"),
@@ -130,7 +130,7 @@ public class EventProjectionRepository {
                 )
         );
 
-        return new PageImpl<>(events, pageable, totalElements == null ? 0 : totalElements);
+        return new PageImpl<EventDetailedProjection>(events, pageable, totalElements == null ? 0 : totalElements);
     }
 
     private List<String> prepareStatusesFilter(List<Event.Status> statuses) {

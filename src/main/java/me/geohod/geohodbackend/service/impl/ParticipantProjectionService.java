@@ -1,14 +1,14 @@
 package me.geohod.geohodbackend.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.data.dto.EventParticipantDto;
-import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
-import me.geohod.geohodbackend.data.model.repository.ParticipantProjectionRepository;
-import me.geohod.geohodbackend.service.IParticipantProjectionService;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.dto.EventParticipantDto;
+import me.geohod.geohodbackend.data.model.repository.ParticipantProjectionRepository;
+import me.geohod.geohodbackend.service.IParticipantProjectionService;
 
 @Service
 @RequiredArgsConstructor

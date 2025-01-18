@@ -1,14 +1,14 @@
 package me.geohod.geohodbackend.data.model.repository;
 
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.data.dto.EventParticipantDto;
-import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Repository;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.dto.EventParticipantDto;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class ParticipantProjectionRepository {
         return jdbcTemplate.query(
                 sql,
                 params,
-                (rs, rowNum) -> new EventParticipantDto(
+                (rs, _) -> new EventParticipantDto(
                         rs.getString("id"),
                         rs.getString("author_username"),
                         rs.getString("author_first_name"),
