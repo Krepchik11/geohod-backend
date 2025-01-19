@@ -5,6 +5,7 @@ import me.geohod.geohodbackend.service.IEventManager;
 import me.geohod.geohodbackend.service.IEventNotificationService;
 import me.geohod.geohodbackend.service.IEventService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ public class EventManager implements IEventManager {
     private final IEventNotificationService eventNotificationService;
 
     @Override
+    @Transactional
     public void cancelEvent(UUID eventId) {
         eventService.cancelEvent(eventId);
         eventNotificationService.notifyParticipantsEventCancelled(eventId);

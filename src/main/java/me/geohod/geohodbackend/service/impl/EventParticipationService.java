@@ -10,6 +10,7 @@ import me.geohod.geohodbackend.service.IEventParticipationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
