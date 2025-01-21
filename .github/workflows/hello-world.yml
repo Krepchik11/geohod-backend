@@ -23,7 +23,7 @@ jobs:
           source: "/tmp/hello_world.txt"
           target: "/tmp/"
           overwrite: true
-          strip_components: 2
+          strip_components: 1
 
       - name: SSH into VPS and check file (Optional)
         if: always()
