@@ -66,8 +66,8 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             docker load < /tmp/geohod-backend/image.tar
-            docker stop ${{ github.repository }} || true
-            docker rm ${{ github.repository }} || true
+            docker stop geohod-backend || true
+            docker rm geohod-backend || true
 
             # Extract and pass environment variables
             SECRET_VARS="${{ secrets.SECRET_VARS }}"
@@ -79,7 +79,7 @@ jobs:
 
             docker run -d --restart always \
               --network=geohod \
-              --name ${{ github.repository }} \
+              --name geohod-backend \
               -p 80:8080 \
               $ENV_ARGS \
               ${{ github.repository }}:${{ github.ref_name }}
