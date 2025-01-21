@@ -49,6 +49,10 @@ jobs:
           source: /tmp/image.tar
           target: /tmp/image.tar
 
+      - name: Cleanup local file
+        if: always()
+        run: rm /tmp/*
+
       - name: VPS launch
         uses: appleboy/ssh-action@master
         with:
