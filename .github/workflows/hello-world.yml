@@ -20,8 +20,8 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "/tmp/hello_world.txt"
-          target: "/tmp/"
+          source: tmp/hello_world.txt
+          target: /tmp/
           overwrite: true
           strip_components: 1
 
