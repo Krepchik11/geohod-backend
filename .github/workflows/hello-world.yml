@@ -10,9 +10,9 @@ jobs:
     steps:
       - name: Create hello world file
         run: |
-          echo "Hello, world!" > /tmp/hello_world.txt
-          cat /tmp/hello_world.txt
-          ls /tmp/
+          echo "Hello, world!" > ./hello_world.txt
+          cat ./hello_world.txt
+          ls ./
 
       - name: Transfer file to VPS
         uses: appleboy/scp-action@master
@@ -20,7 +20,7 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: tmp/hello_world.txt
+          source: ./hello_world.txt
           target: /tmp/
           overwrite: true
           strip_components: 1
@@ -39,4 +39,4 @@ jobs:
 
       - name: Cleanup local file
         if: always()
-        run: rm /tmp/hello_world.txt
+        run: rm hello_world.txt
