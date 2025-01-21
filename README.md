@@ -76,6 +76,7 @@ Required GitHub Variables:
 - `VPS_HOST` - VPS hostname or IP address
 
 Required GitHub Secrets for deployment:
-- `VPS_SSH_KEY` - SSH private key for VPS access
 - `VPS_USER` - VPS username
+- `VPS_SSH_KEY` - SSH private key for VPS access
+- `VPS_SSH_FINGERPRINT` - VPS SSH fingerprint
 - `SECRET_VARS` - Comma-separated list of environment variables in format `KEY=VALUE`
