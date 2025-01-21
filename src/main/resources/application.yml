@@ -7,13 +7,14 @@ spring:
     banner-mode: "off"
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:54321/geohod}
-    username: ${SPRING_DATASOURCE_USERNAME:geohod}
-    password: ${SPRING_DATASOURCE_PASSWORD:secret}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
 
 geohod:
   telegram-bot:
-    token:
+    token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
+    username: ${GEOHOD_TELEGRAM_BOT_USERNAME}

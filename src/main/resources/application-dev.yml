@@ -2,3 +2,18 @@ logging:
   level:
     org.springframework.security: debug
     org.springframework.web.cors: debug
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:54321/geohod
+    username: geohod
+    password: secret
+  docker:
+    compose:
+      enabled: true
+      file: compose.yaml
+
+geohod:
+  telegram-bot:
+    token: ${GEOHOD_TELEGRAM_BOT_TOKEN:dev-token}
+    username: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-bot}
