@@ -24,6 +24,7 @@ jobs:
           target: "/tmp/test/"
           rm: true
           overwrite: true
+          strip_components: 2
 
       - name: SSH into VPS and check file (Optional)
         if: always()
