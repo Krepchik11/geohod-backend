@@ -37,7 +37,7 @@ jobs:
           context: .
           file: ./.github/Dockerfile
           tags: ${{ github.repository }}:${{ github.ref_name }}
-          outputs: type=docker,dest=/tmp/image.tar
+          outputs: type=docker,dest=./image.tar
 
       - name: Transfer image to VPS
         uses: appleboy/scp-action@master
@@ -45,13 +45,13 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          fingerprint: ${{ secrets.VPS_SSH_FINGERPRINT }}
-          source: /tmp/image.tar
+          source: ./image.tar
           target: /tmp/image.tar
+          overwrite: true
 
       - name: Cleanup local file
         if: always()
-        run: rm /tmp/*
+        run: rm ./image.tar
 
       - name: VPS launch
         uses: appleboy/ssh-action@master
@@ -59,7 +59,6 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          fingerprint: ${{ secrets.VPS_SSH_FINGERPRINT }}
           script: |
             docker load < /tmp/image.tar
             docker stop geohod || true
