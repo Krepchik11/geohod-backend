@@ -81,5 +81,5 @@ jobs:
               --network=geohod \
               --name geohod \
               -p 80:8080 \
-              -e $ENV_ARGS \
+              $ENV_ARGS \
               ${{ github.repository }}:${{ github.ref_name }}
