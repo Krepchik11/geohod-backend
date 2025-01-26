@@ -129,4 +129,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="1737883386900-1" author="nabor (generated)">
+        <dropNotNullConstraint tableName="users" columnName="tg_username" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
 </databaseChangeLog>
