@@ -10,23 +10,22 @@ import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.IEventNotificationService;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventNotificationService implements IEventNotificationService {
-
     private static final String EVENT_NOT_FOUND_MESSAGE = "Event {} not found, skipping notification";
+    private static final String NOTIFICATION_FAILED_MESSAGE = "Failed to publish message to user {}: {}";
 
     private final EventParticipantRepository eventParticipantRepository;
     private final ITelegramOutboxMessagePublisher outboxMessagePublisher;
@@ -35,43 +34,51 @@ public class EventNotificationService implements IEventNotificationService {
 
     @Override
     public void notifyParticipantsEventCancelled(UUID eventId) {
-        notifyEvent(eventId, this::formatEventCancelledMessage, this::getEventParticipants);
+        notifyEvent(eventId, NotificationType.EVENT_CANCELLED, this::getEventParticipants);
     }
 
     @Override
     public void notifyParticipantRegisteredOnEvent(UUID userId, UUID eventId) {
-        notifyEvent(eventId, this::formatParticipantRegisteredMessage, _ -> List.of(userId));
+        notifyEvent(eventId, NotificationType.PARTICIPANT_REGISTERED, event -> List.of(userId));
     }
 
     @Override
     public void notifyParticipantUnregisteredFromEvent(UUID userId, UUID eventId) {
-        notifyEvent(eventId, this::formatParticipantUnregisteredMessage, _ -> List.of(userId));
+        notifyEvent(eventId, NotificationType.PARTICIPANT_UNREGISTERED, event -> List.of(userId));
     }
 
     @Override
     public void notifyAuthorEventCreated(UUID eventId) {
-        notifyEvent(eventId, this::formatAuthorEventCreatedMessage, this::getEventAuthor);
+        notifyEvent(eventId, NotificationType.EVENT_CREATED, event -> Collections.singleton(event.getAuthorId()));
     }
 
-    private void notifyEvent(UUID eventId, Function<EventContext, String> messageFormatter, Function<Event, Collection<UUID>> recipientProvider) {
-        Optional<Event> optionalEvent = eventRepository.findById(eventId);
-        if (optionalEvent.isEmpty()) {
-            log.warn(EVENT_NOT_FOUND_MESSAGE, eventId);
-            return;
+    private void notifyEvent(UUID eventId, NotificationType type, Function<Event, Collection<UUID>> recipientProvider) {
+        eventRepository.findById(eventId)
+                .ifPresentOrElse(
+                        event -> sendNotifications(event, type, recipientProvider),
+                        () -> log.warn(EVENT_NOT_FOUND_MESSAGE, eventId)
+                );
+    }
+
+    private void sendNotifications(Event event, NotificationType type, Function<Event, Collection<UUID>> recipientProvider) {
+        EventContext context = createEventContext(event);
+        String message = type.formatMessage(context);
+
+        recipientProvider.apply(event)
+                .forEach(userId -> sendNotification(userId, message));
+    }
+
+    private void sendNotification(UUID userId, String message) {
+        try {
+            outboxMessagePublisher.publish(userId, message);
+        } catch (Exception e) {
+            log.error(NOTIFICATION_FAILED_MESSAGE, userId, e.getMessage(), e);
         }
+    }
 
-        Event event = optionalEvent.get();
+    private EventContext createEventContext(Event event) {
         User author = userService.getUser(event.getAuthorId());
-        EventContext context = new EventContext(event, author);
-        String message = messageFormatter.apply(context);
-
-        recipientProvider.apply(event).forEach(userId -> {
-            try {
-                outboxMessagePublisher.publish(userId, message);
-            } catch (Exception e) {
-                log.error("Failed to publish message to user {}: {}", userId, e.getMessage(), e);
-            }
-        });
+        return new EventContext(event, author);
     }
 
     private Collection<UUID> getEventParticipants(Event event) {
@@ -80,57 +87,84 @@ public class EventNotificationService implements IEventNotificationService {
                 .toList();
     }
 
-    private Collection<UUID> getEventAuthor(Event event) {
-        return List.of(event.getAuthorId());
-    }
+    @RequiredArgsConstructor
+    private enum NotificationType {
+        EVENT_CANCELLED(context -> {
+            String baseMessage = String.format("Организатор отменил мероприятие %s (%s)",
+                    context.event().getName(),
+                    formatEventDate(context.event()));
 
-    private String formatEventCancelledMessage(EventContext context) {
-        return String.format("""
-                Организатор отменил мероприятие %s (%s)
-                Дополнительную информацию вы можете уточнить у организатора: %s @%s
-                """, context.event().getName(), getFormattedEventDate(context.event()), context.authorFullName(), context.authorTgUsername());
-    }
+            return context.getContactInfo()
+                    .map(contactInfo -> baseMessage + "\n" + contactInfo)
+                    .orElse(baseMessage);
+        }),
 
-    private String formatParticipantRegisteredMessage(EventContext context) {
-        return String.format("""
-                Вы зарегистрировались на мероприятие %s (%s)
-                Организатор: %s @%s
-                """, context.event().getName(), getFormattedEventDate(context.event()), context.authorFullName(), context.authorTgUsername());
-    }
+        PARTICIPANT_REGISTERED(context -> String.format("""
+                        Вы зарегистрировались на мероприятие %s (%s)
+                        %s
+                        """,
+                context.event().getName(),
+                formatEventDate(context.event()),
+                context.getContactInfo().orElse(""))),
 
-    private String formatParticipantUnregisteredMessage(EventContext context) {
-        return String.format("""
-                Вы отменили регистрацию на мероприятие %s (%s)
-                """, context.event().getName(), getFormattedEventDate(context.event()));
-    }
+        PARTICIPANT_UNREGISTERED(context -> String.format("""
+                        Вы отменили регистрацию на мероприятие %s (%s)
+                        """,
+                context.event().getName(),
+                formatEventDate(context.event()))),
 
-    private String formatAuthorEventCreatedMessage(EventContext context) {
-        return String.format("""
-                Вы создали мероприятие:
-                
-                %s
-                %s
-                Организатор: %s @%s
-                
-                Ссылка на регистрацию будет тут!
-                """, context.event().getName(), getFormattedEventDate(context.event()), context.authorFullName(), context.authorTgUsername());
-    }
+        EVENT_CREATED(context -> String.format("""
+                        Вы создали мероприятие:
+                        
+                        %s
+                        %s
+                        %s
+                        
+                        Ссылка на регистрацию будет тут!
+                        """,
+                context.event().getName(),
+                formatEventDate(context.event()),
+                context.getContactInfo().orElse("")));
 
+        private final Function<EventContext, String> messageFormatter;
 
-    private String getFormattedEventDate(Event event) {
-        return LocalDate.ofInstant(event.getDate(), ZoneId.systemDefault()).toString();
+        public String formatMessage(EventContext context) {
+            return messageFormatter.apply(context);
+        }
+
+        private static String formatEventDate(Event event) {
+            return LocalDate.ofInstant(event.getDate(), ZoneId.systemDefault()).toString();
+        }
     }
 
     private record EventContext(Event event, User author) {
-        String authorFullName() {
-            return Stream.of(author.getFirstName(), author.getLastName())
-                    .filter(name -> name != null && !name.isBlank())
-                    .reduce((s1, s2) -> s1 + " " + s2)
-                    .orElse("");
+        private Optional<String> getContactInfo() {
+            String fullName = getAuthorFullName();
+            String tgUsername = author.getTgUsername();
+
+            if (StringUtils.isBlank(fullName) && StringUtils.isBlank(tgUsername)) {
+                return Optional.empty();
+            }
+
+            return Optional.of(formatContactInfo(fullName, tgUsername));
         }
 
-        String authorTgUsername() {
-            return author.getTgUsername();
+        private String getAuthorFullName() {
+            return Stream.of(author.getFirstName(), author.getLastName())
+                    .filter(StringUtils::isNotBlank)
+                    .collect(Collectors.joining(" "));
+        }
+
+        private String formatContactInfo(String fullName, String tgUsername) {
+            if (StringUtils.isBlank(tgUsername)) {
+                return String.format("Организатор: %s", fullName);
+            }
+
+            if (StringUtils.isBlank(fullName)) {
+                return String.format("Организатор: @%s", tgUsername);
+            }
+
+            return String.format("Организатор: %s @%s", fullName, tgUsername);
         }
     }
 }
