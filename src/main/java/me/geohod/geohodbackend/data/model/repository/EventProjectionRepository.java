@@ -22,6 +22,7 @@ public class EventProjectionRepository {
         String sql = """
                     SELECT
                         e.id AS event_id,
+                        u.tg_id AS author_tg_id,
                         u.tg_username AS author_username,
                         u.first_name AS author_first_name,
                         u.last_name AS author_last_name,
@@ -46,6 +47,7 @@ public class EventProjectionRepository {
                 (ResultSet rs, int _) -> new EventDetailedProjection(
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
+                                rs.getString("author_tg_id"),
                                 rs.getString("author_username"),
                                 rs.getString("author_first_name"),
                                 rs.getString("author_last_name"),
@@ -70,6 +72,7 @@ public class EventProjectionRepository {
         String sql = """
                     SELECT DISTINCT
                         e.id AS event_id,
+                        u.tg_id AS author_tg_id,
                         u.tg_username AS author_username,
                         u.first_name AS author_first_name,
                         u.last_name AS author_last_name,
@@ -116,6 +119,7 @@ public class EventProjectionRepository {
                 (ResultSet rs, int _) -> new EventDetailedProjection(
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
+                                rs.getString("author_tg_id"),
                                 rs.getString("author_username"),
                                 rs.getString("author_first_name"),
                                 rs.getString("author_last_name"),
@@ -130,7 +134,7 @@ public class EventProjectionRepository {
                 )
         );
 
-        return new PageImpl<EventDetailedProjection>(events, pageable, totalElements == null ? 0 : totalElements);
+        return new PageImpl<>(events, pageable, totalElements == null ? 0 : totalElements);
     }
 
     private List<String> prepareStatusesFilter(List<Event.Status> statuses) {
