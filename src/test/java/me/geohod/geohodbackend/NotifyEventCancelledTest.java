@@ -43,7 +43,84 @@ class NotifyEventCancelledTest {
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
                 Организатор отменил мероприятие Grand holidays (2025-01-09)
-                Дополнительную информацию вы можете уточнить у организатора: Matew Kozlov @buxbanner
-                """);
+                Организатор: Matew Kozlov @buxbanner"""
+        );
+    }
+
+    @Test
+    void checkAuthorContactInfoEmptyMessageCorrect() {
+        EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        UUID eventId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        LocalDate date = LocalDate.of(2025, 1, 9);
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(new Event("Grand holidays", null, date.atStartOfDay().toInstant(ZoneOffset.UTC), 1, authorId)));
+
+        IUserService userService = Mockito.mock(IUserService.class);
+        when(userService.getUser(authorId)).thenReturn(new User(null, null, null, "", null));
+
+        UUID participantId = UUID.randomUUID();
+        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
+        when(participantRepository.findEventParticipantByEventId(any())).thenReturn(List.of(new EventParticipant(eventId, participantId)));
+
+        ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
+
+        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+
+        eventNotificationService.notifyParticipantsEventCancelled(eventId);
+        Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
+                Организатор отменил мероприятие Grand holidays (2025-01-09)"""
+        );
+    }
+
+    @Test
+    void checkAuthorContactInfoContainsOnlyNameMessageCorrect() {
+        EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        UUID eventId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        LocalDate date = LocalDate.of(2025, 1, 9);
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(new Event("Grand holidays", null, date.atStartOfDay().toInstant(ZoneOffset.UTC), 1, authorId)));
+
+        IUserService userService = Mockito.mock(IUserService.class);
+        when(userService.getUser(authorId)).thenReturn(new User(null, null, "Matew", "Kozlov", null));
+
+        UUID participantId = UUID.randomUUID();
+        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
+        when(participantRepository.findEventParticipantByEventId(any())).thenReturn(List.of(new EventParticipant(eventId, participantId)));
+
+        ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
+
+        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+
+        eventNotificationService.notifyParticipantsEventCancelled(eventId);
+        Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
+                Организатор отменил мероприятие Grand holidays (2025-01-09)
+                Организатор: Matew Kozlov"""
+        );
+    }
+
+    @Test
+    void checkAuthorContactInfoContainsTgUsernameMessageCorrect() {
+        EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        UUID eventId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        LocalDate date = LocalDate.of(2025, 1, 9);
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(new Event("Grand holidays", null, date.atStartOfDay().toInstant(ZoneOffset.UTC), 1, authorId)));
+
+        IUserService userService = Mockito.mock(IUserService.class);
+        when(userService.getUser(authorId)).thenReturn(new User(null, "buxbanner", null, "", null));
+
+        UUID participantId = UUID.randomUUID();
+        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
+        when(participantRepository.findEventParticipantByEventId(any())).thenReturn(List.of(new EventParticipant(eventId, participantId)));
+
+        ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
+
+        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+
+        eventNotificationService.notifyParticipantsEventCancelled(eventId);
+        Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
+                Организатор отменил мероприятие Grand holidays (2025-01-09)
+                Организатор: @buxbanner"""
+        );
     }
 }
