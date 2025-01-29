@@ -3,6 +3,7 @@ package me.geohod.geohodbackend.data.dto;
 import java.util.stream.Stream;
 
 public record TelegramUserDetails(
+        String id,
         String username,
         String firstName,
         String lastName,
