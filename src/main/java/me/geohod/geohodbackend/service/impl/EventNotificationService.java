@@ -52,6 +52,13 @@ public class EventNotificationService implements IEventNotificationService {
         notifyEvent(eventId, NotificationType.EVENT_CREATED, event -> Collections.singleton(event.getAuthorId()));
     }
 
+    @Override
+    public void notifyParticipantsEventFinishedWithDonation(UUID eventId, String donationInfo) {
+        notifyEvent(eventId,
+                NotificationType.EVENT_FINISHED.withDonation(donationInfo),
+                this::getEventParticipants);
+    }
+
     private void notifyEvent(UUID eventId, NotificationType type, Function<Event, Collection<UUID>> recipientProvider) {
         eventRepository.findById(eventId)
                 .ifPresentOrElse(
@@ -88,8 +95,35 @@ public class EventNotificationService implements IEventNotificationService {
     }
 
     @RequiredArgsConstructor
-    private enum NotificationType {
-        EVENT_CANCELLED(context -> {
+    private static class NotificationType {
+        private final Function<EventContext, String> messageFormatter;
+        private final Optional<String> additionalMessage;
+
+        private NotificationType(Function<EventContext, String> messageFormatter) {
+            this.messageFormatter = messageFormatter;
+            this.additionalMessage = Optional.empty();
+        }
+
+        public NotificationType withDonation(String amount) {
+            if (StringUtils.isBlank(amount)) {
+                return this;
+            }
+
+            return new NotificationType(
+                    this.messageFormatter,
+                    Optional.of(String.format("""
+                            Средний размер доната: %s""", amount))
+            );
+        }
+
+        public String formatMessage(EventContext context) {
+            String baseMessage = messageFormatter.apply(context);
+            return additionalMessage
+                    .map(additional -> baseMessage + "\n\n" + additional)
+                    .orElse(baseMessage);
+        }
+
+        public static final NotificationType EVENT_CANCELLED = new NotificationType(context -> {
             String baseMessage = String.format("Организатор отменил мероприятие %s (%s)",
                     context.event().getName(),
                     formatEventDate(context.event()));
@@ -97,40 +131,49 @@ public class EventNotificationService implements IEventNotificationService {
             return context.getContactInfo()
                     .map(contactInfo -> baseMessage + "\n" + contactInfo)
                     .orElse(baseMessage);
-        }),
+        });
 
-        PARTICIPANT_REGISTERED(context -> String.format("""
-                        Вы зарегистрировались на мероприятие %s (%s)
-                        %s
-                        """,
-                context.event().getName(),
-                formatEventDate(context.event()),
-                context.getContactInfo().orElse(""))),
+        public static final NotificationType PARTICIPANT_REGISTERED = new NotificationType(context ->
+                String.format("""
+                Вы зарегистрировались на мероприятие %s (%s)
+                %s
+                """,
+                        context.event().getName(),
+                        formatEventDate(context.event()),
+                        context.getContactInfo().orElse(""))
+        );
 
-        PARTICIPANT_UNREGISTERED(context -> String.format("""
-                        Вы отменили регистрацию на мероприятие %s (%s)
-                        """,
-                context.event().getName(),
-                formatEventDate(context.event()))),
+        public static final NotificationType PARTICIPANT_UNREGISTERED = new NotificationType(context ->
+                String.format("""
+                Вы отменили регистрацию на мероприятие %s (%s)
+                """,
+                        context.event().getName(),
+                        formatEventDate(context.event()))
+        );
 
-        EVENT_CREATED(context -> String.format("""
-                        Вы создали мероприятие:
-                        
-                        %s
-                        %s
-                        %s
-                        
-                        Ссылка на регистрацию будет тут!
-                        """,
-                context.event().getName(),
-                formatEventDate(context.event()),
-                context.getContactInfo().orElse("")));
+        public static final NotificationType EVENT_CREATED = new NotificationType(context ->
+                String.format("""
+                Вы создали мероприятие:
+                
+                %s
+                %s
+                %s
+                
+                Ссылка на регистрацию будет тут!
+                """,
+                        context.event().getName(),
+                        formatEventDate(context.event()),
+                        context.getContactInfo().orElse(""))
+        );
 
-        private final Function<EventContext, String> messageFormatter;
-
-        public String formatMessage(EventContext context) {
-            return messageFormatter.apply(context);
-        }
+        public static final NotificationType EVENT_FINISHED = new NotificationType(context ->
+                String.format("""
+                Мероприятие %s (%s) завершено.
+                %s""",
+                        context.event().getName(),
+                        formatEventDate(context.event()),
+                        context.getContactInfo().orElse(""))
+        );
 
         private static String formatEventDate(Event event) {
             return LocalDate.ofInstant(event.getDate(), ZoneId.systemDefault()).toString();
