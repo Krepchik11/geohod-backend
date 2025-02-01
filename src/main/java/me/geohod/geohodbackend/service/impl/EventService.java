@@ -96,6 +96,14 @@ public class EventService implements IEventService {
         event.finish();
 
         eventRepository.save(event);
+
+        notifyEventFinished(finishDto);
+    }
+
+    private void notifyEventFinished(FinishEventDto finishDto) {
+        if (finishDto.sendDonationRequest()) {
+            notificationService.notifyParticipantsEventFinishedWithDonation(finishDto.eventId(), finishDto.donationInfo());
+        }
     }
 
     private void notifyEventCreated(EventDto event) {
