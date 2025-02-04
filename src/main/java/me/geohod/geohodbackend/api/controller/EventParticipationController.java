@@ -1,10 +1,13 @@
 package me.geohod.geohodbackend.api.controller;
 
 import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.api.dto.response.*;
+import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
+import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
+import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
+import me.geohod.geohodbackend.api.dto.response.EventUnregisterResponse;
 import me.geohod.geohodbackend.api.mapper.UserApiMapper;
 import me.geohod.geohodbackend.data.dto.EventDto;
-import me.geohod.geohodbackend.data.dto.EventParticipantDto;
+import me.geohod.geohodbackend.data.dto.EventParticipantProjection;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.IEventService;
@@ -58,7 +61,7 @@ public class EventParticipationController {
 
     @GetMapping("/{eventId}/participants")
     public ResponseEntity<EventParticipantsResponse> eventParticipants(@PathVariable UUID eventId) {
-        List<EventParticipantDto> participants = participantProjectionService.eventParticipants(eventId);
+        List<EventParticipantProjection> participants = participantProjectionService.eventParticipants(eventId);
         EventParticipantsResponse response = new EventParticipantsResponse(
                 participants.stream()
                         .map(userApiMapper::map)
