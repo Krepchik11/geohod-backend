@@ -9,7 +9,7 @@ import me.geohod.geohodbackend.data.mapper.EventModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.data.model.repository.UserRepository;
-import me.geohod.geohodbackend.service.IEventNotificationService;
+import me.geohod.geohodbackend.service.notification.IEventNotificationService;
 import me.geohod.geohodbackend.service.IEventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

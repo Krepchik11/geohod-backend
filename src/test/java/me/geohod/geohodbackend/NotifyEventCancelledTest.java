@@ -1,12 +1,14 @@
 package me.geohod.geohodbackend;
 
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.*;
-import me.geohod.geohodbackend.service.impl.EventNotificationService;
+import me.geohod.geohodbackend.service.notification.EventNotificationService;
+import me.geohod.geohodbackend.service.notification.IEventNotificationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,6 +26,7 @@ class NotifyEventCancelledTest {
     @Test
     void checkNotificationMessageCorrect() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        GeohodProperties properties = Mockito.mock(GeohodProperties.class);
         UUID eventId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         LocalDate date = LocalDate.of(2025, 1, 9);
@@ -38,7 +41,7 @@ class NotifyEventCancelledTest {
 
         ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
 
-        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+        IEventNotificationService eventNotificationService = new EventNotificationService(properties, participantRepository, outboxMessagePublisher, eventRepository, userService);
 
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
@@ -50,6 +53,7 @@ class NotifyEventCancelledTest {
     @Test
     void checkAuthorContactInfoEmptyMessageCorrect() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        GeohodProperties properties = Mockito.mock(GeohodProperties.class);
         UUID eventId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         LocalDate date = LocalDate.of(2025, 1, 9);
@@ -64,7 +68,7 @@ class NotifyEventCancelledTest {
 
         ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
 
-        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+        IEventNotificationService eventNotificationService = new EventNotificationService(properties, participantRepository, outboxMessagePublisher, eventRepository, userService);
 
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
@@ -75,6 +79,7 @@ class NotifyEventCancelledTest {
     @Test
     void checkAuthorContactInfoContainsOnlyNameMessageCorrect() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        GeohodProperties properties = Mockito.mock(GeohodProperties.class);
         UUID eventId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         LocalDate date = LocalDate.of(2025, 1, 9);
@@ -89,7 +94,7 @@ class NotifyEventCancelledTest {
 
         ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
 
-        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+        IEventNotificationService eventNotificationService = new EventNotificationService(properties, participantRepository, outboxMessagePublisher, eventRepository, userService);
 
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
@@ -101,6 +106,7 @@ class NotifyEventCancelledTest {
     @Test
     void checkAuthorContactInfoContainsTgUsernameMessageCorrect() {
         EventRepository eventRepository = Mockito.mock(EventRepository.class);
+        GeohodProperties properties = Mockito.mock(GeohodProperties.class);
         UUID eventId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         LocalDate date = LocalDate.of(2025, 1, 9);
@@ -115,7 +121,7 @@ class NotifyEventCancelledTest {
 
         ITelegramOutboxMessagePublisher outboxMessagePublisher = Mockito.mock(ITelegramOutboxMessagePublisher.class);
 
-        IEventNotificationService eventNotificationService = new EventNotificationService(participantRepository, outboxMessagePublisher, eventRepository, userService);
+        IEventNotificationService eventNotificationService = new EventNotificationService(properties, participantRepository, outboxMessagePublisher, eventRepository, userService);
 
         eventNotificationService.notifyParticipantsEventCancelled(eventId);
         Mockito.verify(outboxMessagePublisher, times(1)).publish(participantId, """
