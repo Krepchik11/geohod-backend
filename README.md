@@ -60,6 +60,7 @@ docker run -d \
 -e SPRING_DATASOURCE_PASSWORD=your_password \
 -e GEOHOD_TELEGRAM_BOT_TOKEN=your_token \
 -e GEOHOD_TELEGRAM_BOT_USERNAME=your_bot_username \
+-e GEOHOD_CREATED_EVENT_LINK_TEMPLATE=new_event_link_template \
 geohod-backend:latest
 ```
 
