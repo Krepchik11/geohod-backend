@@ -89,6 +89,7 @@ public class EventProjectionRepository {
                     WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
                         OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
                         AND e.status IN (:statuses)
+                    ORDER BY e.created_at DESC
                     OFFSET :offset
                     LIMIT :pageSize;
                 """;
