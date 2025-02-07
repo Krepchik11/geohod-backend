@@ -4,7 +4,7 @@ import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.service.IEventNotificationService;
+import me.geohod.geohodbackend.service.notification.IEventNotificationService;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.impl.EventParticipationService;
 import org.junit.jupiter.api.Test;

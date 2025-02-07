@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.service;
+package me.geohod.geohodbackend.service.notification;
 
 import java.util.UUID;
 

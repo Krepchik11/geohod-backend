@@ -42,6 +42,8 @@ Application available at http://localhost:8080
 - `SPRING_DATASOURCE_PASSWORD` - DB password
 - `GEOHOD_TELEGRAM_BOT_TOKEN` - Telegram bot API token
 - `GEOHOD_TELEGRAM_BOT_USERNAME` - Telegram bot username
+- `GEOHOD_CREATED_EVENT_LINK_TEMPLATE` - Link template for event created notification
+  - Parameters: `{botName}`, `{eventId}`
 
 ### Docker deployment
 
@@ -60,6 +62,7 @@ docker run -d \
 -e SPRING_DATASOURCE_PASSWORD=your_password \
 -e GEOHOD_TELEGRAM_BOT_TOKEN=your_token \
 -e GEOHOD_TELEGRAM_BOT_USERNAME=your_bot_username \
+-e GEOHOD_CREATED_EVENT_LINK_TEMPLATE=new_event_link_template \
 geohod-backend:latest
 ```
 

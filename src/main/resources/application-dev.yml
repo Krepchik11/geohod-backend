@@ -17,3 +17,5 @@ geohod:
   telegram-bot:
     token: ${GEOHOD_TELEGRAM_BOT_TOKEN:dev-token}
     username: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-bot}
+  linkTemplates:
+    eventRegistrationLink: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-{botName}-{eventId}
