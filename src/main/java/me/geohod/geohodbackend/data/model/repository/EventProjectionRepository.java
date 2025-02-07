@@ -72,6 +72,7 @@ public class EventProjectionRepository {
         String sql = """
                     SELECT DISTINCT
                         e.id AS event_id,
+                        e.created_at AS created_at,
                         u.tg_id AS author_tg_id,
                         u.tg_username AS author_username,
                         u.first_name AS author_first_name,
