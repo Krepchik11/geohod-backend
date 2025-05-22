@@ -57,7 +57,7 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
-                .addFilterBefore(corsFilter, TelegramInitDataAuthenticationFilter.class)
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tgInitDataAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(sessionConfigurer -> sessionConfigurer
