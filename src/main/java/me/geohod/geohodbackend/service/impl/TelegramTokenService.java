@@ -17,9 +17,11 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TelegramTokenService {
     private final GeohodProperties properties;
     private static final String ALGORITHM = "HmacSHA256";
@@ -31,18 +33,27 @@ public class TelegramTokenService {
         try {
             Map<String, String> initDataMap = parseInitData(tgInitData);
 
-            String hash = initDataMap.remove("hash");
+            String receivedHash = initDataMap.remove("hash");
+            if (receivedHash == null) {
+                log.warn("Hash not found in initData: {}", tgInitData);
+                return false;
+            }
+
             String dataToCheck = initDataMap.entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                     .reduce((a, b) -> a + "\n" + b)
                     .orElse("");
 
-            String calculatedHash = calculateHash(dataToCheck);
+            log.debug("Data to check string: [{}]", dataToCheck);
 
-            return hash.equals(calculatedHash);
+            String calculatedHash = calculateHash(dataToCheck, properties.telegramBot().token());
+            log.debug("Received hash: {}, Calculated hash: {}", receivedHash, calculatedHash);
+
+            return receivedHash.equals(calculatedHash);
         } catch (Exception e) {
-            throw new SecurityException("Invalid initData", e);
+            log.error("Error verifying Telegram WebApp Data: {}", e.getMessage(), e);
+            return false;
         }
     }
 
@@ -72,21 +83,16 @@ public class TelegramTokenService {
         return map;
     }
 
-    private byte[] createSecretKey() {
-        String botToken = properties.telegramBot().token();
-        try {
-            Mac hmac = Mac.getInstance(ALGORITHM);
-            hmac.init(new SecretKeySpec("WebAppData".getBytes(StandardCharsets.UTF_8), ALGORITHM));
-            return hmac.doFinal(botToken.getBytes(StandardCharsets.UTF_8));
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private String calculateHash(String dataToCheck, String botToken) throws NoSuchAlgorithmException, InvalidKeyException {
+        Mac hmacSha256 = Mac.getInstance(ALGORITHM);
+        hmacSha256.init(new SecretKeySpec("WebAppData".getBytes(StandardCharsets.UTF_8), ALGORITHM));
+        byte[] secretKeyBytes = hmacSha256.doFinal(botToken.getBytes(StandardCharsets.UTF_8));
 
-    private String calculateHash(String dataToCheck) throws Exception {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes, ALGORITHM);
         Mac hmac = Mac.getInstance(ALGORITHM);
-        hmac.init(new SecretKeySpec(createSecretKey(), ALGORITHM));
+        hmac.init(secretKeySpec);
         byte[] hashBytes = hmac.doFinal(dataToCheck.getBytes(StandardCharsets.UTF_8));
+        
         StringBuilder hexString = new StringBuilder();
         for (byte b : hashBytes) {
             String hex = Integer.toHexString(0xff & b);
