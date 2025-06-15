@@ -4,13 +4,11 @@ on:
   release:
     types:
       - published
-  workflow_dispatch:
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/aws' || startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -41,33 +39,47 @@ jobs:
           tags: ${{ github.repository }}:${{ github.ref_name }}
           outputs: type=docker,dest=./image.tar
 
-      - name: Transfer files to VPS
+      - name: Transfer image to VPS
         uses: appleboy/scp-action@master
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: |
-            ./image.tar
-            ./docker-compose.yml
+          source: ./image.tar
           target: /tmp/geohod-backend/
           overwrite: true
           rm: true
 
-      - name: Cleanup local files
+      - name: Cleanup local file
         if: always()
-        run: |
-          rm ./image.tar
-          ./gradlew clean
+        run: rm ./image.tar
 
-      - name: Deploy on VPS
+      - name: Cleanup build
+        if: always()
+        run: ./gradlew clean
+
+      - name: VPS launch
         uses: appleboy/ssh-action@master
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /tmp/geohod-backend
-            docker load < image.tar
-            docker compose down
-            docker compose up -d
+            docker load < /tmp/geohod-backend/image.tar
+            docker stop geohod-backend || true
+            docker rm geohod-backend || true
+
+            # Extract and pass environment variables
+            SECRET_VARS="${{ secrets.SECRET_VARS }}"
+            ENV_ARGS=""
+            IFS=',' read -r -a vars <<< "$SECRET_VARS"
+            for var in "${vars[@]}"; do
+              ENV_ARGS="$ENV_ARGS -e $var"
+            done
+
+            docker run -d --restart always \
+              --network=geohod \
+              --name geohod-backend \
+              -p 8080:8080 \
+              $ENV_ARGS \
+              ${{ github.repository }}:${{ github.ref_name }}
