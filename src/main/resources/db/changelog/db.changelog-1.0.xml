@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <property name="uuid.type" value="UUID"/>
+    <property name="timestamp.type" value="TIMESTAMP"/>
+    <property name="varchar.short" value="VARCHAR(255)"/>
+    <property name="varchar.medium" value="VARCHAR(512)"/>
+    <property name="varchar.long" value="VARCHAR(1024)"/>
+
+    <changeSet id="create-users-table" author="nabor">
+        <createTable tableName="users">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tg_id" type="${varchar.short}">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tg_username" type="${varchar.short}"/>
+            <column name="first_name" type="${varchar.short}"/>
+            <column name="last_name" type="${varchar.short}"/>
+            <column name="tg_image_url" type="${varchar.medium}"/>
+            <column name="created_at" type="${timestamp.type}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${timestamp.type}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_users_tg_id" tableName="users">
+            <column name="tg_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="create-events-table" author="nabor">
+        <createTable tableName="events">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author_id" type="${uuid.type}">
+                <constraints nullable="false"
+                             foreignKeyName="fk_events_author"
+                             references="users(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="name" type="${varchar.short}"/>
+            <column name="description" type="TEXT"/>
+            <column name="date" type="${timestamp.type}"/>
+            <column name="max_participants" type="INT"/>
+            <column name="current_participants" type="INT"/>
+            <column name="status" type="${varchar.short}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${timestamp.type}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${timestamp.type}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_events_author_id" tableName="events">
+            <column name="author_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="create-event-participants-table" author="nabor">
+        <createTable tableName="event_participants">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_id" type="${uuid.type}">
+                <constraints nullable="false"
+                             foreignKeyName="fk_participants_event"
+                             references="events(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="user_id" type="${uuid.type}">
+                <constraints nullable="false"
+                             foreignKeyName="fk_participants_user"
+                             references="users(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="created_at" type="${timestamp.type}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="event_participants"
+                columnNames="event_id, user_id"
+                constraintName="ux_event_user_participation"/>
+
+        <createIndex indexName="idx_participants_event_id" tableName="event_participants">
+            <column name="event_id"/>
+        </createIndex>
+        <createIndex indexName="idx_participants_user_id" tableName="event_participants">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="create-tg-outbox-messages-table" author="nabor">
+        <createTable tableName="tg_outbox_messages">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_user_id" type="${uuid.type}">
+                <constraints nullable="false"
+                             foreignKeyName="fk_outbox_recipient"
+                             references="users(id)"/>
+            </column>
+            <column name="message" type="${varchar.long}"/>
+            <column name="created_at" type="${timestamp.type}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed" type="BOOL" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_outbox_recipient" tableName="tg_outbox_messages">
+            <column name="recipient_user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_outbox_processed" tableName="tg_outbox_messages">
+            <column name="processed"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
