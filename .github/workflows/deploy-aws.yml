@@ -1,0 +1,85 @@
+name: Build and Deploy
+
+   on:
+     release:
+       types:
+         - published
+     workflow_dispatch:
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build
+        run: ./gradlew clean build --no-daemon -x test
+
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
+      - name: Build and export
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./.github/Dockerfile
+          tags: ${{ github.repository }}:${{ github.ref_name }}
+          outputs: type=docker,dest=./image.tar
+
+      - name: Transfer image to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: ./image.tar
+          target: /tmp/geohod-backend/
+          overwrite: true
+          rm: true
+
+      - name: Cleanup local file
+        if: always()
+        run: rm ./image.tar
+
+      - name: Cleanup build
+        if: always()
+        run: ./gradlew clean
+
+      - name: VPS launch
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker load < /tmp/geohod-backend/image.tar
+            docker stop geohod-backend || true
+            docker rm geohod-backend || true
+
+            # Extract and pass environment variables
+            SECRET_VARS="${{ secrets.SECRET_VARS }}"
+            ENV_ARGS=""
+            IFS=',' read -r -a vars <<< "$SECRET_VARS"
+            for var in "${vars[@]}"; do
+              ENV_ARGS="$ENV_ARGS -e $var"
+            done
+
+            docker run -d --restart always \
+              --network=geohod \
+              --name geohod-backend \
+              -p 8080:8080 \
+              $ENV_ARGS \
+              ${{ github.repository }}:${{ github.ref_name }}
