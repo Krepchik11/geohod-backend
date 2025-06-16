@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy AWS
 
 on:
   release:
@@ -35,8 +35,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./.github/Dockerfile
-          tags: ${{ github.repository }}:${{ github.ref_name }}
+          file: ./Dockerfile
+          tags: geohod-backend:${{ github.ref_name }}
           outputs: type=docker,dest=./image.tar
 
       - name: Transfer image to VPS
@@ -65,6 +65,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            cd /home/ubuntu
             docker load < /tmp/geohod-backend/image.tar
             docker stop geohod-backend || true
             docker rm geohod-backend || true
@@ -82,4 +83,4 @@ jobs:
               --name geohod-backend \
               -p 8080:8080 \
               $ENV_ARGS \
-              ${{ github.repository }}:${{ github.ref_name }}
+              geohod-backend:${{ github.ref_name }}
