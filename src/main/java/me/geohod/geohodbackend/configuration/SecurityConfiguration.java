@@ -55,10 +55,7 @@ public class SecurityConfiguration {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers("/actuator/health").permitAll()
-                    .requestMatchers("/api/v1/events").permitAll()
-                    .anyRequest().fullyAuthenticated())
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
