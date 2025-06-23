@@ -2,7 +2,6 @@ logging:
   level:
     org.springframework.security: debug
     org.springframework.web.cors: debug
-    me.geohod.geohodbackend.security: debug
 
 spring:
   datasource:
@@ -20,5 +19,3 @@ geohod:
     username: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-bot}
   linkTemplates:
     eventRegistrationLink: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-{botName}-{eventId}
-  security:
-    dev-mode-enabled: true
