@@ -16,8 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,7 +23,6 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
-@Order(UsernamePasswordAuthenticationFilter.BASIC_AUTH_FILTER_ORDER - 1)
 public class TelegramInitDataAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final Environment environment;
