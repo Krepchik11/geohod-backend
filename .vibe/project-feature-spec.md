@@ -202,14 +202,14 @@ We commit to adhering to the following principles and best practices:
 ### 6.1 Server Components
 
 -   **`EventLog`** (`me.geohod.geohodbackend.domain.eventlog`)
-    * JPA entity representing a system event for notification processing.
+    * Entity representing a system event for notification processing.
 -   **`EventLogRepository`** (`me.geohod.geohodbackend.eventlog.repository`)
     * Spring Data JDBC interface for `EventLog` entity.
 -   **`EventLogService`** (`me.geohod.geohodbackend.eventlog.service`)
     * Service to create `EventLog` entries and retrieve unprocessed logs.
     * Methods: `createLogEntry(EventType type, JsonNode payload)`, `getUnprocessedLogs(String processorName, int limit)`.
 -   **`NotificationProcessorProgress`** (`me.geohod.geohodbackend.notification.progress`)
-    * New JPA entity for tracking each processor's progress.
+    * New Entity for tracking each processor's progress.
 -   **`NotificationProcessorProgressRepository`** (`me.geohod.geohodbackend.notification.progress.repository`)
     * Spring Data JDBC interface for `NotificationProcessorProgress` entity.
 -   **`NotificationProcessorProgressService`** (`me.geohod.geohodbackend.notification.progress.service`)
