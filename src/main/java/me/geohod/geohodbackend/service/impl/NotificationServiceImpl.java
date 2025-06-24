@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.notification.NotificationCursorRequest;
 import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
-import me.geohod.geohodbackend.service.INotificationService;
+import me.geohod.geohodbackend.service.IAppNotificationService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationServiceImpl implements INotificationService {
+public class NotificationServiceImpl implements IAppNotificationService {
 
     private final NotificationRepository notificationRepository;
 

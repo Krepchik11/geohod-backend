@@ -89,21 +89,21 @@
 ---
 
 ## 6 – REST Controllers (Skeletons)
-- [ ] **6.1 Create `ReviewController` class with `@RequestMapping("/api/reviews")`**
+- [x] **6.1 Create `ReviewController` class with `@RequestMapping("/api/reviews")`**
   - No endpoints yet – just compile.
-- [ ] **6.2 Create `NotificationController` skeleton**
+- [x] **6.2 Create `NotificationController` skeleton**
 
 ---
 
 ## 7 – REST Controllers (Endpoints)
-- [ ] **7.1 `POST /api/reviews`**
-- [ ] **7.2 `GET /api/users/{id}/reviews` (paged)**  
-- [ ] **7.3 `GET /api/users/{id}/rating`**
-- [ ] **7.4 `PATCH /api/reviews/{id}/hide`**
-- [ ] **7.5 `PATCH /api/reviews/{id}/unhide`**
-- [ ] **7.6 `GET /api/notifications`** (cursor params)
-- [ ] **7.7 `POST /api/notifications/{id}/mark-as-read`**
-- [ ] **7.8 `POST /api/notifications/mark-all-as-read`**
+- [x] **7.1 `POST /api/reviews`**
+- [x] **7.2 `GET /api/users/{id}/reviews` (paged)**  
+- [x] **7.3 `GET /api/users/{id}/rating`**
+- [x] **7.4 `PATCH /api/reviews/{id}/hide`**
+- [x] **7.5 `PATCH /api/reviews/{id}/unhide`**
+- [x] **7.6 `GET /api/notifications`** (cursor params)
+- [x] **7.7 `POST /api/notifications/{id}/mark-as-read`**
+- [x] **7.8 `POST /api/notifications/mark-all-as-read`**
 
 ---
 
