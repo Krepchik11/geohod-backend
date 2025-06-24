@@ -68,23 +68,23 @@
 ---
 
 ## 4 – Core Services (Interfaces)
-- [ ] **4.1 Service interface `EventLogService`**
-- [ ] **4.2 Service interface `NotificationProcessorProgressService`**
-- [ ] **4.3 Service interface `UserRatingService`**
-- [ ] **4.4 Service interface `ReviewService`**
-- [ ] **4.5 Service interface `NotificationService`**
+- [x] **4.1 Service interface `EventLogService`**
+- [x] **4.2 Service interface `NotificationProcessorProgressService`**
+- [x] **4.3 Service interface `UserRatingService`**
+- [x] **4.4 Service interface `ReviewService`**
+- [x] **4.5 Service interface `NotificationService`**
 
 ---
 
 ## 5 – Core Services (Implementations)
-- [ ] **5.1 Implement `EventLogServiceImpl`**
+- [x] **5.1 Implement `EventLogServiceImpl`**
   - createLogEntry + findUnprocessed(limit,processorName)
-- [ ] **5.2 Implement `NotificationProcessorProgressServiceImpl`**
-- [ ] **5.3 Implement `UserRatingServiceImpl`** (calculate & cache)
-- [ ] **5.4 Implement `ReviewServiceImpl` – submitReview() only**
-- [ ] **5.5 Implement `ReviewServiceImpl` – hide/unhide**
-- [ ] **5.6 Implement `NotificationServiceImpl` – fetch (cursor)**
-- [ ] **5.7 Implement `NotificationServiceImpl` – mark-one / mark-all**
+- [x] **5.2 Implement `NotificationProcessorProgressServiceImpl`**
+- [x] **5.3 Implement `UserRatingServiceImpl`** (calculate & cache)
+- [x] **5.4 Implement `ReviewServiceImpl` – submitReview() only**
+- [x] **5.5 Implement `ReviewServiceImpl` – hide/unhide**
+- [x] **5.6 Implement `NotificationServiceImpl` – fetch (cursor)**
+- [x] **5.7 Implement `NotificationServiceImpl` – mark-one / mark-all**
 
 ---
 
