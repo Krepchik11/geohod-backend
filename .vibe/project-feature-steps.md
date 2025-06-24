@@ -108,21 +108,21 @@
 ---
 
 ## 8 – Scheduled Processors
-- [ ] **8.1 Component `InAppNotificationProcessor`**
+- [x] **8.1 Component `InAppNotificationProcessor`**
   - Read logs → create notifications → update progress.
-- [ ] **8.2 Component `TelegramNotificationProcessor`**
+- [x] **8.2 Component `TelegramNotificationProcessor`**
   - Read logs → publish via `ITelegramOutboxMessagePublisher`.
   - **Files**: new class + wire to existing publisher bean.
 
 ---
 
 ## 9 – Existing Code Refactor to EventLog
-- [ ] **9.1 `EventParticipationService` – registration path**  
+- [x] **9.1 `EventParticipationService` – registration path**  
   - Remove direct telegram send; add `createLogEntry(EVENT_REGISTERED, …)`
-- [ ] **9.2 `EventParticipationService` – unregistration path**
-- [ ] **9.3 `EventService.finishEvent` – add EVENT_FINISHED_FOR_REVIEW_LINK**
-- [ ] **9.4 `EventManager.cancelEvent` – add EVENT_CANCELED**
-- [ ] **9.5 Deprecate sending methods in `EventNotificationService` (keep formatter)**
+- [x] **9.2 `EventParticipationService` – unregistration path**
+- [x] **9.3 `EventService.finishEvent` – add EVENT_FINISHED_FOR_REVIEW_LINK**
+- [x] **9.4 `EventManager.cancelEvent` – add EVENT_CANCELED**
+- [x] **9.5 Deprecate sending methods in `EventNotificationService` (keep formatter)**
 
 ---
 
