@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationServiceImpl implements IAppNotificationService {
+public class AppNotificationServiceImpl implements IAppNotificationService {
 
     private final NotificationRepository notificationRepository;
 
@@ -38,5 +38,10 @@ public class NotificationServiceImpl implements IAppNotificationService {
     @Override
     public void markAllAsRead(UUID userId) {
         // This will be implemented with a custom query in the repository later.
+    }
+
+    @Override
+    public Notification createNotification(Notification notification) {
+        return notificationRepository.save(notification);
     }
 } 

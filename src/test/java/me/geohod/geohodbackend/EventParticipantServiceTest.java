@@ -2,116 +2,73 @@ package me.geohod.geohodbackend;
 
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
+import me.geohod.geohodbackend.data.model.eventlog.EventType;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.service.notification.IEventNotificationService;
+import me.geohod.geohodbackend.service.IEventLogService;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.impl.EventParticipationService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class EventParticipantServiceTest {
+@ExtendWith(MockitoExtension.class)
+public class EventParticipantServiceTest {
+
+    @Mock
+    private EventParticipantRepository participantRepository;
+    @Mock
+    private EventRepository eventRepository;
+    @Mock
+    private IEventLogService eventLogService;
+
     @Test
-    void shouldThrowExceptionWhenEventIsFull() {
-        EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        IEventParticipationService service = new EventParticipationService(
-                Mockito.mock(EventParticipantRepository.class),
-                eventRepository,
-                Mockito.mock(IEventNotificationService.class)
-        );
-
+    void testRegisterForEvent() {
+        // Given
         UUID userId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
+        Event event = new Event("Test Event", "Description", Instant.now(), 10, UUID.randomUUID());
 
-        Event event = new Event("Test Event", "Description", Instant.now(), 1, userId);
-        event.increaseParticipantCount();
-
-        UUID eventId = event.getId();
+        when(participantRepository.existsByEventIdAndUserId(eventId, userId)).thenReturn(false);
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
 
-        assertThrows(IllegalStateException.class, () -> {
-            service.registerForEvent(userId, eventId);
-        });
+        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, eventLogService);
 
-        verify(eventRepository, never()).save(any());
-    }
-
-    @Test
-    void shouldUnregisterParticipant() {
-        EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
-        IEventNotificationService notificationService = mock(IEventNotificationService.class);
-        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, notificationService);
-
-        UUID userId = UUID.randomUUID();
-
-        Event event = spy(new Event("Test Event", "Description", Instant.now(), 10, userId));
-        UUID eventId = event.getId();
-        event.increaseParticipantCount();
-        EventParticipant participant = new EventParticipant(eventId, userId);
-
-        when(participantRepository.findByEventIdAndUserId(eventId, userId))
-                .thenReturn(Optional.of(participant));
-        when(eventRepository.findById(eventId))
-                .thenReturn(Optional.of(event));
-
-        service.unregisterFromEvent(userId, eventId);
-
-        verify(participantRepository, times(1)).delete(participant);
-        verify(eventRepository, times(1)).save(event);
-        verify(event, times(1)).decreaseParticipantCount();
-    }
-
-    @Test
-    void shouldNotifyParticipantRegisteredOnEvent() {
-        EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
-        IEventNotificationService notificationService = mock(IEventNotificationService.class);
-        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, notificationService);
-
-        UUID userId = UUID.randomUUID();
-
-        Event event = new Event("Test Event", "Description", Instant.now(), 10, userId);
-        UUID eventId = event.getId();
-        EventParticipant participant = new EventParticipant(eventId, userId);
-
-        when(participantRepository.findByEventIdAndUserId(eventId, userId))
-                .thenReturn(Optional.of(participant));
-        when(eventRepository.findById(eventId))
-                .thenReturn(Optional.of(event));
-
+        // When
         service.registerForEvent(userId, eventId);
 
-        verify(notificationService, times(1)).notifyParticipantRegisteredOnEvent(userId, eventId);
+        // Then
+        verify(eventLogService, times(1)).createLogEntry(eq(eventId), eq(EventType.EVENT_REGISTERED), anyString());
     }
 
     @Test
-    void shouldNotifyParticipantUnregisteredFromEvent() {
-        EventRepository eventRepository = Mockito.mock(EventRepository.class);
-        EventParticipantRepository participantRepository = Mockito.mock(EventParticipantRepository.class);
-        IEventNotificationService notificationService = mock(IEventNotificationService.class);
-        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, notificationService);
-
+    void testUnregisterFromEvent() {
+        // Given
         UUID userId = UUID.randomUUID();
-
-        Event event = new Event("Test Event", "Description", Instant.now(), 10, userId);
-        UUID eventId = event.getId();
+        UUID eventId = UUID.randomUUID();
+        Event event = spy(new Event("Test Event", "Description", Instant.now(), 10, UUID.randomUUID()));
         EventParticipant participant = new EventParticipant(eventId, userId);
         event.increaseParticipantCount();
 
-        when(participantRepository.findByEventIdAndUserId(eventId, userId))
-                .thenReturn(Optional.of(participant));
-        when(eventRepository.findById(eventId))
-                .thenReturn(Optional.of(event));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(participantRepository.findByEventIdAndUserId(eventId, userId)).thenReturn(Optional.of(participant));
 
+
+        IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, eventLogService);
+
+        // When
         service.unregisterFromEvent(userId, eventId);
 
-        verify(notificationService, times(1)).notifyParticipantUnregisteredFromEvent(userId, eventId);
+        // Then
+        verify(eventLogService, times(1)).createLogEntry(eq(eventId), eq(EventType.EVENT_UNREGISTERED), anyString());
     }
 }

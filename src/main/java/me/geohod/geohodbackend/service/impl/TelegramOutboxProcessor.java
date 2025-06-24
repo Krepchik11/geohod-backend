@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-class OutboxProcessor implements IOutboxProcessor {
+class TelegramOutboxProcessor implements IOutboxProcessor {
     private static final int BATCH_SIZE = 30;
 
     private final TelegramOutboxMessageRepository outboxRepository;

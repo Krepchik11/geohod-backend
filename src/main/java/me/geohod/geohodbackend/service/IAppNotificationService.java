@@ -10,4 +10,5 @@ public interface IAppNotificationService {
     List<Notification> getNotifications(UUID userId, NotificationCursorRequest cursorRequest);
     void markAsRead(UUID notificationId, UUID userId);
     void markAllAsRead(UUID userId);
+    Notification createNotification(Notification notification);
 }

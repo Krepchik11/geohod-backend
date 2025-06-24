@@ -16,25 +16,25 @@ import java.util.UUID;
 @RequestMapping("/api/v2/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
-    private final IAppNotificationService notificationService;
+    private final IAppNotificationService appNotificationService;
     private final NotificationApiMapper notificationApiMapper;
 
     @GetMapping
     public ApiResponse<List<NotificationResponse>> getNotifications(@RequestParam UUID userId, NotificationCursorRequest cursorRequest) {
-        List<Notification> notifications = notificationService.getNotifications(userId, cursorRequest);
+        List<Notification> notifications = appNotificationService.getNotifications(userId, cursorRequest);
         List<NotificationResponse> response = notifications.stream().map(notificationApiMapper::map).toList();
         return ApiResponse.success(response);
     }
 
     @PostMapping("/{id}/mark-as-read")
     public ApiResponse<Void> markAsRead(@PathVariable UUID id, @RequestParam UUID userId) {
-        notificationService.markAsRead(id, userId);
+        appNotificationService.markAsRead(id, userId);
         return ApiResponse.success(null);
     }
 
     @PostMapping("/mark-all-as-read")
     public ApiResponse<Void> markAllAsRead(@RequestParam UUID userId) {
-        notificationService.markAllAsRead(userId);
+        appNotificationService.markAllAsRead(userId);
         return ApiResponse.success(null);
     }
 } 

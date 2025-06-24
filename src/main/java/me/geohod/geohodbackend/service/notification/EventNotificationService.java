@@ -10,6 +10,7 @@ import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
+import me.geohod.geohodbackend.service.notification.EventContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -32,21 +33,25 @@ public class EventNotificationService implements IEventNotificationService {
     private final IUserService userService;
 
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void notifyParticipantsEventCancelled(UUID eventId) {
         notifyEvent(eventId, NotificationType.EVENT_CANCELLED, NotificationParams.empty(), this::getEventParticipants);
     }
 
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void notifyParticipantRegisteredOnEvent(UUID userId, UUID eventId) {
         notifyEvent(eventId, NotificationType.PARTICIPANT_REGISTERED, NotificationParams.empty(), event -> List.of(userId));
     }
 
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void notifyParticipantUnregisteredFromEvent(UUID userId, UUID eventId) {
         notifyEvent(eventId, NotificationType.PARTICIPANT_UNREGISTERED, NotificationParams.empty(), event -> List.of(userId));
     }
 
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void notifyAuthorEventCreated(UUID eventId) {
         String linkTemplate = properties.linkTemplates().eventRegistrationLink();
         String botName = properties.telegramBot().username();
@@ -57,6 +62,7 @@ public class EventNotificationService implements IEventNotificationService {
     }
 
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void notifyParticipantsEventFinishedWithDonation(UUID eventId, String donationInfo) {
         notifyEvent(eventId,
                 NotificationType.EVENT_FINISHED,
@@ -97,36 +103,5 @@ public class EventNotificationService implements IEventNotificationService {
         return eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
                 .map(EventParticipant::getUserId)
                 .toList();
-    }
-
-    protected record EventContext(Event event, User author) {
-        Optional<String> getContactInfo() {
-            String fullName = getAuthorFullName();
-            String tgUsername = author.getTgUsername();
-
-            if (StringUtils.isBlank(fullName) && StringUtils.isBlank(tgUsername)) {
-                return Optional.empty();
-            }
-
-            return Optional.of(formatContactInfo(fullName, tgUsername));
-        }
-
-        private String getAuthorFullName() {
-            return Stream.of(author.getFirstName(), author.getLastName())
-                    .filter(StringUtils::isNotBlank)
-                    .collect(Collectors.joining(" "));
-        }
-
-        private String formatContactInfo(String fullName, String tgUsername) {
-            if (StringUtils.isBlank(tgUsername)) {
-                return String.format("Организатор: %s", fullName);
-            }
-
-            if (StringUtils.isBlank(fullName)) {
-                return String.format("Организатор: @%s", tgUsername);
-            }
-
-            return String.format("Организатор: %s @%s", fullName, tgUsername);
-        }
     }
 }

@@ -5,7 +5,8 @@ import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.service.notification.IEventNotificationService;
+import me.geohod.geohodbackend.data.model.eventlog.EventType;
+import me.geohod.geohodbackend.service.IEventLogService;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,7 @@ import java.util.UUID;
 public class EventParticipationService implements IEventParticipationService {
     private final EventParticipantRepository eventParticipantRepository;
     private final EventRepository eventRepository;
-    private final IEventNotificationService notificationService;
+    private final IEventLogService eventLogService;
 
     @Override
     @Transactional
@@ -46,7 +47,8 @@ public class EventParticipationService implements IEventParticipationService {
         EventParticipant participant = new EventParticipant(eventId, userId);
         eventParticipantRepository.save(participant);
 
-        notificationService.notifyParticipantRegisteredOnEvent(participant.getUserId(), participant.getEventId());
+        String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);
+        eventLogService.createLogEntry(eventId, EventType.EVENT_REGISTERED, payload);
     }
 
     @Override
@@ -68,7 +70,8 @@ public class EventParticipationService implements IEventParticipationService {
         event.decreaseParticipantCount();
         eventRepository.save(event);
 
-        notificationService.notifyParticipantUnregisteredFromEvent(participant.getUserId(), participant.getEventId());
+        String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);
+        eventLogService.createLogEntry(eventId, EventType.EVENT_UNREGISTERED, payload);
     }
 
     @Override
@@ -89,6 +92,7 @@ public class EventParticipationService implements IEventParticipationService {
         event.decreaseParticipantCount();
         eventRepository.save(event);
 
-        notificationService.notifyParticipantUnregisteredFromEvent(participant.getUserId(), participant.getEventId());
+        String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", participant.getUserId(), eventId);
+        eventLogService.createLogEntry(eventId, EventType.EVENT_UNREGISTERED, payload);
     }
 }
