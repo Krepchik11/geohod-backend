@@ -40,30 +40,30 @@
 ---
 
 ## 2 – Domain Model
-- [ ] **2.1 Create enum `EventType`**
+- [x] **2.1 Create enum `EventType`**
   - **Files**: `domain/eventlog/EventType.java`
-- [ ] **2.2 Entity & Repository `Review`**
+- [x] **2.2 Entity & Repository `Review`**
   - **Files**
     - `domain/review/Review.java`
     - `repository/review/ReviewRepository.java`
-- [ ] **2.3 Entity & Repository `UserRating`**
+- [x] **2.3 Entity & Repository `UserRating`**
   - **Files**: analogous pair.
-- [ ] **2.4 Entity & Repository `EventLog`**
-- [ ] **2.5 Entity & Repository `NotificationProcessorProgress`**
-- [ ] **2.6 Entity & Repository `Notification`**
+- [x] **2.4 Entity & Repository `EventLog`**
+- [x] **2.5 Entity & Repository `NotificationProcessorProgress`**
+- [x] **2.6 Entity & Repository `Notification`**
 
 ---
 
 ## 3 – DTOs & Mapping
-- [ ] **3.1 DTOs for Review**
+- [x] **3.1 DTOs for Review**
   - **Files**: `api/dto/review/ReviewCreateRequest.java`, `ReviewResponse.java`
-- [ ] **3.2 DTOs for Notification (cursor)**
+- [x] **3.2 DTOs for Notification (cursor)**
   - **Files**: `api/dto/notification/NotificationResponse.java`, `NotificationCursorRequest.java`
-- [ ] **3.3 MapStruct config module** (if not yet present)
+- [x] **3.3 MapStruct config module** (if not yet present)
   - **Task**: Ensure `@MapperConfig(componentModel = "spring")`
   - **Files**: `infrastructure/mapper/GlobalMapperConfig.java`
-- [ ] **3.4 Mapper `ReviewApiMapper`**
-- [ ] **3.5 Mapper `NotificationApiMapper`**
+- [x] **3.4 Mapper `ReviewApiMapper`**
+- [x] **3.5 Mapper `NotificationApiMapper`**
 
 ---
 
