@@ -1,0 +1,54 @@
+package me.geohod.geohodbackend;
+
+import me.geohod.geohodbackend.data.model.notification.Notification;
+import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
+import me.geohod.geohodbackend.api.dto.notification.NotificationCursorRequest;
+import me.geohod.geohodbackend.service.impl.AppNotificationServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+public class NotificationServiceTest {
+    @Mock
+    private NotificationRepository notificationRepository;
+    private AppNotificationServiceImpl notificationService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        notificationService = new AppNotificationServiceImpl(notificationRepository);
+    }
+
+    @Test
+    void testFetchNotifications() {
+        UUID userId = UUID.randomUUID();
+        Notification notification = new Notification(userId, "TYPE", "payload");
+        NotificationCursorRequest cursorRequest = new NotificationCursorRequest(10, false, null);
+        when(notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
+        var result = notificationService.getNotifications(userId, cursorRequest);
+        assertEquals(1, result.size());
+        assertEquals("TYPE", result.get(0).getType());
+        assertEquals("payload", result.get(0).getPayload());
+    }
+
+    @Test
+    void testMarkAsRead() {
+        UUID notificationId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Notification notification = new Notification(userId, "TYPE", "payload");
+        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+        when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
+        notificationService.markAsRead(notificationId, userId);
+        assertTrue(notification.isRead());
+    }
+} 

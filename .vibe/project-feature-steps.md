@@ -127,27 +127,27 @@
 ---
 
 ## 10 – Configuration & Security
-- [ ] **10.1 Update `SecurityConfiguration`** – secure new routes.
-- [ ] **10.2 Add scheduler & batch props to `application.yml`**
-- [ ] **10.3 Add `@EnableScheduling` if not already present**
+- [x] **10.1 Update `SecurityConfiguration`** – secure new routes.
+- [x] **10.2 Add scheduler & batch props to `application.yml`**
+- [x] **10.3 Add `@EnableScheduling` if not already present**
 
 ---
 
 ## 11 – Testing Foundation
-- [ ] **11.1 Test utilities: `TestContainersPostgresConfig`** (if not yet)
-- [ ] **11.2 Abstract `@SpringBootTest` base for integration**
+- [x] **11.1 Test utilities: `TestContainersPostgresConfig`** (if not yet)
+- [x] **11.2 Abstract `@SpringBootTest` base for integration**
 
 ---
 
 ## 12 – Unit Tests
-- [ ] **12.1 `EventLogServiceTest`**
-- [ ] **12.2 `NotificationProcessorProgressServiceTest`**
-- [ ] **12.3 `UserRatingServiceTest`**
-- [ ] **12.4 `ReviewServiceTest` – submitReview()**
-- [ ] **12.5 `ReviewServiceTest` – hide/unhide**
-- [ ] **12.6 `NotificationServiceTest` – cursor pagination**
-- [ ] **12.7 `InAppNotificationProcessorTest`**
-- [ ] **12.8 `TelegramNotificationProcessorTest`**
+- [x] **12.1 `EventLogServiceTest`**
+- [x] **12.2 `NotificationProcessorProgressServiceTest`**
+- [x] **12.3 `UserRatingServiceTest`**
+- [x] **12.4 `ReviewServiceTest` – submitReview()**
+- [x] **12.5 `ReviewServiceTest` – hide/unhide**
+- [x] **12.6 `NotificationServiceTest` – cursor pagination**
+- [x] **12.7 `InAppNotificationProcessorTest`**
+- [x] **12.8 `TelegramNotificationProcessorTest`**
 
 ---
 
