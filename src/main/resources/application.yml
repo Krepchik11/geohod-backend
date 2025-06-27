@@ -20,3 +20,8 @@ geohod:
     username: ${GEOHOD_TELEGRAM_BOT_USERNAME}
   linkTemplates:
     eventRegistrationLink: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}
+  processor:
+    in-app:
+      delay: 5000
+    telegram:
+      delay: 5000

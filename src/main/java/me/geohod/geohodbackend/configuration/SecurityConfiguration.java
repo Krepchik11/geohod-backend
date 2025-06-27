@@ -44,7 +44,10 @@ public class SecurityConfiguration {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(authorize -> authorize.anyRequest().fullyAuthenticated())
+                .authorizeHttpRequests(authorize -> authorize
+                    .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/api/v2/**").authenticated()
+                    .anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
                 .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tgInitDataAuthFilter(), UsernamePasswordAuthenticationFilter.class)
