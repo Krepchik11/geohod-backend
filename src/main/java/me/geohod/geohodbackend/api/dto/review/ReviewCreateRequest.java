@@ -10,8 +10,6 @@ import java.util.UUID;
 public record ReviewCreateRequest(
         @NotNull
         UUID eventId,
-        @NotNull
-        UUID targetUserId,
         @Min(1)
         @Max(5)
         int rating,

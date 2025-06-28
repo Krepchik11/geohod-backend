@@ -16,9 +16,6 @@
             <column name="author_id" type="UUID">
                 <constraints nullable="false" foreignKeyName="fk_reviews_author" references="users(id)"/>
             </column>
-            <column name="target_user_id" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk_reviews_target_user" references="users(id)"/>
-            </column>
             <column name="rating" type="INT">
                 <constraints nullable="false"/>
             </column>
@@ -35,9 +32,6 @@
         </createIndex>
         <createIndex indexName="idx_reviews_author_id" tableName="reviews">
             <column name="author_id"/>
-        </createIndex>
-        <createIndex indexName="idx_reviews_target_user_id" tableName="reviews">
-            <column name="target_user_id"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog> 

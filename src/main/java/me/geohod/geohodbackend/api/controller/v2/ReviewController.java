@@ -9,12 +9,14 @@ import me.geohod.geohodbackend.data.model.review.Review;
 import me.geohod.geohodbackend.data.model.userrating.UserRating;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2/reviews")
@@ -33,9 +35,10 @@ public class ReviewController {
     @GetMapping("/users/{id}/reviews")
     public ApiResponse<List<ReviewResponse>> getUserReviews(@PathVariable UUID id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        // This assumes a findByTargetUserId method exists in ReviewRepository, to be implemented later.
-        List<ReviewResponse> reviews = List.of(); // Placeholder
-        return ApiResponse.success(reviews);
+        Page<ReviewResponse> reviewsPage = reviewService.getReviewsWithAuthorForUser(id, pageable)
+                .map(reviewApiMapper::map);
+        
+        return ApiResponse.success(reviewsPage.getContent());
     }
 
     @GetMapping("/users/{id}/rating")

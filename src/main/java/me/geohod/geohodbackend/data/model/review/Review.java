@@ -24,17 +24,15 @@ public class Review {
 
     private UUID eventId;
     private UUID authorId;
-    private UUID targetUserId;
     private int rating;
     private String comment;
     private boolean isHidden;
     private Instant createdAt;
 
-    public Review(UUID eventId, UUID authorId, UUID targetUserId, int rating, String comment) {
+    public Review(UUID eventId, UUID authorId, int rating, String comment) {
         this.id = UUID.randomUUID();
         this.eventId = eventId;
         this.authorId = authorId;
-        this.targetUserId = targetUserId;
         this.rating = rating;
         this.comment = comment;
         this.isHidden = false;

@@ -7,7 +7,8 @@ public record ReviewResponse(
         UUID id,
         UUID eventId,
         UUID authorId,
-        UUID targetUserId,
+        String authorUsername,
+        String authorImageUrl,
         int rating,
         String comment,
         Instant createdAt
