@@ -5,6 +5,7 @@ import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
 import me.geohod.geohodbackend.api.dto.review.ReviewResponse;
 import me.geohod.geohodbackend.api.mapper.ReviewApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
+import me.geohod.geohodbackend.data.dto.UserRatingDto;
 import me.geohod.geohodbackend.data.model.review.Review;
 import me.geohod.geohodbackend.data.model.userrating.UserRating;
 import me.geohod.geohodbackend.service.IReviewService;
@@ -43,8 +44,8 @@ public class ReviewController {
 
     @GetMapping("/users/{id}/rating")
     public ApiResponse<Double> getUserRating(@PathVariable UUID id) {
-        UserRating rating = userRatingService.getUserRating(id);
-        return ApiResponse.success(rating.getAverageRating().doubleValue());
+        UserRatingDto rating = userRatingService.getUserRating(id);
+        return ApiResponse.success(rating.averageRating().doubleValue());
     }
 
     @PatchMapping("/{id}/hide")

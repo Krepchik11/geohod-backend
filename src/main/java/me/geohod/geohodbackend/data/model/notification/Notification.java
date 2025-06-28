@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import me.geohod.geohodbackend.service.notification.NotificationType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
@@ -23,12 +24,12 @@ public class Notification {
     private Long version;
 
     private UUID userId;
-    private String type;
+    private NotificationType type;
     private String payload;
     private boolean isRead;
     private Instant createdAt;
 
-    public Notification(UUID userId, String type, String payload) {
+    public Notification(UUID userId, NotificationType type, String payload) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.type = type;

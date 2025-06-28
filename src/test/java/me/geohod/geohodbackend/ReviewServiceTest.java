@@ -8,6 +8,7 @@ import me.geohod.geohodbackend.data.model.repository.UserRepository;
 import me.geohod.geohodbackend.data.model.review.Review;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
+import me.geohod.geohodbackend.service.IUserRatingService;
 import me.geohod.geohodbackend.service.impl.ReviewServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,51 +36,68 @@ public class ReviewServiceTest {
     private EventRepository eventRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private IUserRatingService userRatingService;
     private ReviewServiceImpl reviewService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        reviewService = new ReviewServiceImpl(reviewRepository, eventRepository, userRepository);
+        reviewService = new ReviewServiceImpl(reviewRepository, eventRepository, userRepository, userRatingService);
     }
 
     @Test
     void testSubmitReview() {
         UUID authorId = UUID.randomUUID();
         UUID eventId = UUID.randomUUID();
+        UUID eventAuthorId = UUID.randomUUID();
         ReviewCreateRequest request = new ReviewCreateRequest(eventId, 5, "Great event!");
         
-        Event event = new Event("Test Event", "Test Description", java.time.Instant.now(), 10, UUID.randomUUID());
+        Event event = new Event("Test Event", "Test Description", Instant.now(), 10, eventAuthorId);
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         
         Review review = new Review(request.eventId(), authorId, request.rating(), request.comment());
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         
         Review result = reviewService.submitReview(authorId, request);
+        
         assertEquals(request.eventId(), result.getEventId());
         assertEquals(authorId, result.getAuthorId());
         assertEquals(request.rating(), result.getRating());
         assertEquals(request.comment(), result.getComment());
+        
+        // Verify that user rating update was called
+        verify(userRatingService).updateUserRatingAsync(eventAuthorId);
     }
 
     @Test
     void testHideReview() {
         UUID reviewId = UUID.randomUUID();
-        Review review = new Review();
+        UUID eventId = UUID.randomUUID();
+        
+        Review review = new Review(eventId, UUID.randomUUID(), 5, "Great event!");
+
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
+        
         reviewService.hideReview(reviewId);
+        
         assertTrue(review.isHidden());
     }
 
     @Test
     void testUnhideReview() {
         UUID reviewId = UUID.randomUUID();
-        Review review = new Review();
+        UUID eventId = UUID.randomUUID();
+        
+        Review review = new Review(eventId, UUID.randomUUID(), 5, "Great event!");
         review.hide();
+
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
+        
         reviewService.unhideReview(reviewId);
+        
         assertFalse(review.isHidden());
     }
 

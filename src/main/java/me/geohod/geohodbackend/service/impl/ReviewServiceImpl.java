@@ -10,6 +10,7 @@ import me.geohod.geohodbackend.data.model.repository.UserRepository;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.service.IReviewService;
+import me.geohod.geohodbackend.service.IUserRatingService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ public class ReviewServiceImpl implements IReviewService {
     private final ReviewRepository reviewRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final IUserRatingService userRatingService;
 
     @Override
     @Transactional
@@ -41,8 +43,13 @@ public class ReviewServiceImpl implements IReviewService {
                 request.rating(),
                 request.comment()
         );
-        // User rating update logic will be added here later.
-        return reviewRepository.save(review);
+        
+        Review savedReview = reviewRepository.save(review);
+        
+        // Update user rating for the event author asynchronously
+        userRatingService.updateUserRatingAsync(event.getAuthorId());
+        
+        return savedReview;
     }
 
     @Override
@@ -50,6 +57,7 @@ public class ReviewServiceImpl implements IReviewService {
     public void hideReview(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found: " + reviewId));
+
         review.hide();
         reviewRepository.save(review);
     }
@@ -59,6 +67,7 @@ public class ReviewServiceImpl implements IReviewService {
     public void unhideReview(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found: " + reviewId));
+        
         review.unhide();
         reviewRepository.save(review);
     }

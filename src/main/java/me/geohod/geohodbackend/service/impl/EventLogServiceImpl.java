@@ -9,7 +9,6 @@ import me.geohod.geohodbackend.data.model.repository.NotificationProcessorProgre
 import me.geohod.geohodbackend.service.IEventLogService;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,15 +27,25 @@ public class EventLogServiceImpl implements IEventLogService {
 
     @Override
     public List<EventLog> findUnprocessed(int limit, String processorName) {
+        // Validate parameters
+        if (limit <= 0 || limit > 1000) {
+            throw new IllegalArgumentException("Limit must be between 1 and 1000");
+        }
+        if (processorName == null || processorName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Processor name cannot be null or empty");
+        }
+
+        // Find the last processed event log ID for this processor
         UUID lastProcessedId = progressRepository.findByProcessorName(processorName)
                 .map(NotificationProcessorProgress::getLastProcessedEventLogId)
                 .orElse(null);
 
         if (lastProcessedId == null) {
-            // How to handle this? For now, let's assume we need a custom query in the repo.
-            // This will be implemented in a future step.
+            // No previous processing, return first batch of unprocessed logs
+            return eventLogRepository.findFirstUnprocessed(limit);
+        } else {
+            // Return logs after the last processed ID
+            return eventLogRepository.findUnprocessedAfterId(lastProcessedId, limit);
         }
-        // Also need a custom query here to find logs GREATER THAN lastProcessedId.
-        return Collections.emptyList();
     }
 } 

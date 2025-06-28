@@ -2,8 +2,9 @@ package me.geohod.geohodbackend;
 
 import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
-import me.geohod.geohodbackend.api.dto.notification.NotificationCursorRequest;
 import me.geohod.geohodbackend.service.impl.AppNotificationServiceImpl;
+import me.geohod.geohodbackend.service.notification.NotificationType;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -32,12 +33,11 @@ public class NotificationServiceTest {
     @Test
     void testFetchNotifications() {
         UUID userId = UUID.randomUUID();
-        Notification notification = new Notification(userId, "TYPE", "payload");
-        NotificationCursorRequest cursorRequest = new NotificationCursorRequest(10, false, null);
+        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
         when(notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
-        var result = notificationService.getNotifications(userId, cursorRequest);
+        var result = notificationService.getNotifications(userId, 10, false, null);
         assertEquals(1, result.size());
-        assertEquals("TYPE", result.get(0).getType());
+        assertEquals(NotificationType.EVENT_CREATED, result.get(0).getType());
         assertEquals("payload", result.get(0).getPayload());
     }
 
@@ -45,7 +45,7 @@ public class NotificationServiceTest {
     void testMarkAsRead() {
         UUID notificationId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        Notification notification = new Notification(userId, "TYPE", "payload");
+        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
         when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
         notificationService.markAsRead(notificationId, userId);

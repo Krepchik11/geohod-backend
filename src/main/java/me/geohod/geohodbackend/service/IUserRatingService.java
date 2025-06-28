@@ -1,9 +1,13 @@
 package me.geohod.geohodbackend.service;
 
-import me.geohod.geohodbackend.data.model.userrating.UserRating;
+import me.geohod.geohodbackend.data.dto.UserRatingDto;
 
 import java.util.UUID;
 
 public interface IUserRatingService {
-    UserRating getUserRating(UUID userId);
+    UserRatingDto getUserRating(UUID userId);
+    
+    void updateUserRating(UUID userId);
+    
+    void updateUserRatingAsync(UUID userId);
 } 
