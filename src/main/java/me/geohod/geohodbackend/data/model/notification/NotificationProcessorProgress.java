@@ -19,9 +19,6 @@ public class NotificationProcessorProgress {
     @Id
     private UUID id;
 
-    @Version
-    private Long version;
-
     private String processorName;
     private UUID lastProcessedEventLogId;
     private Instant updatedAt;
