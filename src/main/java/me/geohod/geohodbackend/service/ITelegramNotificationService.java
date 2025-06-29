@@ -2,6 +2,6 @@ package me.geohod.geohodbackend.service;
 
 import java.util.UUID;
 
-public interface INotificationService {
+public interface ITelegramNotificationService {
     void sendNotification(UUID userId, String message);
 }

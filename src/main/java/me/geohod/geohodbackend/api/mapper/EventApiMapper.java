@@ -13,8 +13,9 @@ import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.FinishEventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
+import me.geohod.geohodbackend.mapper.GlobalMapperConfig;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(config = GlobalMapperConfig.class)
 public interface EventApiMapper {
     CreateEventDto map(EventCreateRequest request, UUID authorId);
 

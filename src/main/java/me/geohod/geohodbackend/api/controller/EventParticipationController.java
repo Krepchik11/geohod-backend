@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
+@RestController(value = "EventParticipationControllerV2")
 @RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
 public class EventParticipationController {

@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- We are implementing new features for geohod backend event management system
+- Find project features request in [project-feature-request.md](mdc:.vibe/project-feature-request.md)
+- Find project specification in [project-feature-spec.md](mdc:.vibe/project-feature-spec.md)
+- Find the steps in [project-feature-steps.md](mdc:.vibe/project-feature-steps.md)
+- Respect coding principles [principles.mdc](mdc:.cursor/rules/principles.mdc)
+- Work on whatever step(s) I tell you to work on and only work on those steps at once
+- Once those steps are done, mark them completed
+- Then stop, I will give you further instructions

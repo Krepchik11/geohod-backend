@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.data.model.TelegramOutboxMessage;
 import me.geohod.geohodbackend.data.model.repository.TelegramOutboxMessageRepository;
-import me.geohod.geohodbackend.service.INotificationService;
+import me.geohod.geohodbackend.service.ITelegramNotificationService;
 import me.geohod.geohodbackend.service.IOutboxProcessor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,11 +20,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-class OutboxProcessor implements IOutboxProcessor {
+class TelegramOutboxProcessor implements IOutboxProcessor {
     private static final int BATCH_SIZE = 30;
 
     private final TelegramOutboxMessageRepository outboxRepository;
-    private final INotificationService notificationService;
+    private final ITelegramNotificationService notificationService;
 
     @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.SECONDS)
     @Transactional

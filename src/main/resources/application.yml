@@ -14,9 +14,21 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
 geohod:
   telegram-bot:
     token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
     username: ${GEOHOD_TELEGRAM_BOT_USERNAME}
   linkTemplates:
     eventRegistrationLink: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}
+  processor:
+    in-app:
+      delay: 5000
+    telegram:
+      delay: 5000

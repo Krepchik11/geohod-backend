@@ -9,7 +9,8 @@ import me.geohod.geohodbackend.data.mapper.EventModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.data.model.repository.UserRepository;
-import me.geohod.geohodbackend.service.notification.IEventNotificationService;
+import me.geohod.geohodbackend.data.model.eventlog.EventType;
+import me.geohod.geohodbackend.service.IEventLogService;
 import me.geohod.geohodbackend.service.IEventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,7 @@ public class EventService implements IEventService {
     private final EventModelMapper mapper;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final IEventNotificationService notificationService;
+    private final IEventLogService eventLogService;
 
     @Override
     public EventDto event(UUID eventId) {
@@ -49,7 +50,8 @@ public class EventService implements IEventService {
 
         EventDto result = mapper.map(event);
 
-        notifyEventCreated(result);
+        String payload = String.format("{\"authorId\": \"%s\"}", result.authorId());
+        eventLogService.createLogEntry(result.id(), EventType.EVENT_CREATED, payload);
         return result;
     }
 
@@ -81,6 +83,8 @@ public class EventService implements IEventService {
         event.cancel();
 
         eventRepository.save(event);
+
+        eventLogService.createLogEntry(eventId, EventType.EVENT_CANCELED, "{}");
     }
 
     @Override
@@ -97,16 +101,8 @@ public class EventService implements IEventService {
 
         eventRepository.save(event);
 
-        notifyEventFinished(finishDto);
-    }
-
-    private void notifyEventFinished(FinishEventDto finishDto) {
-        if (finishDto.sendDonationRequest()) {
-            notificationService.notifyParticipantsEventFinishedWithDonation(finishDto.eventId(), finishDto.donationInfo());
-        }
-    }
-
-    private void notifyEventCreated(EventDto event) {
-        notificationService.notifyAuthorEventCreated(event.id());
+        String payload = String.format("{\"sendDonationRequest\": %b, \"donationInfo\": \"%s\"}",
+                finishDto.sendDonationRequest(), finishDto.donationInfo());
+        eventLogService.createLogEntry(finishDto.eventId(), EventType.EVENT_FINISHED_FOR_REVIEW_LINK, payload);
     }
 }
