@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.api.controller;
+package me.geohod.geohodbackend.api.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
@@ -6,13 +6,13 @@ import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
 import me.geohod.geohodbackend.api.dto.response.EventUnregisterResponse;
 import me.geohod.geohodbackend.api.mapper.UserApiMapper;
+import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.EventParticipantProjection;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.IEventService;
 import me.geohod.geohodbackend.service.IParticipantProjectionService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController(value = "EventParticipationControllerV2")
-@RequestMapping("/api/v1/events")
+@RestController
+@RequestMapping("/api/v2/events")
 @RequiredArgsConstructor
 public class EventParticipationController {
     private final UserApiMapper userApiMapper;
@@ -30,23 +30,23 @@ public class EventParticipationController {
     private final IParticipantProjectionService participantProjectionService;
 
     @PostMapping("/{eventId}/register")
-    public ResponseEntity<EventRegisterResponse> registerForEvent(@PathVariable UUID eventId,
+    public ApiResponse<EventRegisterResponse> registerForEvent(@PathVariable UUID eventId,
                                                                   @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         participationService.registerForEvent(loggedUserId, eventId);
-        return ResponseEntity.ok(new EventRegisterResponse("success"));
+        return ApiResponse.success(new EventRegisterResponse("success"));
     }
 
     @DeleteMapping("/{eventId}/unregister")
-    public ResponseEntity<EventUnregisterResponse> unregisterFromEvent(@PathVariable UUID eventId,
+    public ApiResponse<EventUnregisterResponse> unregisterFromEvent(@PathVariable UUID eventId,
                                                                        @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         participationService.unregisterFromEvent(loggedUserId, eventId);
-        return ResponseEntity.ok(new EventUnregisterResponse("success"));
+        return ApiResponse.success(new EventUnregisterResponse("success"));
     }
 
     @DeleteMapping("/{eventId}/participants/{participantId}")
-    public ResponseEntity<EventRemoveParticipant> removeParticipant(@PathVariable UUID eventId,
+    public ApiResponse<EventRemoveParticipant> removeParticipant(@PathVariable UUID eventId,
                                                                     @PathVariable UUID participantId,
                                                                     @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
@@ -56,11 +56,11 @@ public class EventParticipationController {
         }
 
         participationService.unregisterParticipantFromEvent(participantId, eventId);
-        return ResponseEntity.ok(new EventRemoveParticipant("success"));
+        return ApiResponse.success(new EventRemoveParticipant("success"));
     }
 
     @GetMapping("/{eventId}/participants")
-    public ResponseEntity<EventParticipantsResponse> eventParticipants(@PathVariable UUID eventId) {
+    public ApiResponse<EventParticipantsResponse> eventParticipants(@PathVariable UUID eventId) {
         List<EventParticipantProjection> participants = participantProjectionService.eventParticipants(eventId);
         EventParticipantsResponse response = new EventParticipantsResponse(
                 participants.stream()
@@ -68,6 +68,6 @@ public class EventParticipationController {
                         .toList()
         );
 
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(response);
     }
-}
+} 

@@ -22,8 +22,14 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
     @Query("SELECT r.* FROM reviews r " +
            "JOIN events e ON r.event_id = e.id " +
            "WHERE e.author_id = :userId " +
-           "ORDER BY r.created_at DESC")
-    Page<Review> findByEventAuthorId(UUID userId, Pageable pageable);
+           "ORDER BY r.created_at DESC " +
+           "LIMIT :limit OFFSET :offset")
+    List<Review> findByEventAuthorIdWithPaging(UUID userId, int limit, int offset);
+    
+    @Query("SELECT COUNT(*) FROM reviews r " +
+           "JOIN events e ON r.event_id = e.id " +
+           "WHERE e.author_id = :userId")
+    long countByEventAuthorId(UUID userId);
     
     List<Review> findByAuthorId(UUID authorId);
     

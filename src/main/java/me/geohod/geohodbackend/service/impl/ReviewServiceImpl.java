@@ -74,20 +74,30 @@ public class ReviewServiceImpl implements IReviewService {
 
     @Override
     public Page<Review> getReviewsForUser(UUID userId, Pageable pageable) {
-        return reviewRepository.findByEventAuthorId(userId, pageable);
+        int limit = pageable.getPageSize();
+        int offset = (int) pageable.getOffset();
+        
+        List<Review> reviews = reviewRepository.findByEventAuthorIdWithPaging(userId, limit, offset);
+        long totalElements = reviewRepository.countByEventAuthorId(userId);
+        
+        return new PageImpl<>(reviews, pageable, totalElements);
     }
 
     @Override
     public Page<ReviewWithAuthorDto> getReviewsWithAuthorForUser(UUID userId, Pageable pageable) {
-        Page<Review> reviewsPage = reviewRepository.findByEventAuthorId(userId, pageable);
+        int limit = pageable.getPageSize();
+        int offset = (int) pageable.getOffset();
         
-        List<ReviewWithAuthorDto> reviewsWithAuthor = reviewsPage.getContent().stream()
+        List<Review> reviews = reviewRepository.findByEventAuthorIdWithPaging(userId, limit, offset);
+        long totalElements = reviewRepository.countByEventAuthorId(userId);
+        
+        List<ReviewWithAuthorDto> reviewsWithAuthor = reviews.stream()
                 .map(review -> {
                     User author = userRepository.findById(review.getAuthorId()).orElse(null);
                     return ReviewWithAuthorDto.from(review, author);
                 })
                 .collect(Collectors.toList());
         
-        return new PageImpl<>(reviewsWithAuthor, pageable, reviewsPage.getTotalElements());
+        return new PageImpl<>(reviewsWithAuthor, pageable, totalElements);
     }
 } 

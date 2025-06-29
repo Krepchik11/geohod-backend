@@ -1,5 +1,7 @@
 package me.geohod.geohodbackend;
 
+import me.geohod.geohodbackend.data.dto.NotificationDto;
+import me.geohod.geohodbackend.data.mapper.NotificationMapper;
 import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
 import me.geohod.geohodbackend.service.impl.AppNotificationServiceImpl;
@@ -22,23 +24,31 @@ import static org.mockito.Mockito.*;
 public class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
+    
+    @Mock
+    private NotificationMapper notificationMapper;
+    
     private AppNotificationServiceImpl notificationService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        notificationService = new AppNotificationServiceImpl(notificationRepository);
+        notificationService = new AppNotificationServiceImpl(notificationRepository, notificationMapper);
     }
 
     @Test
     void testFetchNotifications() {
         UUID userId = UUID.randomUUID();
         Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
+        NotificationDto notificationDto = new NotificationDto(1L, NotificationType.EVENT_CREATED, "payload", false, null);
+        
         when(notificationRepository.findByUserIdAndIsReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
+        when(notificationMapper.toDto(notification)).thenReturn(notificationDto);
+        
         var result = notificationService.getNotifications(userId, 10, false, null);
         assertEquals(1, result.size());
-        assertEquals(NotificationType.EVENT_CREATED, result.get(0).getType());
-        assertEquals("payload", result.get(0).getPayload());
+        assertEquals(NotificationType.EVENT_CREATED, result.get(0).type());
+        assertEquals("payload", result.get(0).payload());
     }
 
     @Test

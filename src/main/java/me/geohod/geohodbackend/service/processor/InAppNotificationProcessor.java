@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.service.IEventLogService;
 import me.geohod.geohodbackend.service.IAppNotificationService;
 import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
-import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.service.notification.NotificationType;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
@@ -69,12 +69,12 @@ public class InAppNotificationProcessor {
             Collection<UUID> recipients = getRecipients(event, type, eventLog.getPayload());
             
             for (UUID userId : recipients) {
-                Notification notification = new Notification(
+                NotificationCreateDto request = new NotificationCreateDto(
                     userId,
                     type,
                     eventLog.getPayload()
                 );
-                appNotificationService.createNotification(notification);
+                appNotificationService.createNotification(request);
             }
             
             log.debug("Created {} notifications for event log {}", recipients.size(), eventLog.getId());

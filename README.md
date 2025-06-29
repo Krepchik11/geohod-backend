@@ -26,12 +26,28 @@ GEOHOD_TELEGRAM_BOT_USERNAME=your_telegram_bot_username
 docker compose up -d
 ```
 
-2. Run the application:
+2. Run the application (default profile, Swagger disabled):
 ```bash
 ./gradlew bootRun
 ```
 
-Application available at http://localhost:8080
+3. **To enable Swagger UI and OpenAPI docs:**
+   - Run with the `dev` profile:
+     ```bash
+     ./gradlew bootRun --args='--spring.profiles.active=dev'
+     ```
+   - Or set the environment variable (for deployment, CI, or Docker):
+     ```bash
+     SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+     ```
+   - Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+   - OpenAPI JSON: [http://localhost:8080/api-docs](http://localhost:8080/api-docs)
+
+## API Versioning
+
+The API supports versioning with backward compatibility:
+- **v1**: Legacy endpoints (maintained for backward compatibility)
+- **v2**: New endpoints with improved response format using `ApiResponse<T>` wrapper
 
 ## Database Migrations
 
@@ -99,6 +115,7 @@ docker run -d \
 -e GEOHOD_TELEGRAM_BOT_TOKEN=your_token \
 -e GEOHOD_TELEGRAM_BOT_USERNAME=your_bot_username \
 -e GEOHOD_CREATED_EVENT_LINK_TEMPLATE=new_event_link_template \
+-e SPRING_PROFILES_ACTIVE=dev \
 geohod-backend:latest
 ```
 

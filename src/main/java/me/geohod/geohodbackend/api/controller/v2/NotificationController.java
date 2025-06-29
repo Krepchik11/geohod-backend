@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.notification.NotificationResponse;
 import me.geohod.geohodbackend.api.mapper.NotificationApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
-import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IAppNotificationService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,9 +24,13 @@ public class NotificationController {
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(defaultValue = "false") Boolean isRead,
             @RequestParam(required = false) Long cursorIdAfter) {
-        List<Notification> notifications = appNotificationService.getNotifications(
+        var notifications = appNotificationService.getNotifications(
                 principal.userId(), limit, isRead, cursorIdAfter);
-        List<NotificationResponse> response = notifications.stream().map(notificationApiMapper::map).toList();
+        
+        List<NotificationResponse> response = notifications.stream()
+                .map(notificationDto -> notificationApiMapper.toResponse(notificationDto, principal.userId()))
+                .toList();
+        
         return ApiResponse.success(response);
     }
 

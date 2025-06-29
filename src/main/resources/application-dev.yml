@@ -18,9 +18,15 @@ geohod:
     token: ${GEOHOD_TELEGRAM_BOT_TOKEN:dev-token}
     username: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-bot}
   linkTemplates:
-    eventRegistrationLink: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-{botName}-{eventId}
+    eventRegistrationLink: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE:https://t.me/{botName}/{eventId}}
   processor:
     in-app:
       delay: 5000
     telegram:
       delay: 5000
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

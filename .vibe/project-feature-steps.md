@@ -158,5 +158,5 @@
 ---
 
 ## 14 – Documentation & Cleanup
-- [ ] **14.1 Update `README.md`** – new endpoints, how to run Liquibase
-- [ ] **14.2 Remove/adjust obsolete tests & TODOs**
+- [x] **14.1 Update `README.md`** – new endpoints, how to run Liquibase
+- [x] **14.2 Remove/adjust obsolete tests & TODOs**

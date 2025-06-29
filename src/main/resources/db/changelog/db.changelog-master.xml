@@ -9,5 +9,4 @@
     <include file="db.changelog-1.3-event_logs.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.4-npp.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.5-notifications.xml" relativeToChangelogFile="true"/>
-    <include file="db.changelog-1.6-notification-id-numeric.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

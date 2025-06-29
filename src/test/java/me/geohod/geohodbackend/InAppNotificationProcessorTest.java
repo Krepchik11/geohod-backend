@@ -1,10 +1,10 @@
 package me.geohod.geohodbackend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
-import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.IAppNotificationService;
@@ -73,11 +73,11 @@ public class InAppNotificationProcessorTest {
         
         processor.process();
         
-        ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(appNotificationService, times(1)).createNotification(notificationCaptor.capture());
+        ArgumentCaptor<NotificationCreateDto> requestCaptor = ArgumentCaptor.forClass(NotificationCreateDto.class);
+        verify(appNotificationService, times(1)).createNotification(requestCaptor.capture());
         
-        Notification capturedNotification = notificationCaptor.getValue();
-        assert capturedNotification.getUserId().equals(authorId);
+        NotificationCreateDto capturedRequest = requestCaptor.getValue();
+        assert capturedRequest.userId().equals(authorId);
         verify(progressService, times(1)).updateProgress(anyString(), eq(logId));
     }
 
@@ -101,11 +101,11 @@ public class InAppNotificationProcessorTest {
         
         processor.process();
         
-        ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(appNotificationService, times(1)).createNotification(notificationCaptor.capture());
+        ArgumentCaptor<NotificationCreateDto> requestCaptor = ArgumentCaptor.forClass(NotificationCreateDto.class);
+        verify(appNotificationService, times(1)).createNotification(requestCaptor.capture());
         
-        Notification capturedNotification = notificationCaptor.getValue();
-        assert capturedNotification.getUserId().equals(participantId);
+        NotificationCreateDto capturedRequest = requestCaptor.getValue();
+        assert capturedRequest.userId().equals(participantId);
         verify(progressService, times(1)).updateProgress(anyString(), eq(logId));
     }
 
@@ -133,11 +133,11 @@ public class InAppNotificationProcessorTest {
         
         processor.process();
         
-        ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(appNotificationService, times(1)).createNotification(notificationCaptor.capture());
+        ArgumentCaptor<NotificationCreateDto> requestCaptor = ArgumentCaptor.forClass(NotificationCreateDto.class);
+        verify(appNotificationService, times(1)).createNotification(requestCaptor.capture());
         
-        Notification capturedNotification = notificationCaptor.getValue();
-        assert capturedNotification.getUserId().equals(participantId);
+        NotificationCreateDto capturedRequest = requestCaptor.getValue();
+        assert capturedRequest.userId().equals(participantId);
         verify(progressService, times(1)).updateProgress(anyString(), eq(logId));
     }
 
@@ -145,7 +145,7 @@ public class InAppNotificationProcessorTest {
     void testProcessWithNoUnprocessedLogs() {
         when(eventLogService.findUnprocessed(anyInt(), anyString())).thenReturn(List.of());
         processor.process();
-        verify(appNotificationService, never()).createNotification(any(Notification.class));
+        verify(appNotificationService, never()).createNotification(any(NotificationCreateDto.class));
         verify(progressService, never()).updateProgress(anyString(), any(UUID.class));
     }
 } 

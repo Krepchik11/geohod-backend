@@ -108,14 +108,17 @@ public class ReviewServiceTest {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
         List<Review> reviews = List.of(new Review(UUID.randomUUID(), UUID.randomUUID(), 5, "Great event!"));
-        Page<Review> reviewPage = new PageImpl<>(reviews, pageable, 1);
         
-        when(reviewRepository.findByEventAuthorId(userId, pageable)).thenReturn(reviewPage);
+        when(reviewRepository.findByEventAuthorIdWithPaging(userId, 10, 0)).thenReturn(reviews);
+        when(reviewRepository.countByEventAuthorId(userId)).thenReturn(1L);
         
         Page<Review> result = reviewService.getReviewsForUser(userId, pageable);
         
-        assertEquals(reviewPage, result);
-        verify(reviewRepository).findByEventAuthorId(userId, pageable);
+        assertEquals(1, result.getContent().size());
+        assertEquals(reviews.get(0), result.getContent().get(0));
+        assertEquals(1L, result.getTotalElements());
+        verify(reviewRepository).findByEventAuthorIdWithPaging(userId, 10, 0);
+        verify(reviewRepository).countByEventAuthorId(userId);
     }
 
     @Test
@@ -126,11 +129,11 @@ public class ReviewServiceTest {
         
         Review review = new Review(UUID.randomUUID(), authorId, 5, "Great event!");
         List<Review> reviews = List.of(review);
-        Page<Review> reviewPage = new PageImpl<>(reviews, pageable, 1);
         
         User author = new User("tg123", "testuser", "Test", "User", "image.jpg");
         
-        when(reviewRepository.findByEventAuthorId(userId, pageable)).thenReturn(reviewPage);
+        when(reviewRepository.findByEventAuthorIdWithPaging(userId, 10, 0)).thenReturn(reviews);
+        when(reviewRepository.countByEventAuthorId(userId)).thenReturn(1L);
         when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
         
         Page<ReviewWithAuthorDto> result = reviewService.getReviewsWithAuthorForUser(userId, pageable);
@@ -138,7 +141,9 @@ public class ReviewServiceTest {
         assertEquals(1, result.getContent().size());
         assertEquals(author.getTgUsername(), result.getContent().get(0).authorUsername());
         assertEquals(author.getTgImageUrl(), result.getContent().get(0).authorImageUrl());
-        verify(reviewRepository).findByEventAuthorId(userId, pageable);
+        assertEquals(1L, result.getTotalElements());
+        verify(reviewRepository).findByEventAuthorIdWithPaging(userId, 10, 0);
+        verify(reviewRepository).countByEventAuthorId(userId);
         verify(userRepository).findById(authorId);
     }
 } 

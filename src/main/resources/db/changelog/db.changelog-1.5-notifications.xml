@@ -24,10 +24,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <createIndex indexName="idx_notifications_user_isread_numericid" tableName="notifications" unique="false">
+        <createIndex indexName="idx_notifications_user_isread_id" tableName="notifications" unique="false">
             <column name="user_id"/>
             <column name="is_read"/>
-            <column name="numeric_id"/>
+            <column name="id"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog> 
