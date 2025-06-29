@@ -33,7 +33,7 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
     }
 
     @Override
-    public void markAsRead(UUID notificationId, UUID userId) {
+    public void dismiss(UUID notificationId, UUID userId) {
         if (notificationId == null) {
             throw new IllegalArgumentException("Notification ID cannot be null");
         }
@@ -45,16 +45,16 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
         if (!notification.getUserId().equals(userId)) {
             throw new IllegalArgumentException("Notification does not belong to the specified user");
         }
-        notification.markAsRead();
+        notification.dismiss();
         notificationRepository.save(notification);
     }
 
     @Override
-    public void markAllAsRead(UUID userId) {
+    public void dismissAll(UUID userId) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        notificationRepository.markAllAsReadForUser(userId);
+        notificationRepository.dismissAllByUser(userId);
     }
 
     @Override

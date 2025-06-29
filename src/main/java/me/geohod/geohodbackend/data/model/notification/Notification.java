@@ -38,7 +38,7 @@ public class Notification {
         this.createdAt = Instant.now();
     }
 
-    public void markAsRead() {
+    public void dismiss() {
         this.isRead = true;
     }
 } 

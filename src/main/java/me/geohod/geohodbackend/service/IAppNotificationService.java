@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface IAppNotificationService {
     List<Notification> getNotifications(UUID userId, Integer limit, Boolean isRead, Instant cursorCreatedAt);
-    void markAsRead(UUID notificationId, UUID userId);
-    void markAllAsRead(UUID userId);
+    void dismiss(UUID notificationId, UUID userId);
+    void dismissAll(UUID userId);
     Notification createNotification(Notification notification);
 }

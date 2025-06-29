@@ -33,5 +33,5 @@ public interface NotificationRepository extends CrudRepository<Notification, UUI
 
     @Modifying
     @Query("UPDATE notifications SET is_read = true WHERE user_id = :userId AND is_read = false")
-    void markAllAsReadForUser(@Param("userId") UUID userId);
+    void dismissAllByUser(@Param("userId") UUID userId);
 } 

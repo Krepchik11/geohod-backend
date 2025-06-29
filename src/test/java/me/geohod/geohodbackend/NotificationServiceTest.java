@@ -42,13 +42,13 @@ public class NotificationServiceTest {
     }
 
     @Test
-    void testMarkAsRead() {
+    void testDismiss() {
         UUID notificationId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
         when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
-        notificationService.markAsRead(notificationId, userId);
+        notificationService.dismiss(notificationId, userId);
         assertTrue(notification.isRead());
     }
 } 

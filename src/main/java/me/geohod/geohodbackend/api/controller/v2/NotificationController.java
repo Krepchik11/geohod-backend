@@ -33,15 +33,15 @@ public class NotificationController {
         return ApiResponse.success(response);
     }
 
-    @PostMapping("/{id}/mark-as-read")
-    public ApiResponse<Void> markAsRead(@AuthenticationPrincipal TelegramPrincipal principal, @PathVariable UUID id) {
-        appNotificationService.markAsRead(id, principal.userId());
+    @PostMapping("/{id}/dismiss")
+    public ApiResponse<Void> dismiss(@AuthenticationPrincipal TelegramPrincipal principal, @PathVariable UUID id) {
+        appNotificationService.dismiss(id, principal.userId());
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/mark-all-as-read")
-    public ApiResponse<Void> markAllAsRead(@AuthenticationPrincipal TelegramPrincipal principal) {
-        appNotificationService.markAllAsRead(principal.userId());
+    @PostMapping("/dismiss-all")
+    public ApiResponse<Void> dismissAll(@AuthenticationPrincipal TelegramPrincipal principal) {
+        appNotificationService.dismissAll(principal.userId());
         return ApiResponse.success(null);
     }
 } 
