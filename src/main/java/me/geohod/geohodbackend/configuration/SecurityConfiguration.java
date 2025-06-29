@@ -46,6 +46,7 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                     .requestMatchers("/api/v2/**").authenticated()
                     .anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
