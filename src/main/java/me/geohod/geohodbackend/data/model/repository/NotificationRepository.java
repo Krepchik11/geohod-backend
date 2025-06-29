@@ -8,26 +8,27 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface NotificationRepository extends CrudRepository<Notification, UUID> {
-    List<Notification> findByUserIdAndIsReadOrderByCreatedAtDesc(UUID userId, boolean isRead, Pageable pageable);
+public interface NotificationRepository extends CrudRepository<Notification, Long> {
+    Optional<Notification> findByIdAndUserId(Long id, UUID userId);
+    List<Notification> findByUserIdAndIsReadOrderByIdDesc(UUID userId, boolean isRead, Pageable pageable);
     
     @Query("""
         SELECT * FROM notifications
         WHERE user_id = :userId
           AND is_read = :isRead
-          AND created_at < :cursorCreatedAt
-        ORDER BY created_at DESC, id DESC
+          AND id > :cursorId
+        ORDER BY id DESC
         LIMIT :limit
         """)
-    List<Notification> findByUserIdAndIsReadBeforeCursor(
+    List<Notification> findByUserIdAndIsReadAfterCursor(
         @Param("userId") UUID userId,
         @Param("isRead") boolean isRead,
-        @Param("cursorCreatedAt") Instant cursorCreatedAt,
+        @Param("cursorId") Long afterId,
         @Param("limit") int limit
     );
 

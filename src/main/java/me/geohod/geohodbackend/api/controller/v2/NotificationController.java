@@ -10,9 +10,7 @@ import me.geohod.geohodbackend.service.IAppNotificationService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v2/notifications")
@@ -26,15 +24,15 @@ public class NotificationController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(defaultValue = "false") Boolean isRead,
-            @RequestParam(required = false) Instant cursorCreatedAt) {
+            @RequestParam(required = false) Long cursorIdAfter) {
         List<Notification> notifications = appNotificationService.getNotifications(
-                principal.userId(), limit, isRead, cursorCreatedAt);
+                principal.userId(), limit, isRead, cursorIdAfter);
         List<NotificationResponse> response = notifications.stream().map(notificationApiMapper::map).toList();
         return ApiResponse.success(response);
     }
 
     @PostMapping("/{id}/dismiss")
-    public ApiResponse<Void> dismiss(@AuthenticationPrincipal TelegramPrincipal principal, @PathVariable UUID id) {
+    public ApiResponse<Void> dismiss(@AuthenticationPrincipal TelegramPrincipal principal, @PathVariable Long id) {
         appNotificationService.dismiss(id, principal.userId());
         return ApiResponse.success(null);
     }

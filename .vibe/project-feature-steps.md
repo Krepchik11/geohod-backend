@@ -152,19 +152,11 @@
 ---
 
 ## 13 – Integration Tests
-- [ ] **13.1 Flow test: register → log → processors → notification visible**
-- [ ] **13.2 Flow test: submit review → rating updated → organizer notified**
+- [x] **13.1 Flow test: register → log → processors → notification visible**
+- [x] **13.2 Flow test: submit review → rating updated → organizer notified**
 
 ---
 
 ## 14 – Documentation & Cleanup
 - [ ] **14.1 Update `README.md`** – new endpoints, how to run Liquibase
 - [ ] **14.2 Remove/adjust obsolete tests & TODOs**
-
----
-
-## 15 – Optional Frontend (Long-poll Hook)*
-*(Skip if no frontend repo; otherwise continue.)*
-- [ ] **15.1 Add `useNotificationsLongPoll` React hook** (TS)
-- [ ] **15.2 Display unread badge + mark-as-read button**
-

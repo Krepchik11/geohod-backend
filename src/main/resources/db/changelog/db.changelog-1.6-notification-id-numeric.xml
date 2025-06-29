@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="change-notification-id-to-numeric" author="nabor">
+        <!-- Drop existing index -->
+        <dropIndex indexName="idx_notifications_user_isread_createdat" tableName="notifications"/>
+        
+        <!-- Add new numeric ID column -->
+        <addColumn tableName="notifications">
+            <column name="numeric_id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Create new index for cursor-based pagination using numeric ID -->
+        <createIndex indexName="idx_notifications_user_isread_numericid" tableName="notifications" unique="false">
+            <column name="user_id"/>
+            <column name="is_read"/>
+            <column name="numeric_id"/>
+        </createIndex>
+        
+        <!-- Drop the old UUID primary key and make numeric_id the new primary key -->
+        <dropPrimaryKey tableName="notifications"/>
+        <addPrimaryKey tableName="notifications" columnNames="numeric_id" constraintName="pk_notifications"/>
+        
+        <!-- Drop the old UUID id column -->
+        <dropColumn tableName="notifications" columnName="id"/>
+        
+        <!-- Rename numeric_id to id -->
+        <renameColumn tableName="notifications" oldColumnName="numeric_id" newColumnName="id"/>
+    </changeSet>
+</databaseChangeLog> 

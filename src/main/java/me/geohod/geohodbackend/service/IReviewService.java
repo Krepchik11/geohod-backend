@@ -10,8 +10,8 @@ import java.util.UUID;
 
 public interface IReviewService {
     Review submitReview(UUID authorId, ReviewCreateRequest request);
-    void hideReview(UUID reviewId);
-    void unhideReview(UUID reviewId);
+    void hideReview(UUID reviewId, UUID userId);
+    void unhideReview(UUID reviewId, UUID userId);
     Page<Review> getReviewsForUser(UUID userId, Pageable pageable);
     Page<ReviewWithAuthorDto> getReviewsWithAuthorForUser(UUID userId, Pageable pageable);
 } 

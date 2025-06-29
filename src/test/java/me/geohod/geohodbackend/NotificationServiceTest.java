@@ -34,7 +34,7 @@ public class NotificationServiceTest {
     void testFetchNotifications() {
         UUID userId = UUID.randomUUID();
         Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
-        when(notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
+        when(notificationRepository.findByUserIdAndIsReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
         var result = notificationService.getNotifications(userId, 10, false, null);
         assertEquals(1, result.size());
         assertEquals(NotificationType.EVENT_CREATED, result.get(0).getType());
@@ -43,10 +43,10 @@ public class NotificationServiceTest {
 
     @Test
     void testDismiss() {
-        UUID notificationId = UUID.randomUUID();
+        Long notificationId = 1L;
         UUID userId = UUID.randomUUID();
         Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
         notificationService.dismiss(notificationId, userId);
         assertTrue(notification.isRead());

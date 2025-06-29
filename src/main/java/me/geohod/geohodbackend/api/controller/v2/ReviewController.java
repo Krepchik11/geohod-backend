@@ -8,11 +8,13 @@ import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.dto.UserRatingDto;
 import me.geohod.geohodbackend.data.model.review.Review;
 import me.geohod.geohodbackend.data.model.userrating.UserRating;
+import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +30,10 @@ public class ReviewController {
     private final ReviewApiMapper reviewApiMapper;
 
     @PostMapping
-    public ApiResponse<ReviewResponse> submitReview(@RequestBody ReviewCreateRequest request, @RequestParam UUID authorId) {
-        Review review = reviewService.submitReview(authorId, request);
+    public ApiResponse<ReviewResponse> submitReview(
+            @RequestBody ReviewCreateRequest request, 
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        Review review = reviewService.submitReview(principal.userId(), request);
         return ApiResponse.success(reviewApiMapper.map(review));
     }
 
@@ -49,14 +53,18 @@ public class ReviewController {
     }
 
     @PatchMapping("/{id}/hide")
-    public ApiResponse<Void> hideReview(@PathVariable UUID id) {
-        reviewService.hideReview(id);
+    public ApiResponse<Void> hideReview(
+            @PathVariable UUID id, 
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        reviewService.hideReview(id, principal.userId());
         return ApiResponse.success(null);
     }
 
     @PatchMapping("/{id}/unhide")
-    public ApiResponse<Void> unhideReview(@PathVariable UUID id) {
-        reviewService.unhideReview(id);
+    public ApiResponse<Void> unhideReview(
+            @PathVariable UUID id, 
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        reviewService.unhideReview(id, principal.userId());
         return ApiResponse.success(null);
     }
 } 

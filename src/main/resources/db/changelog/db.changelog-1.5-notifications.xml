@@ -7,7 +7,7 @@
 
     <changeSet id="create-notifications-table" author="nabor">
         <createTable tableName="notifications">
-            <column name="id" type="UUID">
+            <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="user_id" type="UUID">
@@ -24,10 +24,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <createIndex indexName="idx_notifications_user_isread_createdat" tableName="notifications" unique="false">
+        <createIndex indexName="idx_notifications_user_isread_numericid" tableName="notifications" unique="false">
             <column name="user_id"/>
             <column name="is_read"/>
-            <column name="created_at"/>
+            <column name="numeric_id"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog> 

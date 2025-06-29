@@ -10,10 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAndSortingRepository<Review, UUID> {
+    Optional<Review> findByIdAndAuthorId(UUID eventId, UUID authorId);
     List<Review> findByEventId(UUID eventId);
     Page<Review> findByEventId(UUID eventId, Pageable pageable);
     

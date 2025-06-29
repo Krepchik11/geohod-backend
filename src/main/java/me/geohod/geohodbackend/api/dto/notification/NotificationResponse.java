@@ -2,10 +2,9 @@ package me.geohod.geohodbackend.api.dto.notification;
 
 import me.geohod.geohodbackend.service.notification.NotificationType;
 import java.time.Instant;
-import java.util.UUID;
 
 public record NotificationResponse(
-        UUID id,
+        Long id,
         NotificationType type,
         String payload,
         boolean isRead,

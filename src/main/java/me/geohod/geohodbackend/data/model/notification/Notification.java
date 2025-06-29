@@ -18,10 +18,7 @@ import java.util.UUID;
 @Table("notifications")
 public class Notification {
     @Id
-    private UUID id;
-
-    @Version
-    private Long version;
+    private Long id;
 
     private UUID userId;
     private NotificationType type;
@@ -30,7 +27,6 @@ public class Notification {
     private Instant createdAt;
 
     public Notification(UUID userId, NotificationType type, String payload) {
-        this.id = UUID.randomUUID();
         this.userId = userId;
         this.type = type;
         this.payload = payload;

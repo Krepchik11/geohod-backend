@@ -74,13 +74,14 @@ public class ReviewServiceTest {
     void testHideReview() {
         UUID reviewId = UUID.randomUUID();
         UUID eventId = UUID.randomUUID();
+        UUID eventAuthorId = UUID.randomUUID();
         
-        Review review = new Review(eventId, UUID.randomUUID(), 5, "Great event!");
+        Review review = new Review(eventId, eventAuthorId, 5, "Great event!");
 
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+        when(reviewRepository.findByIdAndAuthorId(reviewId, eventAuthorId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         
-        reviewService.hideReview(reviewId);
+        reviewService.hideReview(reviewId, eventAuthorId);
         
         assertTrue(review.isHidden());
     }
@@ -89,14 +90,15 @@ public class ReviewServiceTest {
     void testUnhideReview() {
         UUID reviewId = UUID.randomUUID();
         UUID eventId = UUID.randomUUID();
+        UUID eventAuthorId = UUID.randomUUID();
         
-        Review review = new Review(eventId, UUID.randomUUID(), 5, "Great event!");
+        Review review = new Review(eventId, eventAuthorId, 5, "Great event!");
         review.hide();
 
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+        when(reviewRepository.findByIdAndAuthorId(reviewId, eventAuthorId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         
-        reviewService.unhideReview(reviewId);
+        reviewService.unhideReview(reviewId, eventAuthorId);
         
         assertFalse(review.isHidden());
     }

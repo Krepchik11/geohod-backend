@@ -6,7 +6,6 @@ import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
 import me.geohod.geohodbackend.service.IAppNotificationService;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,34 +16,32 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
     private final NotificationRepository notificationRepository;
 
     @Override
-    public List<Notification> getNotifications(UUID userId, Integer limit, Boolean isRead, Instant cursorCreatedAt) {
+    public List<Notification> getNotifications(UUID userId, Integer limit, Boolean isRead, Long cursorAfterId) {
         if (limit == null || limit < 1 || limit > 100) {
             limit = 20;
         }
         if (isRead == null) {
             isRead = false;
         }
-        if (cursorCreatedAt == null) {
+        if (cursorAfterId == null) {
             // Fetch first page
-            return notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(userId, isRead, org.springframework.data.domain.PageRequest.of(0, limit));
+            return notificationRepository.findByUserIdAndIsReadOrderByIdDesc(userId, isRead, org.springframework.data.domain.PageRequest.of(0, limit));
         } else {
-            return notificationRepository.findByUserIdAndIsReadBeforeCursor(userId, isRead, cursorCreatedAt, limit);
+            return notificationRepository.findByUserIdAndIsReadAfterCursor(userId, isRead, cursorAfterId, limit);
         }
     }
 
     @Override
-    public void dismiss(UUID notificationId, UUID userId) {
+    public void dismiss(Long notificationId, UUID userId) {
         if (notificationId == null) {
             throw new IllegalArgumentException("Notification ID cannot be null");
         }
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        Notification notification = notificationRepository.findById(notificationId)
+        Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
-        if (!notification.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Notification does not belong to the specified user");
-        }
+
         notification.dismiss();
         notificationRepository.save(notification);
     }
