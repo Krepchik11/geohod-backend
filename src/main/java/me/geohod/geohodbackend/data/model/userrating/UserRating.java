@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -16,12 +17,11 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("user_ratings")
-public class UserRating {
-    @Id
-    private UUID id;
-
+public class UserRating implements Persistable<UUID> {
     @Version
     private Long version;
+    @Id
+    private UUID id;
 
     private UUID userId;
     private BigDecimal averageRating;
@@ -42,5 +42,10 @@ public class UserRating {
         this.averageRating = averageRating;
         this.totalReviewsCount = totalReviewsCount;
         this.updatedAt = Instant.now();
+    }
+
+    @Override
+    public boolean isNew() {
+        return version == null;
     }
 } 

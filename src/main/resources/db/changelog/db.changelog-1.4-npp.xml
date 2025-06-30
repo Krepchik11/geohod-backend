@@ -10,6 +10,9 @@
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="processor_name" type="VARCHAR(128)">
                 <constraints nullable="false" unique="true"/>
             </column>

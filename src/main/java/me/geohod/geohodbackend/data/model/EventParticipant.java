@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("event_participants")
-public class EventParticipant {
+public class EventParticipant implements Persistable<UUID> {
     @Version
     private Long version;
     @Id
@@ -29,5 +30,10 @@ public class EventParticipant {
         this.eventId = eventId;
         this.userId = userId;
         this.createdAt = Instant.now();
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.version == null;
     }
 }

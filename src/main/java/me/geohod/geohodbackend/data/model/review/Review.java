@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -15,12 +16,11 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("reviews")
-public class Review {
-    @Id
-    private UUID id;
-
+public class Review implements Persistable<UUID> {
     @Version
     private Long version;
+    @Id
+    private UUID id;
 
     private UUID eventId;
     private UUID authorId;
@@ -45,5 +45,10 @@ public class Review {
 
     public void unhide() {
         this.isHidden = false;
+    }
+
+    @Override
+    public boolean isNew() {
+        return version == null;
     }
 } 
