@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("tg_outbox_messages")
-public class TelegramOutboxMessage {
+public class TelegramOutboxMessage implements Persistable<Long> {
     @Version
     private Long version;
     @Id
@@ -33,5 +34,10 @@ public class TelegramOutboxMessage {
 
     public void markProcessed() {
         this.processed = true;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.id == null;
     }
 }

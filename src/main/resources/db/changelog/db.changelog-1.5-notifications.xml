@@ -10,6 +10,9 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="user_id" type="UUID">
                 <constraints nullable="false" foreignKeyName="fk_notifications_user" references="users(id)"/>
             </column>

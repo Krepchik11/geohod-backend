@@ -10,6 +10,9 @@
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="event_id" type="UUID">
                 <constraints nullable="false" foreignKeyName="fk_reviews_event" references="events(id)"/>
             </column>

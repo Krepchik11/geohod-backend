@@ -10,6 +10,9 @@
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="user_id" type="UUID">
                 <constraints nullable="false" unique="true" foreignKeyName="fk_user_ratings_user" references="users(id)"/>
             </column>

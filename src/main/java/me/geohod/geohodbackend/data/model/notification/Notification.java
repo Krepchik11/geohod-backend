@@ -7,6 +7,7 @@ import lombok.Setter;
 import me.geohod.geohodbackend.service.notification.NotificationType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -16,7 +17,9 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("notifications")
-public class Notification {
+public class Notification implements Persistable<Long> {
+    @Version
+    private Long version;
     @Id
     private Long id;
 
@@ -36,5 +39,10 @@ public class Notification {
 
     public void dismiss() {
         this.isRead = true;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.id == null;
     }
 } 

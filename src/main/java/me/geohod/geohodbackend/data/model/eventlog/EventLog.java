@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -15,12 +16,11 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Table("event_logs")
-public class EventLog {
-    @Id
-    private UUID id;
-
+public class EventLog implements Persistable<UUID> {
     @Version
     private Long version;
+    @Id
+    private UUID id;
     
     private UUID eventId;
     private EventType type;
@@ -33,5 +33,10 @@ public class EventLog {
         this.type = type;
         this.payload = payload;
         this.createdAt = Instant.now();
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.version == null;
     }
 } 
