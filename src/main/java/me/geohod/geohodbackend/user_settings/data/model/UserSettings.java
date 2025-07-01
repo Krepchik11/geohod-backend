@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter
 @NoArgsConstructor
 @Table("user_settings")
 public class UserSettings implements Persistable<UUID> {
@@ -21,6 +21,7 @@ public class UserSettings implements Persistable<UUID> {
     private Long version;
     @Id
     private UUID id;
+    private UUID userId;
     private String defaultDonationAmount;
     private Integer defaultMaxParticipants;
     private Instant createdAt;
