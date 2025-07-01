@@ -50,14 +50,14 @@
   - **User Instructions**: Ensure that the `GlobalMapperConfig.class` exists in your project. If it doesn't, you might need to create a simple placeholder or remove the `config` attribute from the `@Mapper` annotation initially.
 
 ## Service Layer Implementation
-- [ ] Step 7: Implement IUserSettingsService Interface
+- [x] Step 7: Implement IUserSettingsService Interface
   - **Task**: Create the `IUserSettingsService.java` interface. This interface will define the contract for the user settings business logic. It should declare two methods: `UserSettingsResponse getUserSettings(UUID userId)` to retrieve a user's settings, and `UserSettingsResponse updateUserSettings(UUID userId, UserSettingsRequest userSettingsRequest)` to create or update a user's settings.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/service/IUserSettingsService.java`: New file for the UserSettings service interface.
   - **Step Dependencies**: Step 1, Step 4, Step 5
   - **User Instructions**: No specific user action is required for this step.
 
-- [ ] Step 8: Implement UserSettingsServiceImpl
+- [x] Step 8: Implement UserSettingsServiceImpl
   - **Task**: Create the `UserSettingsServiceImpl.java` class, which will implement the `IUserSettingsService` interface. Use constructor injection for `UserSettingsRepository` and `UserSettingsMapper`.
     - For `getUserSettings(UUID userId)`: Fetch `UserSettings` from the repository by `userId`. If settings are not found, return a `UserSettingsResponse` with `null` values for donation and participants. Otherwise, map the found entity to `UserSettingsResponse`.
     - For `updateUserSettings(UUID userId, UserSettingsRequest userSettingsRequest)`: Check if `UserSettings` already exist for the user. If they do, update the existing entity with values from `userSettingsRequest`. If not, create a new `UserSettings` entity with the provided `userId` and request values. Save the entity using the repository and then map the saved entity to `UserSettingsResponse` before returning.
@@ -67,7 +67,7 @@
   - **User Instructions**: No specific user action is required for this step.
 
 ## API Layer Implementation - Controller
-- [ ] Step 9: Implement UserSettingsController
+- [x] Step 9: Implement UserSettingsController
   - **Task**: Create the `UserSettingsController.java` class. This will be a Spring `@RestController` handling API requests for user settings, annotated with `@RequestMapping("/api/user-settings")`. Implement constructor injection for `IUserSettingsService`.
     - For the GET endpoint (`GET /api/user-settings`): Define a method `public ResponseEntity<UserSettingsResponse> getUserSettings(@AuthenticationPrincipal TelegramPrincipal principal)`. Retrieve the authenticated user's ID from the `TelegramPrincipal`, call `IUserSettingsService.getUserSettings(userId)`, and return the `UserSettingsResponse` with HTTP status 200 OK.
     - For the PUT endpoint (`PUT /api/user-settings`): Define a method `public ResponseEntity<UserSettingsResponse> updateUserSettings(@AuthenticationPrincipal TelegramPrincipal principal, @RequestBody UserSettingsRequest request)`. Retrieve the authenticated user's ID, accept `UserSettingsRequest` as `@RequestBody`, call `IUserSettingsService.updateUserSettings(userId, request)`, and return the updated `UserSettingsResponse` with HTTP status 200 OK.
