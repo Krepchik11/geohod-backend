@@ -66,13 +66,13 @@ public class InAppNotificationProcessor {
                 return;
             }
 
-            Collection<UUID> recipients = getRecipients(event, type, eventLog.getPayload());
+            Collection<UUID> recipients = getRecipients(event, type, eventLog.getPayload().value());
             
             for (UUID userId : recipients) {
                 NotificationCreateDto request = new NotificationCreateDto(
                     userId,
                     type,
-                    eventLog.getPayload()
+                    eventLog.getPayload().value()
                 );
                 appNotificationService.createNotification(request);
             }

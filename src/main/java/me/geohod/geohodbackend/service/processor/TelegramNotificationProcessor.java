@@ -52,9 +52,9 @@ public class TelegramNotificationProcessor {
                 if (type == null) return;
 
                 EventContext context = new EventContext(event, userService.getUser(event.getAuthorId()));
-                NotificationParams params = createParams(type, event.getId(), log.getPayload());
+                NotificationParams params = createParams(type, event.getId(), log.getPayload().value());
                 String message = type.formatMessage(context, params);
-                Collection<UUID> recipients = getRecipients(event, type, log.getPayload());
+                Collection<UUID> recipients = getRecipients(event, type, log.getPayload().value());
 
                 recipients.forEach(userId -> telegramOutboxMessagePublisher.publish(userId, message));
             });

@@ -24,10 +24,18 @@ public class EventLog implements Persistable<UUID> {
     
     private UUID eventId;
     private EventType type;
-    private String payload;
+    private JsonbString payload;
     private Instant createdAt;
 
     public EventLog(UUID eventId, EventType type, String payload) {
+        this.id = UUID.randomUUID();
+        this.eventId = eventId;
+        this.type = type;
+        this.payload = new JsonbString(payload);
+        this.createdAt = Instant.now();
+    }
+
+    public EventLog(UUID eventId, EventType type, JsonbString payload) {
         this.id = UUID.randomUUID();
         this.eventId = eventId;
         this.type = type;
