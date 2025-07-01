@@ -77,7 +77,7 @@
   - **User Instructions**: Ensure that the `TelegramPrincipal` class is correctly defined and accessible in your project for `@AuthenticationPrincipal` to function as intended.
 
 ## Security Configuration Update
-- [ ] Step 10: Update SecurityConfig.java
+- [x] Step 10: Update SecurityConfig.java
   - **Task**: Modify the existing `SecurityConfig.java` file (located in `src/main/java/me/geohod/geohodbackend/config/`) to protect the new `/api/user-settings` endpoint. This involves adding a rule to the security configuration that requires authentication for all requests to this path using `requestMatchers("/api/user-settings").authenticated()`.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/config/SecurityConfig.java`: Modify existing file to add new security rules.
@@ -85,7 +85,7 @@
   - **User Instructions**: Verify the exact location and structure of your `SecurityConfig.java` to ensure the new rule is added correctly within the existing security chain.
 
 ## Testing
-- [ ] Step 11: Implement UserSettingsServiceTest
+- [x] Step 11: Implement UserSettingsServiceTest
   - **Task**: Create `UserSettingsServiceTest.java` in `src/test/java/me/geohod/geohodbackend/user_settings/service/`. This unit test class will use `@ExtendWith(MockitoExtension.class)` to mock `UserSettingsRepository` and `UserSettingsMapper`. Write comprehensive test cases to verify the business logic of `UserSettingsServiceImpl`, including:
     - Correct retrieval and mapping when user settings exist.
     - Returning `null` values in the DTO when settings do not exist for a user.
@@ -97,7 +97,7 @@
   - **Step Dependencies**: Step 8
   - **User Instructions**: No specific user action is required for this step.
 
-- [ ] Step 12: Implement UserSettingsControllerTest
+- [x] Step 12: Implement UserSettingsControllerTest
   - **Task**: Create `UserSettingsControllerTest.java` in `src/test/java/me/geohod/geohodbackend/user_settings/api/`. This test class will use Spring MockMvc to test the API endpoints. Mock the `IUserSettingsService` dependency. Write test cases for:
     - Verifying that a GET request to `/api/user-settings` returns HTTP status 200 OK with the correct `UserSettingsResponse` for an authenticated user.
     - Verifying that a PUT request to `/api/user-settings` returns HTTP status 200 OK with the updated `UserSettingsResponse` and that the service method is called with the correct arguments for an authenticated user.
@@ -108,7 +108,7 @@
   - **User Instructions**: No specific user action is required for this step.
 
 ## Database Migration
-- [ ] Step 13: Create Database Migration Script
+- [x] Step 13: Create Database Migration Script
   - **Task**: Create a new database migration script (e.g., using Flyway or Liquibase). For Flyway, the filename should follow the convention `V<timestamp>__create_user_settings_table.sql` and be placed in `src/main/resources/db/migration/`. The script should define the `CREATE TABLE user_settings` statement with the following columns: `user_id` UUID PRIMARY KEY REFERENCES `users(id)`, `default_donation_amount` VARCHAR(255) NULL, and `default_max_participants` INTEGER NULL.
   - **Files**:
     - `src/main/resources/db/migration/V<timestamp>__create_user_settings_table.sql`: New file for database migration. (Replace `<timestamp>` with an appropriate timestamp).
