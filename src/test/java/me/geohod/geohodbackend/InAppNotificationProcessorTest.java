@@ -61,7 +61,7 @@ public class InAppNotificationProcessorTest {
         EventLog log = mock(EventLog.class);
         when(log.getEventId()).thenReturn(eventId);
         when(log.getType()).thenReturn(me.geohod.geohodbackend.data.model.eventlog.EventType.EVENT_CREATED);
-        when(log.getPayload()).thenReturn("payload");
+        when(log.getPayload()).thenReturn(new me.geohod.geohodbackend.data.model.eventlog.JsonbString("payload"));
         when(log.getId()).thenReturn(logId);
         
         Event event = mock(Event.class);
@@ -90,7 +90,7 @@ public class InAppNotificationProcessorTest {
         EventLog log = mock(EventLog.class);
         when(log.getEventId()).thenReturn(eventId);
         when(log.getType()).thenReturn(me.geohod.geohodbackend.data.model.eventlog.EventType.EVENT_REGISTERED);
-        when(log.getPayload()).thenReturn("{\"userId\": \"" + participantId + "\"}");
+        when(log.getPayload()).thenReturn(new me.geohod.geohodbackend.data.model.eventlog.JsonbString("{\"userId\": \"" + participantId + "\"}"));
         when(log.getId()).thenReturn(logId);
         
         Event event = mock(Event.class);
@@ -118,7 +118,7 @@ public class InAppNotificationProcessorTest {
         EventLog log = mock(EventLog.class);
         when(log.getEventId()).thenReturn(eventId);
         when(log.getType()).thenReturn(me.geohod.geohodbackend.data.model.eventlog.EventType.EVENT_CANCELED);
-        when(log.getPayload()).thenReturn("payload");
+        when(log.getPayload()).thenReturn(new me.geohod.geohodbackend.data.model.eventlog.JsonbString("payload"));
         when(log.getId()).thenReturn(logId);
         
         Event event = mock(Event.class);
