@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="1.6-create-user-settings-table" author="ai">
+        <createTable tableName="user_settings">
+            <column name="user_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="default_donation_amount" type="VARCHAR(255)"/>
+            <column name="default_max_participants" type="INTEGER"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="user_settings"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_user_settings_user_id"/>
+    </changeSet>
+
+</databaseChangeLog> 

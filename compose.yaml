@@ -1,4 +1,17 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    environment:
+      - 'SPRING_PROFILES_ACTIVE=dev'
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/geohod'
+      - 'SPRING_DATASOURCE_USERNAME=geohod'
+      - 'SPRING_DATASOURCE_PASSWORD=secret'
   postgres:
     image: 'postgres:latest'
     environment:
