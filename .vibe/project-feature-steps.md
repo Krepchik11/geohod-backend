@@ -1,7 +1,7 @@
 # Implementation Plan
 
 ## Project Setup and Core Data Model
-- [ ] Step 1: Create Base Package Structure
+- [x] Step 1: Create Base Package Structure
   - **Task**: Create the necessary directory structure for the new `user_settings` feature within `src/main/java/me/geohod/geohodbackend/`. This includes `user_settings/api`, `user_settings/api/dto`, `user_settings/data/model`, `user_settings/data/repository`, `user_settings/service`, and `user_settings/mapper`. This step sets up the modular organization for the new feature's components.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/api/` (directory)
@@ -13,14 +13,14 @@
   - **Step Dependencies**: None
   - **User Instructions**: No specific user action is required for this step.
 
-- [ ] Step 2: Implement UserSettings Entity
+- [x] Step 2: Implement UserSettings Entity
   - **Task**: Create the `UserSettings.java` class. This class will serve as the Spring Data JDBC entity for the `user_settings` table, defining fields for `user_id` (UUID), `default_donation_amount` (String, nullable), and `default_max_participants` (Integer, nullable). Ensure appropriate Spring Data JDBC annotations (e.g., `@Table`, `@Id`) are used, along with constructors (all-args, no-args), getters, setters, `equals()`, `hashCode()`, and `toString()` methods.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/data/model/UserSettings.java`: New file for the UserSettings entity.
   - **Step Dependencies**: Step 1
   - **User Instructions**: No specific user action is required for this step.
 
-- [ ] Step 3: Implement UserSettingsRepository
+- [x] Step 3: Implement UserSettingsRepository
   - **Task**: Create the `UserSettingsRepository.java` interface. This interface will extend `org.springframework.data.repository.CrudRepository<UserSettings, UUID>` to provide basic CRUD operations for the `UserSettings` entity. Additionally, define a custom method `Optional<UserSettings> findByUserId(UUID userId)` to allow retrieval of user settings by their unique user ID.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/data/repository/UserSettingsRepository.java`: New file for the UserSettings repository.
@@ -28,21 +28,21 @@
   - **User Instructions**: No specific user action is required for this step.
 
 ## API Layer Implementation - DTOs and Mapper
-- [ ] Step 4: Create UserSettingsRequest DTO
+- [x] Step 4: Create UserSettingsRequest DTO
   - **Task**: Create the `UserSettingsRequest.java` as a Java record in the DTO package. This record will define the structure for incoming PUT requests to update user settings, including fields for `defaultDonationAmount` (String) and `defaultMaxParticipants` (Integer). These fields should be nullable to support the initial empty state and partial updates.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/api/dto/UserSettingsRequest.java`: New file for the UserSettingsRequest DTO.
   - **Step Dependencies**: Step 1
   - **User Instructions**: No specific user action is required for this step.
 
-- [ ] Step 5: Create UserSettingsResponse DTO
+- [x] Step 5: Create UserSettingsResponse DTO
   - **Task**: Create the `UserSettingsResponse.java` as a Java record in the DTO package. This record will define the structure for responses from GET and PUT API calls related to user settings, including fields for `defaultDonationAmount` (String) and `defaultMaxParticipants` (Integer).
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/api/dto/UserSettingsResponse.java`: New file for the UserSettingsResponse DTO.
   - **Step Dependencies**: Step 1
   - **User Instructions**: No specific user action is required for this step.
 
-- [ ] Step 6: Implement UserSettingsMapper
+- [x] Step 6: Implement UserSettingsMapper
   - **Task**: Create the `UserSettingsMapper.java` interface. This will be a MapStruct mapper responsible for converting between the `UserSettings` entity and the `UserSettingsResponse` DTO. Annotate the interface with `@Mapper(config = GlobalMapperConfig.class)` (assuming `GlobalMapperConfig` exists for shared MapStruct configurations) and include a method `UserSettingsResponse toResponse(UserSettings userSettings)`.
   - **Files**:
     - `src/main/java/me/geohod/geohodbackend/user_settings/mapper/UserSettingsMapper.java`: New file for the UserSettings MapStruct mapper.
