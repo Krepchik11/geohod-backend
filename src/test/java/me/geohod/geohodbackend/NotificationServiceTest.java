@@ -6,6 +6,7 @@ import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
 import me.geohod.geohodbackend.service.impl.AppNotificationServiceImpl;
 import me.geohod.geohodbackend.service.notification.NotificationType;
+import me.geohod.geohodbackend.data.model.eventlog.JsonbString;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ public class NotificationServiceTest {
     @Test
     void testFetchNotifications() {
         UUID userId = UUID.randomUUID();
-        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
+        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, new JsonbString("payload"));
         NotificationDto notificationDto = new NotificationDto(1L, NotificationType.EVENT_CREATED, "payload", false, null);
         
         when(notificationRepository.findByUserIdAndIsReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
@@ -55,7 +56,7 @@ public class NotificationServiceTest {
     void testDismiss() {
         Long notificationId = 1L;
         UUID userId = UUID.randomUUID();
-        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, "payload");
+        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, new JsonbString("payload"));
         when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
         notificationService.dismiss(notificationId, userId);
