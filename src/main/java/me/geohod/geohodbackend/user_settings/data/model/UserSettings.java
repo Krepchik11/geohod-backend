@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Table("user_settings")
 public class UserSettings implements Persistable<UUID> {
     @Version
@@ -24,6 +23,11 @@ public class UserSettings implements Persistable<UUID> {
     private Integer defaultMaxParticipants;
     private Instant createdAt;
     private Instant updatedAt;
+
+    public UserSettings() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
 
     public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants) {
         this.userId = userId;
