@@ -12,6 +12,15 @@
             </column>
             <column name="default_donation_amount" type="VARCHAR(255)"/>
             <column name="default_max_participants" type="INTEGER"/>
+            <column name="version" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <addForeignKeyConstraint baseTableName="user_settings"
                                  baseColumnNames="user_id"
