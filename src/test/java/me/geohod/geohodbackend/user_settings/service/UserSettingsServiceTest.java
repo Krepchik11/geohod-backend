@@ -33,8 +33,7 @@ class UserSettingsServiceTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        entity = new UserSettings("10", 5);
-        entity.setId(userId);
+        entity = new UserSettings(userId, "10", 5);
         dto = new UserSettingsDto("10", 5);
     }
 
@@ -77,8 +76,7 @@ class UserSettingsServiceTest {
     @Test
     void updateUserSettings_handlesNulls() {
         UserSettingsDto input = new UserSettingsDto(null, null);
-        UserSettings entityWithNulls = new UserSettings(null, null);
-        entityWithNulls.setId(userId);
+        UserSettings entityWithNulls = new UserSettings(userId, null, null);
         when(repository.findByUserId(userId)).thenReturn(Optional.empty());
         when(mapper.toEntity(input)).thenReturn(entityWithNulls);
         when(repository.save(any(UserSettings.class))).thenReturn(entityWithNulls);
