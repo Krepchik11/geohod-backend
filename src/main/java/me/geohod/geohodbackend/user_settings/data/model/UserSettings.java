@@ -1,6 +1,5 @@
 package me.geohod.geohodbackend.user_settings.data.model;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,15 +19,14 @@ public class UserSettings implements Persistable<UUID> {
     @Version
     private Long version;
     @Id
-    private UUID id;
     private UUID userId;
     private String defaultDonationAmount;
     private Integer defaultMaxParticipants;
     private Instant createdAt;
     private Instant updatedAt;
 
-    public UserSettings(String defaultDonationAmount, Integer defaultMaxParticipants) {
-        this.id = UUID.randomUUID();
+    public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants) {
+        this.userId = userId;
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
         this.createdAt = Instant.now();
@@ -39,6 +37,11 @@ public class UserSettings implements Persistable<UUID> {
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
         this.updatedAt = Instant.now();
+    }
+
+    @Override
+    public UUID getId() {
+        return this.userId;
     }
 
     @Override

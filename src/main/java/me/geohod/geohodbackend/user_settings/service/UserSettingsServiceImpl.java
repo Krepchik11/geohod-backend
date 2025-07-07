@@ -32,7 +32,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         Optional<UserSettings> settingsOpt = userSettingsRepository.findByUserId(userId);
         UserSettings settings = settingsOpt.orElseGet(() -> {
             UserSettings newSettings = userSettingsMapper.toEntity(userSettingsDto);
-            newSettings.setId(userId);
+            newSettings.setUserId(userId);
             return newSettings;
         });
         settings.updateSettings(userSettingsDto.defaultDonationAmount(), userSettingsDto.defaultMaxParticipants());
