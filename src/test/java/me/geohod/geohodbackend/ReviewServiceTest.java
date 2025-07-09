@@ -35,15 +35,13 @@ public class ReviewServiceTest {
     @Mock
     private EventRepository eventRepository;
     @Mock
-    private UserRepository userRepository;
-    @Mock
     private IUserRatingService userRatingService;
     private ReviewServiceImpl reviewService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        reviewService = new ReviewServiceImpl(reviewRepository, eventRepository, userRepository, userRatingService);
+        reviewService = new ReviewServiceImpl(reviewRepository, eventRepository, userRatingService);
     }
 
     @Test
@@ -122,28 +120,55 @@ public class ReviewServiceTest {
     }
 
     @Test
-    void testGetReviewsWithAuthorForUser() {
+    void testGetReviewsWithAuthorForUser_OwnReviews_ShowHidden() {
         UUID userId = UUID.randomUUID();
-        UUID authorId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
-        
-        Review review = new Review(UUID.randomUUID(), authorId, 5, "Great event!");
-        List<Review> reviews = List.of(review);
-        
-        User author = new User("tg123", "testuser", "Test", "User", "image.jpg");
-        
-        when(reviewRepository.findByEventAuthorIdWithPaging(userId, 10, 0)).thenReturn(reviews);
-        when(reviewRepository.countByEventAuthorId(userId)).thenReturn(1L);
-        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
-        
-        Page<ReviewWithAuthorDto> result = reviewService.getReviewsWithAuthorForUser(userId, pageable);
-        
+        ReviewRepository.ReviewWithAuthorProjection projection = mock(ReviewRepository.ReviewWithAuthorProjection.class);
+        when(projection.getId()).thenReturn(UUID.randomUUID());
+        when(projection.getEventId()).thenReturn(UUID.randomUUID());
+        when(projection.getAuthorId()).thenReturn(UUID.randomUUID());
+        when(projection.getAuthorUsername()).thenReturn("testuser");
+        when(projection.getAuthorImageUrl()).thenReturn("image.jpg");
+        when(projection.getRating()).thenReturn(5);
+        when(projection.getComment()).thenReturn("Great event!");
+        when(projection.getIsHidden()).thenReturn(true);
+        when(projection.getCreatedAt()).thenReturn(Instant.now());
+        List<ReviewRepository.ReviewWithAuthorProjection> projections = List.of(projection);
+        when(reviewRepository.findReviewsWithAuthorForUser(userId, true, 10, 0)).thenReturn(projections);
+        when(reviewRepository.countReviewsWithAuthorForUser(userId, true)).thenReturn(1L);
+
+        Page<ReviewWithAuthorDto> result = reviewService.getReviewsWithAuthorForUser(userId, userId, pageable);
         assertEquals(1, result.getContent().size());
-        assertEquals(author.getTgUsername(), result.getContent().get(0).authorUsername());
-        assertEquals(author.getTgImageUrl(), result.getContent().get(0).authorImageUrl());
-        assertEquals(1L, result.getTotalElements());
-        verify(reviewRepository).findByEventAuthorIdWithPaging(userId, 10, 0);
-        verify(reviewRepository).countByEventAuthorId(userId);
-        verify(userRepository).findById(authorId);
+        assertEquals("testuser", result.getContent().get(0).authorUsername());
+        assertTrue(result.getContent().get(0).isHidden());
+        verify(reviewRepository).findReviewsWithAuthorForUser(userId, true, 10, 0);
+        verify(reviewRepository).countReviewsWithAuthorForUser(userId, true);
+    }
+
+    @Test
+    void testGetReviewsWithAuthorForUser_OtherUser_OnlyUnhidden() {
+        UUID userId = UUID.randomUUID();
+        UUID requestingUserId = UUID.randomUUID();
+        Pageable pageable = PageRequest.of(0, 10);
+        ReviewRepository.ReviewWithAuthorProjection projection = mock(ReviewRepository.ReviewWithAuthorProjection.class);
+        when(projection.getId()).thenReturn(UUID.randomUUID());
+        when(projection.getEventId()).thenReturn(UUID.randomUUID());
+        when(projection.getAuthorId()).thenReturn(UUID.randomUUID());
+        when(projection.getAuthorUsername()).thenReturn("testuser");
+        when(projection.getAuthorImageUrl()).thenReturn("image.jpg");
+        when(projection.getRating()).thenReturn(5);
+        when(projection.getComment()).thenReturn("Great event!");
+        when(projection.getIsHidden()).thenReturn(false);
+        when(projection.getCreatedAt()).thenReturn(Instant.now());
+        List<ReviewRepository.ReviewWithAuthorProjection> projections = List.of(projection);
+        when(reviewRepository.findReviewsWithAuthorForUser(userId, false, 10, 0)).thenReturn(projections);
+        when(reviewRepository.countReviewsWithAuthorForUser(userId, false)).thenReturn(1L);
+
+        Page<ReviewWithAuthorDto> result = reviewService.getReviewsWithAuthorForUser(userId, requestingUserId, pageable);
+        assertEquals(1, result.getContent().size());
+        assertEquals("testuser", result.getContent().get(0).authorUsername());
+        assertFalse(result.getContent().get(0).isHidden());
+        verify(reviewRepository).findReviewsWithAuthorForUser(userId, false, 10, 0);
+        verify(reviewRepository).countReviewsWithAuthorForUser(userId, false);
     }
 } 

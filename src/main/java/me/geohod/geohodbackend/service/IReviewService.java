@@ -13,5 +13,5 @@ public interface IReviewService {
     void hideReview(UUID reviewId, UUID userId);
     void unhideReview(UUID reviewId, UUID userId);
     Page<Review> getReviewsForUser(UUID userId, Pageable pageable);
-    Page<ReviewWithAuthorDto> getReviewsWithAuthorForUser(UUID userId, Pageable pageable);
+    Page<ReviewWithAuthorDto> getReviewsWithAuthorForUser(UUID userId, UUID requestingUserId, Pageable pageable);
 } 

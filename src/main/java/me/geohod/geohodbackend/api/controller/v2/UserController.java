@@ -20,6 +20,8 @@ import me.geohod.geohodbackend.api.mapper.UserApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.dto.UserDto;
 import me.geohod.geohodbackend.data.dto.UserRatingDto;
+import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
 import me.geohod.geohodbackend.service.IUserService;
@@ -43,11 +45,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}/reviews")
-    public ApiResponse<List<ReviewResponse>> getUserReviews(@PathVariable UUID id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<List<ReviewResponse>> getUserReviews(@PathVariable UUID id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @AuthenticationPrincipal TelegramPrincipal principal) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ReviewResponse> reviewsPage = reviewService.getReviewsWithAuthorForUser(id, pageable)
+        Page<ReviewResponse> reviewsPage = reviewService.getReviewsWithAuthorForUser(id, principal.userId(), pageable)
                 .map(reviewApiMapper::map);
-        
         return ApiResponse.success(reviewsPage.getContent());
     }
 
