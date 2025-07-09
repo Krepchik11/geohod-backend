@@ -43,4 +43,44 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
         BigDecimal getAverageRating();
         Long getTotalCount();
     }
+
+    // Projection for review with author info
+    interface ReviewWithAuthorProjection {
+        UUID getId();
+        UUID getEventId();
+        UUID getAuthorId();
+        String getAuthorUsername();
+        String getAuthorImageUrl();
+        int getRating();
+        String getComment();
+        boolean getIsHidden();
+        java.time.Instant getCreatedAt();
+    }
+
+    /**
+     * Fetch reviews for a user (event author) with author info, optionally filtering hidden reviews.
+     * @param userId event author id
+     * @param showHidden if true, include hidden reviews; else only unhidden
+     * @param limit page size
+     * @param offset page offset
+     * @return list of projections
+     */
+    @Query("SELECT r.id, r.event_id, r.author_id, u.tg_username AS author_username, u.tg_image_url AS author_image_url, r.rating, r.comment, r.is_hidden, r.created_at " +
+           "FROM reviews r " +
+           "JOIN events e ON r.event_id = e.id " +
+           "JOIN users u ON r.author_id = u.id " +
+           "WHERE e.author_id = :userId " +
+           "AND (:showHidden = true OR r.is_hidden = false) " +
+           "ORDER BY r.created_at DESC " +
+           "LIMIT :limit OFFSET :offset")
+    List<ReviewWithAuthorProjection> findReviewsWithAuthorForUser(UUID userId, boolean showHidden, int limit, int offset);
+
+    /**
+     * Count reviews for a user (event author) with optional hidden filtering.
+     */
+    @Query("SELECT COUNT(*) FROM reviews r " +
+           "JOIN events e ON r.event_id = e.id " +
+           "WHERE e.author_id = :userId " +
+           "AND (:showHidden = true OR r.is_hidden = false)")
+    long countReviewsWithAuthorForUser(UUID userId, boolean showHidden);
 } 

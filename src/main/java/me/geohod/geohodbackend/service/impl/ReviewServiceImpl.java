@@ -6,9 +6,7 @@ import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
 import me.geohod.geohodbackend.data.model.review.Review;
 import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.data.model.repository.UserRepository;
 import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
 import org.springframework.data.domain.Page;
@@ -19,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +24,6 @@ public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
     private final IUserRatingService userRatingService;
 
     @Override
@@ -84,20 +80,28 @@ public class ReviewServiceImpl implements IReviewService {
     }
 
     @Override
-    public Page<ReviewWithAuthorDto> getReviewsWithAuthorForUser(UUID userId, Pageable pageable) {
+    public Page<ReviewWithAuthorDto> getReviewsWithAuthorForUser(UUID userId, UUID requestingUserId, Pageable pageable) {
         int limit = pageable.getPageSize();
         int offset = (int) pageable.getOffset();
-        
-        List<Review> reviews = reviewRepository.findByEventAuthorIdWithPaging(userId, limit, offset);
-        long totalElements = reviewRepository.countByEventAuthorId(userId);
-        
-        List<ReviewWithAuthorDto> reviewsWithAuthor = reviews.stream()
-                .map(review -> {
-                    User author = userRepository.findById(review.getAuthorId()).orElse(null);
-                    return ReviewWithAuthorDto.from(review, author);
-                })
-                .collect(Collectors.toList());
-        
+        boolean showHidden = userId.equals(requestingUserId);
+
+        List<ReviewRepository.ReviewWithAuthorProjection> projections = reviewRepository.findReviewsWithAuthorForUser(userId, showHidden, limit, offset);
+        long totalElements = reviewRepository.countReviewsWithAuthorForUser(userId, showHidden);
+
+        List<ReviewWithAuthorDto> reviewsWithAuthor = projections.stream()
+                .map(p -> new ReviewWithAuthorDto(
+                        p.getId(),
+                        p.getEventId(),
+                        p.getAuthorId(),
+                        p.getAuthorUsername(),
+                        p.getAuthorImageUrl(),
+                        p.getRating(),
+                        p.getComment(),
+                        p.getIsHidden(),
+                        p.getCreatedAt()
+                ))
+                .toList();
+
         return new PageImpl<>(reviewsWithAuthor, pageable, totalElements);
     }
 } 
