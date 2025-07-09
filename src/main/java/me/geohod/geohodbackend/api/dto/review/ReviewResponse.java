@@ -11,6 +11,7 @@ public record ReviewResponse(
         String authorImageUrl,
         int rating,
         String comment,
+        Boolean isHidden,
         Instant createdAt
 ) {
 } 
