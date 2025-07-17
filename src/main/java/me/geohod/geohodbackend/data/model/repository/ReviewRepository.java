@@ -1,6 +1,10 @@
 package me.geohod.geohodbackend.data.model.repository;
 
-import me.geohod.geohodbackend.data.model.review.Review;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -8,16 +12,15 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import me.geohod.geohodbackend.data.model.review.Review;
 
 @Repository
 public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAndSortingRepository<Review, UUID> {
     Optional<Review> findByIdAndAuthorId(UUID eventId, UUID authorId);
     List<Review> findByEventId(UUID eventId);
     Page<Review> findByEventId(UUID eventId, Pageable pageable);
+    
+    Optional<Review> findByEventIdAndAuthorId(UUID eventId, UUID authorId);
     
     @Query("SELECT r.* FROM reviews r " +
            "JOIN events e ON r.event_id = e.id " +
@@ -83,4 +86,4 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
            "WHERE e.author_id = :userId " +
            "AND (:showHidden = true OR r.is_hidden = false)")
     long countReviewsWithAuthorForUser(UUID userId, boolean showHidden);
-} 
+}

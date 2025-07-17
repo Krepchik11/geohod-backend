@@ -21,13 +21,14 @@ Based on the initial analysis of the codebase and `README.md`, the following cor
 
 ## Current Status
 
-*   **Memory Bank Updated:** Successfully updated the Memory Bank to reflect the completion of the keyset pagination fix for the notification processors.
+*   **Memory Bank Updated:** Successfully updated the Memory Bank to reflect the completion of the keyset pagination fix for the notification processors and the review system enhancements.
 *   **Bug Fix Completed:** Successfully resolved the critical bug where in-app and Telegram-bot notifications were not being delivered due to flawed `UUID` ordering in event log processing.
 *   **Keyset Pagination Implemented:** Replaced the non-sequential `UUID` cursor with a composite `(createdAt, id)` cursor for reliable event log processing.
 *   **Database Migration:** Added Liquibase migration `db.changelog-1.7-keyset-pagination-fix.xml` to support the new cursor structure.
 *   **Code Changes:** Updated `EventLogServiceImpl`, `NotificationProcessorProgressServiceImpl`, `InAppNotificationProcessor`, `TelegramNotificationProcessor`, and corresponding tests to use the new cursor logic.
 *   **Build Status:** All compilation errors have been resolved.
+*   **Review System Enhancements**: Implemented one-to-one user-to-event reviews and provided an API endpoint to retrieve a user's existing review for an event.
 
 ## Known Issues & Blockers
 
-*   **No Known Issues:** The keyset pagination fix has been successfully implemented and tested. No known issues or blockers remain for this specific bug.
+*   **No Known Issues:** The keyset pagination fix and review system enhancements have been successfully implemented and tested. No known issues or blockers remain.

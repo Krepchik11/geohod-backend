@@ -1,22 +1,24 @@
 package me.geohod.geohodbackend.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
-import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
-import me.geohod.geohodbackend.data.model.review.Review;
-import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
-import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.service.IReviewService;
-import me.geohod.geohodbackend.service.IUserRatingService;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
+import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
+import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
+import me.geohod.geohodbackend.data.model.review.Review;
+import me.geohod.geohodbackend.service.IReviewService;
+import me.geohod.geohodbackend.service.IUserRatingService;
 
 @Service
 @RequiredArgsConstructor
@@ -33,12 +35,24 @@ public class ReviewServiceImpl implements IReviewService {
         Event event = eventRepository.findById(request.eventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found: " + request.eventId()));
         
-        Review review = new Review(
-                request.eventId(),
-                authorId,
-                request.rating(),
-                request.comment()
-        );
+        // Check if review already exists for this user and event
+        Optional<Review> existingReview = reviewRepository.findByEventIdAndAuthorId(request.eventId(), authorId);
+        
+        Review review;
+        if (existingReview.isPresent()) {
+            // Update existing review
+            review = existingReview.get();
+            review.setRating(request.rating());
+            review.setComment(request.comment());
+        } else {
+            // Create new review
+            review = new Review(
+                    request.eventId(),
+                    authorId,
+                    request.rating(),
+                    request.comment()
+            );
+        }
         
         Review savedReview = reviewRepository.save(review);
         
@@ -104,4 +118,9 @@ public class ReviewServiceImpl implements IReviewService {
 
         return new PageImpl<>(reviewsWithAuthor, pageable, totalElements);
     }
-} 
+
+    @Override
+    public Optional<Review> getUserReviewForEvent(UUID userId, UUID eventId) {
+        return reviewRepository.findByEventIdAndAuthorId(eventId, userId);
+    }
+}

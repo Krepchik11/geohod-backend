@@ -1,22 +1,21 @@
-# Active Context: Initial Project Analysis
+# Active Context: Review System Enhancements
 
 ## Current Focus
 
-The current task is to populate the Memory Bank for the Geohod backend project. This involves analyzing the existing codebase to create a set of core documentation files that will guide future development.
+The current focus was on enhancing the review system to enforce one-to-one user-to-event reviews and provide an API endpoint to retrieve a user's existing review for an event.
 
 ## Recent Changes
 
-*   Initialized the Memory Bank by creating the following files:
-    *   `projectBrief.md`: High-level project overview.
-    *   `productContext.md`: The "why" behind the project.
-    *   `techContext.md`: The technology stack and technical details.
-    *   `systemPatterns.md`: The application's architecture and design patterns.
+*   Implemented a database unique constraint to prevent duplicate reviews.
+*   Updated the `submitReview` method in `ReviewServiceImpl` to implement upsert logic.
+*   Added a new API endpoint `GET /api/v2/reviews/event/{eventId}/my-review` in `ReviewController`.
+*   Implemented the `getUserReviewForEvent` method in `ReviewServiceImpl`.
+*   The keyset pagination fix has been successfully implemented and tested.
 
 ## Next Steps
 
-1.  Create the `progress.md` file to document the current state of the project from a development perspective.
-2.  Review the newly created Memory Bank files for accuracy and completeness.
-3.  Begin work on any active development tasks, using the Memory Bank as a guide.
+1.  Review the newly updated Memory Bank files for accuracy and completeness.
+2.  Begin work on any active development tasks, using the Memory Bank as a guide.
 
 ## Key Learnings & Insights
 
@@ -24,3 +23,4 @@ The current task is to populate the Memory Bank for the Geohod backend project. 
 *   The reliance on Telegram for authentication is a critical and unique feature.
 *   The use of `spring-data-jdbc` over `spring-data-jpa` is a significant architectural decision, suggesting a preference for more direct SQL control.
 *   The system includes advanced patterns like the Outbox pattern for reliable notifications.
+*   The review system now enforces one-to-one user-to-event reviews and provides an API endpoint to retrieve a user's existing review for an event.
