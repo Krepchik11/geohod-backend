@@ -61,6 +61,8 @@ jobs:
 
       - name: VPS launch
         uses: appleboy/ssh-action@master
+        env:
+          GEOHOD_CREATED_EVENT_LINK_TEMPLATE: ${{ vars.GEOHOD_CREATED_EVENT_LINK_TEMPLATE }}
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
