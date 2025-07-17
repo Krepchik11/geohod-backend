@@ -68,6 +68,15 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            # --- DEBUGGING START ---
+            echo "--- SSH Script Debugging ---"
+            echo "Value of GEOHOD_CREATED_EVENT_LINK_TEMPLATE in script: '${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}'"
+            if [ -z "${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}" ]; then
+              echo "WARNING: GEOHOD_CREATED_EVENT_LINK_TEMPLATE is empty or not set in the script environment."
+            fi
+            echo "--- SSH Script Debugging End ---"
+            # --- DEBUGGING END ---
+
             docker load < /tmp/geohod-backend/image.tar
             docker stop geohod-backend || true
             docker rm geohod-backend || true
@@ -81,8 +90,10 @@ jobs:
             done
 
             if [ -n "${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}" ]; then
-                echo adding GEOHOD_CREATED_EVENT_LINK_TEMPLATE
+                echo "Adding GEOHOD_CREATED_LINK_TEMPLATE to Docker args."
                 ENV_ARGS="$ENV_ARGS -e GEOHOD_CREATED_EVENT_LINK_TEMPLATE='${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}'"
+            else
+                echo "GEOHOD_CREATED_EVENT_LINK_TEMPLATE is empty, not adding to Docker args."
             fi
 
             docker run -d --restart always \
