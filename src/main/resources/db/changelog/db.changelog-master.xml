@@ -11,4 +11,5 @@
     <include file="db.changelog-1.5-notifications.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.6-user_settings.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.7-keyset-pagination-fix.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-1.8-review-unique-constraint.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
