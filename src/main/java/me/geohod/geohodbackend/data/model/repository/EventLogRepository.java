@@ -14,7 +14,7 @@ import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 @Repository
 public interface EventLogRepository extends CrudRepository<EventLog, UUID> {
 
-    @Query("SELECT * FROM event_logs WHERE (:lastCreatedAt IS NULL OR (created_at, id) > (:lastCreatedAt, :lastId)) ORDER BY created_at ASC, id ASC LIMIT :limit")
+    @Query("SELECT * FROM event_logs WHERE (created_at, id) > (:lastCreatedAt, :lastId) ORDER BY created_at ASC, id ASC LIMIT :limit")
     List<EventLog> findUnprocessedAfter(@Param("lastCreatedAt") Instant lastCreatedAt, @Param("lastId") UUID lastId, @Param("limit") int limit);
 
     @Query("SELECT * FROM event_logs ORDER BY created_at ASC, id ASC LIMIT :limit")
