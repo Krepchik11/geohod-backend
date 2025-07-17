@@ -81,6 +81,7 @@ jobs:
             done
 
             if [ -n "${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}" ]; then
+                echo adding GEOHOD_CREATED_EVENT_LINK_TEMPLATE
                 ENV_ARGS="$ENV_ARGS -e GEOHOD_CREATED_EVENT_LINK_TEMPLATE='${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}'"
             fi
 
