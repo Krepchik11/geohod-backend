@@ -61,8 +61,6 @@ jobs:
 
       - name: VPS launch
         uses: appleboy/ssh-action@master
-        env:
-          GEOHOD_CREATED_EVENT_LINK_TEMPLATE: ${{ vars.GEOHOD_CREATED_EVENT_LINK_TEMPLATE }}
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -80,12 +78,8 @@ jobs:
               ENV_ARGS="$ENV_ARGS -e $var"
             done
 
-            echo "DEBUG: GEOHOD_CREATED_EVENT_LINK_TEMPLATE is: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}"
-
             if [ -n "${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}" ]; then
-                ESCAPED_LINK_TEMPLATE=$(printf %q "${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}")
-                echo "DEBUG: ESCAPED_LINK_TEMPLATE is: $ESCAPED_LINK_TEMPLATE"
-                ENV_ARGS="$ENV_ARGS -e GEOHOD_CREATED_EVENT_LINK_TEMPLATE=$ESCAPED_LINK_TEMPLATE"
+                ENV_ARGS="$ENV_ARGS -e GEOHOD_CREATED_EVENT_LINK_TEMPLATE='${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}'"
             fi
 
             docker run -d --restart always \
