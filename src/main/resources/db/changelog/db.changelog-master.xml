@@ -10,4 +10,5 @@
     <include file="db.changelog-1.4-npp.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.5-notifications.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.6-user_settings.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-1.7-keyset-pagination-fix.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

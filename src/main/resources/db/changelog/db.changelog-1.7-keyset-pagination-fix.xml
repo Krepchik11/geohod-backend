@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1" author="naborshchikov">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="notification_processor_progress" columnName="last_processed_created_at"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="notification_processor_progress">
+            <column name="last_processed_created_at" type="TIMESTAMP"/>
+        </addColumn>
+        <comment>Add last_processed_created_at to notification_processor_progress</comment>
+    </changeSet>
+
+    <changeSet id="2" author="naborshchikov">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="notification_processor_progress" columnName="last_processed_event_log_id"/>
+        </preConditions>
+        <renameColumn tableName="notification_processor_progress"
+                      oldColumnName="last_processed_event_log_id"
+                      newColumnName="last_processed_id"
+                      columnDataType="UUID"/>
+        <comment>Rename last_processed_event_log_id to last_processed_id for clarity</comment>
+    </changeSet>
+
+    <changeSet id="3" author="naborshchikov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM notification_processor_progress WHERE last_processed_created_at IS NOT NULL;
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE notification_processor_progress npp
+            SET last_processed_created_at = (SELECT el.created_at FROM event_logs el WHERE el.id = npp.last_processed_id)
+            WHERE npp.last_processed_id IS NOT NULL;
+        </sql>
+        <comment>Backfill last_processed_created_at from event_logs table</comment>
+    </changeSet>
+
+</databaseChangeLog>

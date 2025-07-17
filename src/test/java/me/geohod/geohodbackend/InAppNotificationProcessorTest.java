@@ -1,6 +1,26 @@
 package me.geohod.geohodbackend;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
@@ -11,20 +31,6 @@ import me.geohod.geohodbackend.service.IAppNotificationService;
 import me.geohod.geohodbackend.service.IEventLogService;
 import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
 import me.geohod.geohodbackend.service.processor.InAppNotificationProcessor;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 public class InAppNotificationProcessorTest {
     @Mock
@@ -63,6 +69,7 @@ public class InAppNotificationProcessorTest {
         when(log.getType()).thenReturn(me.geohod.geohodbackend.data.model.eventlog.EventType.EVENT_CREATED);
         when(log.getPayload()).thenReturn(new me.geohod.geohodbackend.data.model.eventlog.JsonbString("payload"));
         when(log.getId()).thenReturn(logId);
+        when(log.getCreatedAt()).thenReturn(Instant.now());
         
         Event event = mock(Event.class);
         when(event.getId()).thenReturn(eventId);
@@ -78,7 +85,7 @@ public class InAppNotificationProcessorTest {
         
         NotificationCreateDto capturedRequest = requestCaptor.getValue();
         assert capturedRequest.userId().equals(authorId);
-        verify(progressService, times(1)).updateProgress(anyString(), eq(logId));
+        verify(progressService, times(1)).updateProgress(anyString(), any(Instant.class), eq(logId));
     }
 
     @Test
@@ -92,6 +99,7 @@ public class InAppNotificationProcessorTest {
         when(log.getType()).thenReturn(me.geohod.geohodbackend.data.model.eventlog.EventType.EVENT_REGISTERED);
         when(log.getPayload()).thenReturn(new me.geohod.geohodbackend.data.model.eventlog.JsonbString("{\"userId\": \"" + participantId + "\"}"));
         when(log.getId()).thenReturn(logId);
+        when(log.getCreatedAt()).thenReturn(Instant.now());
         
         Event event = mock(Event.class);
         when(event.getId()).thenReturn(eventId);
@@ -106,7 +114,7 @@ public class InAppNotificationProcessorTest {
         
         NotificationCreateDto capturedRequest = requestCaptor.getValue();
         assert capturedRequest.userId().equals(participantId);
-        verify(progressService, times(1)).updateProgress(anyString(), eq(logId));
+        verify(progressService, times(1)).updateProgress(anyString(), any(Instant.class), eq(logId));
     }
 
     @Test
@@ -120,6 +128,7 @@ public class InAppNotificationProcessorTest {
         when(log.getType()).thenReturn(me.geohod.geohodbackend.data.model.eventlog.EventType.EVENT_CANCELED);
         when(log.getPayload()).thenReturn(new me.geohod.geohodbackend.data.model.eventlog.JsonbString("payload"));
         when(log.getId()).thenReturn(logId);
+        when(log.getCreatedAt()).thenReturn(Instant.now());
         
         Event event = mock(Event.class);
         when(event.getId()).thenReturn(eventId);
@@ -138,7 +147,7 @@ public class InAppNotificationProcessorTest {
         
         NotificationCreateDto capturedRequest = requestCaptor.getValue();
         assert capturedRequest.userId().equals(participantId);
-        verify(progressService, times(1)).updateProgress(anyString(), eq(logId));
+        verify(progressService, times(1)).updateProgress(anyString(), any(Instant.class), eq(logId));
     }
 
     @Test
@@ -146,6 +155,6 @@ public class InAppNotificationProcessorTest {
         when(eventLogService.findUnprocessed(anyInt(), anyString())).thenReturn(List.of());
         processor.process();
         verify(appNotificationService, never()).createNotification(any(NotificationCreateDto.class));
-        verify(progressService, never()).updateProgress(anyString(), any(UUID.class));
+        verify(progressService, never()).updateProgress(anyString(), any(Instant.class), any(UUID.class));
     }
-} 
+}
