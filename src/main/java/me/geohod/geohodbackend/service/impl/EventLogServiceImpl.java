@@ -1,16 +1,16 @@
 package me.geohod.geohodbackend.service.impl;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
-import me.geohod.geohodbackend.data.model.notification.NotificationProcessorProgress;
 import me.geohod.geohodbackend.data.model.repository.EventLogRepository;
 import me.geohod.geohodbackend.data.model.repository.NotificationProcessorProgressRepository;
 import me.geohod.geohodbackend.service.IEventLogService;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,17 +35,16 @@ public class EventLogServiceImpl implements IEventLogService {
             throw new IllegalArgumentException("Processor name cannot be null or empty");
         }
 
-        // Find the last processed event log ID for this processor
-        UUID lastProcessedId = progressRepository.findByProcessorName(processorName)
-                .map(NotificationProcessorProgress::getLastProcessedEventLogId)
-                .orElse(null);
+        // Find the last processed event log marker for this processor
+        var progress = progressRepository.findByProcessorName(processorName);
 
-        if (lastProcessedId == null) {
+        if (progress.isEmpty()) {
             // No previous processing, return first batch of unprocessed logs
             return eventLogRepository.findFirstUnprocessed(limit);
         } else {
-            // Return logs after the last processed ID
-            return eventLogRepository.findUnprocessedAfterId(lastProcessedId, limit);
+            // Return logs after the last processed marker
+            var p = progress.get();
+            return eventLogRepository.findUnprocessedAfter(p.getLastProcessedCreatedAt(), p.getLastProcessedId(), limit);
         }
     }
-} 
+}

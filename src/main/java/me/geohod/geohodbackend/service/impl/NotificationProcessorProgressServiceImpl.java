@@ -1,12 +1,14 @@
 package me.geohod.geohodbackend.service.impl;
 
+import java.time.Instant;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.model.notification.NotificationProcessorProgress;
 import me.geohod.geohodbackend.data.model.repository.NotificationProcessorProgressRepository;
 import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
-import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -15,11 +17,11 @@ public class NotificationProcessorProgressServiceImpl implements INotificationPr
     private final NotificationProcessorProgressRepository progressRepository;
 
     @Override
-    public void updateProgress(String processorName, UUID lastProcessedEventLogId) {
+    public void updateProgress(String processorName, Instant lastProcessedCreatedAt, UUID lastProcessedId) {
         NotificationProcessorProgress progress = progressRepository.findByProcessorName(processorName)
-                .orElseGet(() -> new NotificationProcessorProgress(processorName, lastProcessedEventLogId));
+                .orElseGet(() -> new NotificationProcessorProgress(processorName, lastProcessedCreatedAt, lastProcessedId));
 
-        progress.updateProgress(lastProcessedEventLogId);
+        progress.updateProgress(lastProcessedCreatedAt, lastProcessedId);
         progressRepository.save(progress);
     }
-} 
+}

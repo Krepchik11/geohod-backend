@@ -1,16 +1,17 @@
 package me.geohod.geohodbackend.data.model.notification;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.Instant;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
@@ -23,18 +24,21 @@ public class NotificationProcessorProgress implements Persistable<UUID> {
     private UUID id;
 
     private String processorName;
-    private UUID lastProcessedEventLogId;
+    private Instant lastProcessedCreatedAt;
+    private UUID lastProcessedId;
     private Instant updatedAt;
 
-    public NotificationProcessorProgress(String processorName, UUID lastProcessedEventLogId) {
+    public NotificationProcessorProgress(String processorName, Instant lastProcessedCreatedAt, UUID lastProcessedId) {
         this.id = UUID.randomUUID();
         this.processorName = processorName;
-        this.lastProcessedEventLogId = lastProcessedEventLogId;
+        this.lastProcessedCreatedAt = lastProcessedCreatedAt;
+        this.lastProcessedId = lastProcessedId;
         this.updatedAt = Instant.now();
     }
 
-    public void updateProgress(UUID lastProcessedEventLogId) {
-        this.lastProcessedEventLogId = lastProcessedEventLogId;
+    public void updateProgress(Instant lastProcessedCreatedAt, UUID lastProcessedId) {
+        this.lastProcessedCreatedAt = lastProcessedCreatedAt;
+        this.lastProcessedId = lastProcessedId;
         this.updatedAt = Instant.now();
     }
 
@@ -42,4 +46,4 @@ public class NotificationProcessorProgress implements Persistable<UUID> {
     public boolean isNew() {
         return version == null;
     }
-} 
+}

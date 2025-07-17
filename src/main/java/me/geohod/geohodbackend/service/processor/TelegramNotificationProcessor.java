@@ -1,29 +1,32 @@
 package me.geohod.geohodbackend.service.processor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
-import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.data.model.User;
-import me.geohod.geohodbackend.data.model.eventlog.EventLog;
-import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
-import me.geohod.geohodbackend.service.*;
-import me.geohod.geohodbackend.service.notification.EventContext;
-import me.geohod.geohodbackend.service.notification.NotificationParams;
-import me.geohod.geohodbackend.service.notification.NotificationType;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.eventlog.EventLog;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
+import me.geohod.geohodbackend.service.IEventLogService;
+import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
+import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
+import me.geohod.geohodbackend.service.IUserService;
+import me.geohod.geohodbackend.service.notification.EventContext;
+import me.geohod.geohodbackend.service.notification.NotificationParams;
+import me.geohod.geohodbackend.service.notification.NotificationType;
 
 @Component
 @RequiredArgsConstructor
@@ -62,7 +65,7 @@ public class TelegramNotificationProcessor {
 
         if (!unprocessedLogs.isEmpty()) {
             EventLog lastProcessedLog = unprocessedLogs.get(unprocessedLogs.size() - 1);
-            progressService.updateProgress(PROCESSOR_NAME, lastProcessedLog.getId());
+            progressService.updateProgress(PROCESSOR_NAME, lastProcessedLog.getCreatedAt(), lastProcessedLog.getId());
         }
         log.debug("Finished Telegram notification processing");
     }
@@ -113,4 +116,4 @@ public class TelegramNotificationProcessor {
         return eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
                 .map(me.geohod.geohodbackend.data.model.EventParticipant::getUserId).toList();
     }
-} 
+}
