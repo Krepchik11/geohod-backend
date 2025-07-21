@@ -60,7 +60,7 @@ public enum NotificationType {
                             %s
                             %s
                             
-                            Ссылка на регистрацию [ЗДЕСЬ](%s)""",
+                            [Ссылка на регистрацию](%s)""",
                     context.event().getName(),
                     formatEventDate(context.event().getDate()),
                     context.getContactInfo().orElse(""),
@@ -91,7 +91,7 @@ public enum NotificationType {
                 baseMessage += String.format("""
 
 
-                        Оставьте отзыв о мероприятии: (%s)""", reviewLink);
+                        [Оставьте отзыв о мероприятии](%s)""", reviewLink);
             }
             return baseMessage;
         }
