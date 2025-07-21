@@ -75,7 +75,8 @@ public class InAppNotificationProcessor {
                 NotificationCreateDto request = new NotificationCreateDto(
                     userId,
                     type,
-                    eventLog.getPayload().value()
+                    eventLog.getPayload().value(),
+                    eventLog.getEventId()
                 );
                 appNotificationService.createNotification(request);
             }

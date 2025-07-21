@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 @Mapper(config = GlobalMapperConfig.class)
 public interface NotificationMapper {
     @Mapping(target = "payload", expression = "java(notification.getPayload() != null ? notification.getPayload().value() : null)")
+    @Mapping(target = "eventId", source = "eventId")
     NotificationDto toDto(Notification notification);
 } 
