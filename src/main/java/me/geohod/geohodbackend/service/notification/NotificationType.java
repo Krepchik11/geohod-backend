@@ -91,7 +91,7 @@ public enum NotificationType {
                 baseMessage += String.format("""
 
 
-                        Оставьте отзыв о мероприятии: [Ссылка для отзыва](%s)""", reviewLink);
+                        Оставьте отзыв о мероприятии: (%s)""", reviewLink);
             }
             return baseMessage;
         }
