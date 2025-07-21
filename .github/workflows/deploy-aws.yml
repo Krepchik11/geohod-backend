@@ -83,6 +83,11 @@ jobs:
                 ENV_ARGS="$ENV_ARGS -e GEOHOD_CREATED_EVENT_LINK_TEMPLATE=$GEOHOD_CREATED_EVENT_LINK_TEMPLATE"
             fi
 
+            GEOHOD_REVIEW_LINK_TEMPLATE="${{ vars.GEOHOD_REVIEW_LINK_TEMPLATE }}"
+            if [ -n "$GEOHOD_REVIEW_LINK_TEMPLATE" ]; then
+                ENV_ARGS="$ENV_ARGS -e GEOHOD_REVIEW_LINK_TEMPLATE=$GEOHOD_REVIEW_LINK_TEMPLATE"
+            fi
+
             docker run -d --restart always \
               --network=geohod \
               --name geohod-backend \
