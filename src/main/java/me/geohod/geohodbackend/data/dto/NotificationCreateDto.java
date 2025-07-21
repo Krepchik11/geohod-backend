@@ -6,6 +6,7 @@ import java.util.UUID;
 public record NotificationCreateDto(
         UUID userId,
         NotificationType type,
-        String payload
+        String payload,
+        UUID eventId
 ) {
 } 

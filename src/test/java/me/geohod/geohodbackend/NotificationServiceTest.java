@@ -41,7 +41,7 @@ public class NotificationServiceTest {
     void testFetchNotifications() {
         UUID userId = UUID.randomUUID();
         Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, new JsonbString("payload"));
-        NotificationDto notificationDto = new NotificationDto(1L, NotificationType.EVENT_CREATED, "payload", false, null);
+        NotificationDto notificationDto = new NotificationDto(1L, userId, NotificationType.EVENT_CREATED, "payload", false, null, UUID.randomUUID());
         
         when(notificationRepository.findByUserIdAndIsReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
         when(notificationMapper.toDto(notification)).thenReturn(notificationDto);

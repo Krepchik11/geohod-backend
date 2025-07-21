@@ -13,9 +13,4 @@ public interface NotificationApiMapper {
     
     @Mapping(target = "userId", source = "userId")
     NotificationResponse toResponse(NotificationDto notificationDto, UUID userId);
-    
-    default NotificationResponse toResponse(NotificationDto notificationDto) {
-        // This method should not be used directly - userId should be provided
-        throw new UnsupportedOperationException("userId must be provided when mapping to NotificationResponse");
-    }
 } 

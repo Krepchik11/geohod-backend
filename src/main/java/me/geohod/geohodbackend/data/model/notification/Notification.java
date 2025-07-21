@@ -24,6 +24,7 @@ public class Notification implements Persistable<Long> {
     @Id
     private Long id;
 
+    private UUID eventId;
     private UUID userId;
     private NotificationType type;
     private JsonbString payload;
@@ -39,6 +40,15 @@ public class Notification implements Persistable<Long> {
     }
 
     public Notification(UUID userId, NotificationType type, JsonbString payload) {
+        this.userId = userId;
+        this.type = type;
+        this.payload = payload;
+        this.isRead = false;
+        this.createdAt = Instant.now();
+    }
+
+    public Notification(UUID eventId, UUID userId, NotificationType type, JsonbString payload) {
+        this.eventId = eventId;
         this.userId = userId;
         this.type = type;
         this.payload = payload;

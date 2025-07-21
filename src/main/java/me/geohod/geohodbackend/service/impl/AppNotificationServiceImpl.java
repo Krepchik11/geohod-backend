@@ -62,9 +62,12 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
 
     @Override
     public NotificationDto createNotification(NotificationCreateDto request) {
-        // Create entity using the constructor
-        Notification notification = new Notification(request.userId(), request.type(), new me.geohod.geohodbackend.data.model.eventlog.JsonbString(request.payload()));
-        
+        Notification notification = new Notification(
+            request.eventId(),
+            request.userId(),
+            request.type(),
+            new me.geohod.geohodbackend.data.model.eventlog.JsonbString(request.payload())
+        );
         Notification savedNotification = notificationRepository.save(notification);
         return notificationMapper.toDto(savedNotification);
     }

@@ -10,6 +10,7 @@ public record NotificationResponse(
         NotificationType type,
         String payload,
         boolean isRead,
-        Instant createdAt
+        Instant createdAt,
+        UUID eventId
 ) {
 } 
