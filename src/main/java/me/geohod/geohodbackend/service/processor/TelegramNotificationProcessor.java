@@ -89,8 +89,18 @@ public class TelegramNotificationProcessor {
         if (type == NotificationType.EVENT_FINISHED) {
             try {
                 JsonNode root = objectMapper.readTree(payload);
-                if (root.path("sendDonationRequest").asBoolean(false)) {
-                    return NotificationParams.eventFinishedParams(root.path("donationInfo").asText(""));
+                String donationInfo = root.path("donationInfo").asText("");
+                boolean sendPollLink = root.path("sendPollLink").asBoolean(false);
+
+                if (sendPollLink) {
+                    String reviewLinkTemplate = properties.linkTemplates().reviewLink();
+                    String botName = properties.telegramBot().username();
+                    return NotificationParams.eventFinishedParams(donationInfo, true, eventId, botName, reviewLinkTemplate);
+                } else {
+                    boolean sendDonationRequest = root.path("sendDonationRequest").asBoolean(false);
+                    if(sendDonationRequest) {
+                        return NotificationParams.eventFinishedParams(donationInfo);
+                    }
                 }
             } catch (JsonProcessingException e) {
                 log.error("Failed to parse payload for EVENT_FINISHED: {}", payload, e);

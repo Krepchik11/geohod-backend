@@ -84,6 +84,15 @@ public enum NotificationType {
                         
                         Средний размер доната: %s""", donationInfo);
             }
+            if (params.sendPollLink()) {
+                String reviewLink = params.linkTemplate()
+                        .replace("{botName}", params.botName())
+                        .replace("{eventId}", params.eventId().toString());
+                baseMessage += String.format("""
+
+
+                        Оставьте отзыв о мероприятии: [Ссылка для отзыва](%s)""", reviewLink);
+            }
             return baseMessage;
         }
     };

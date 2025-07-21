@@ -101,8 +101,8 @@ public class EventService implements IEventService {
 
         eventRepository.save(event);
 
-        String payload = String.format("{\"sendDonationRequest\": %b, \"donationInfo\": \"%s\"}",
-                finishDto.sendDonationRequest(), finishDto.donationInfo());
+        String payload = String.format("{\"sendDonationRequest\": %b, \"donationInfo\": \"%s\", \"sendPollLink\": %b}",
+                finishDto.sendDonationRequest(), finishDto.donationInfo(), finishDto.sendPollLink());
         eventLogService.createLogEntry(finishDto.eventId(), EventType.EVENT_FINISHED_FOR_REVIEW_LINK, payload);
     }
 }
