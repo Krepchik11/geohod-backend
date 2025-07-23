@@ -21,6 +21,24 @@ springdoc:
     enabled: false
     path: /swagger-ui.html
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
 geohod:
   telegram-bot:
     token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
