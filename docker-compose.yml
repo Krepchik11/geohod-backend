@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   geohod-app:
     image: geohod-backend:latest

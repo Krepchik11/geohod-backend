@@ -8,10 +8,6 @@ spring:
     url: jdbc:postgresql://localhost:54321/geohod
     username: geohod
     password: secret
-  docker:
-    compose:
-      enabled: true
-      file: compose.yaml
 
 geohod:
   telegram-bot:

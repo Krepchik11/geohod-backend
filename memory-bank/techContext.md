@@ -18,7 +18,6 @@
 *   **API Documentation**: `springdoc-openapi-starter-webmvc-ui` generates OpenAPI 3.0 documentation and provides the Swagger UI.
 *   **Development Tooling**:
     *   `lombok`: Reduces boilerplate code for models and other classes.
-    *   `spring-boot-docker-compose`: Simplifies local development by managing Docker containers.
     *   `mapstruct`: A code generator for type-safe bean mappings between DTOs and entities.
 *   **Testing**:
     *   `spring-boot-starter-test` (includes JUnit 5, Mockito, etc.).
