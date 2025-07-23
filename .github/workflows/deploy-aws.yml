@@ -61,7 +61,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: |
             docker-compose.yml
-          target: /opt/geohod-backend/
+          target: ~/geohod-backend/
           overwrite: true
           strip_components: 1
 
@@ -73,10 +73,10 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             # Create application directory
-            mkdir -p /opt/geohod-backend
+            mkdir -p ~/geohod-backend
             
             # Create .env file from GitHub secrets and variables
-            cat > /opt/geohod-backend/.env << EOF
+            cat > ~/geohod-backend/.env << EOF
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
@@ -94,7 +94,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /opt/geohod-backend
+            cd ~/geohod-backend
             
             # Load the new image
             docker load < /tmp/geohod-backend/image.tar

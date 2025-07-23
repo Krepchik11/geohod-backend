@@ -54,7 +54,7 @@ For manual deployment, use these commands on the VPS:
 
 ```bash
 # Navigate to application directory
-cd /opt/geohod-backend
+cd ~/geohod-backend
 
 # Create .env file (if not using GitHub Actions)
 cp .env.template .env
