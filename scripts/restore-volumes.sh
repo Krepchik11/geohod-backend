@@ -26,13 +26,13 @@ echo "Stopping services..."
 docker compose down || true
 
 # Restore postgres data
-if [ -f "${BACKUP_PATH}/postgres_data.tar.gz" ]; then
+if [ -f "${BACKUP_PATH}/geohod_postgres_data.tar.gz" ]; then
     echo "Restoring PostgreSQL data..."
     docker run --rm \
       -v geohod_postgres_data:/data \
       -v "${BACKUP_PATH}:/backup" \
       alpine:latest \
-      sh -c "rm -rf /data/* && tar xzf /backup/postgres_data.tar.gz -C /data"
+      sh -c "rm -rf /data/* && tar xzf /backup/geohod_postgres_data.tar.gz -C /data"
 else
     echo "Warning: PostgreSQL backup not found, skipping..."
 fi

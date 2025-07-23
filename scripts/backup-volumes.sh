@@ -20,7 +20,7 @@ docker run --rm \
   -v geohod_postgres_data:/data:ro \
   -v "${BACKUP_PATH}:/backup" \
   alpine:latest \
-  tar czf /backup/postgres_data.tar.gz -C /data .
+  tar czf /backup/geohod_postgres_data.tar.gz -C /data .
 
 # Create backup metadata
 cat > "${BACKUP_PATH}/backup_info.txt" << EOF
