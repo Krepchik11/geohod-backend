@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  app:
+  geohod-app:
     image: geohod-backend:latest
-    container_name: geohod-app
+    container_name: geohod-backend
     restart: unless-stopped
     ports:
       - "8080:8080"
