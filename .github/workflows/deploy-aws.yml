@@ -74,6 +74,8 @@ jobs:
           script: |
             # Create application directory
             mkdir -p ~/geohod-backend
+
+            echo whoami
             
             # Create .env file from GitHub secrets and variables
             cat > ~/geohod-backend/.env << EOF
