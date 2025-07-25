@@ -1,18 +1,19 @@
 package me.geohod.geohodbackend.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import me.geohod.geohodbackend.data.dto.UserRatingDto;
-import me.geohod.geohodbackend.data.model.repository.UserRatingRepository;
-import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
-import me.geohod.geohodbackend.data.model.userrating.UserRating;
-import me.geohod.geohodbackend.service.IUserRatingService;
+import java.math.BigDecimal;
+import java.util.UUID;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.data.dto.UserRatingDto;
+import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
+import me.geohod.geohodbackend.data.model.repository.UserRatingRepository;
+import me.geohod.geohodbackend.data.model.userrating.UserRating;
+import me.geohod.geohodbackend.service.IUserRatingService;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +48,8 @@ public class UserRatingServiceImpl implements IUserRatingService {
             // Calculate rating using database aggregation
             ReviewRepository.ReviewRatingProjection ratingProjection = reviewRepository.calculateUserRating(userId);
             
-            BigDecimal averageRating = ratingProjection.getAverageRating();
-            int totalReviewsCount = ratingProjection.getTotalCount().intValue();
+            BigDecimal averageRating = ratingProjection.averageRating();
+            int totalReviewsCount = ratingProjection.totalCount().intValue();
             
             // Save or update user rating
             UserRating userRating = userRatingRepository.findByUserId(userId)
@@ -75,4 +76,4 @@ public class UserRatingServiceImpl implements IUserRatingService {
             // Don't re-throw in async method to prevent transaction rollback
         }
     }
-} 
+}

@@ -1,33 +1,33 @@
 package me.geohod.geohodbackend;
 
-import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
-import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
-import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
-import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.data.model.repository.UserRepository;
-import me.geohod.geohodbackend.data.model.review.Review;
-import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.data.model.User;
-import me.geohod.geohodbackend.service.IUserRatingService;
-import me.geohod.geohodbackend.service.impl.ReviewServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
+import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
+import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
+import me.geohod.geohodbackend.data.model.review.Review;
+import me.geohod.geohodbackend.service.IUserRatingService;
+import me.geohod.geohodbackend.service.impl.ReviewServiceImpl;
 
 public class ReviewServiceTest {
     @Mock
@@ -123,16 +123,17 @@ public class ReviewServiceTest {
     void testGetReviewsWithAuthorForUser_OwnReviews_ShowHidden() {
         UUID userId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
-        ReviewRepository.ReviewWithAuthorProjection projection = mock(ReviewRepository.ReviewWithAuthorProjection.class);
-        when(projection.getId()).thenReturn(UUID.randomUUID());
-        when(projection.getEventId()).thenReturn(UUID.randomUUID());
-        when(projection.getAuthorId()).thenReturn(UUID.randomUUID());
-        when(projection.getAuthorUsername()).thenReturn("testuser");
-        when(projection.getAuthorImageUrl()).thenReturn("image.jpg");
-        when(projection.getRating()).thenReturn(5);
-        when(projection.getComment()).thenReturn("Great event!");
-        when(projection.getIsHidden()).thenReturn(true);
-        when(projection.getCreatedAt()).thenReturn(Instant.now());
+        ReviewRepository.ReviewWithAuthorProjection projection = new ReviewRepository.ReviewWithAuthorProjection(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "testuser",
+            "image.jpg",
+            5,
+            "Great event!",
+            true,
+            Instant.now()
+        );
         List<ReviewRepository.ReviewWithAuthorProjection> projections = List.of(projection);
         when(reviewRepository.findReviewsWithAuthorForUser(userId, true, 10, 0)).thenReturn(projections);
         when(reviewRepository.countReviewsWithAuthorForUser(userId, true)).thenReturn(1L);
@@ -150,16 +151,17 @@ public class ReviewServiceTest {
         UUID userId = UUID.randomUUID();
         UUID requestingUserId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
-        ReviewRepository.ReviewWithAuthorProjection projection = mock(ReviewRepository.ReviewWithAuthorProjection.class);
-        when(projection.getId()).thenReturn(UUID.randomUUID());
-        when(projection.getEventId()).thenReturn(UUID.randomUUID());
-        when(projection.getAuthorId()).thenReturn(UUID.randomUUID());
-        when(projection.getAuthorUsername()).thenReturn("testuser");
-        when(projection.getAuthorImageUrl()).thenReturn("image.jpg");
-        when(projection.getRating()).thenReturn(5);
-        when(projection.getComment()).thenReturn("Great event!");
-        when(projection.getIsHidden()).thenReturn(false);
-        when(projection.getCreatedAt()).thenReturn(Instant.now());
+        ReviewRepository.ReviewWithAuthorProjection projection = new ReviewRepository.ReviewWithAuthorProjection(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "testuser",
+            "image.jpg",
+            5,
+            "Great event!",
+            false,
+            Instant.now()
+        );
         List<ReviewRepository.ReviewWithAuthorProjection> projections = List.of(projection);
         when(reviewRepository.findReviewsWithAuthorForUser(userId, false, 10, 0)).thenReturn(projections);
         when(reviewRepository.countReviewsWithAuthorForUser(userId, false)).thenReturn(1L);
@@ -171,4 +173,4 @@ public class ReviewServiceTest {
         verify(reviewRepository).findReviewsWithAuthorForUser(userId, false, 10, 0);
         verify(reviewRepository).countReviewsWithAuthorForUser(userId, false);
     }
-} 
+}

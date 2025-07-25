@@ -104,15 +104,15 @@ public class ReviewServiceImpl implements IReviewService {
 
         List<ReviewWithAuthorDto> reviewsWithAuthor = projections.stream()
                 .map(p -> new ReviewWithAuthorDto(
-                        p.getId(),
-                        p.getEventId(),
-                        p.getAuthorId(),
-                        p.getAuthorUsername(),
-                        p.getAuthorImageUrl(),
-                        p.getRating(),
-                        p.getComment(),
-                        p.getIsHidden(),
-                        p.getCreatedAt()
+                        p.id(),
+                        p.eventId(),
+                        p.authorId(),
+                        p.authorUsername(),
+                        p.authorImageUrl(),
+                        p.rating(),
+                        p.comment(),
+                        p.isHidden(),
+                        p.createdAt()
                 ))
                 .toList();
 
