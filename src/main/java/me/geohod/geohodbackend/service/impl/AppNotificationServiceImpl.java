@@ -1,5 +1,11 @@
 package me.geohod.geohodbackend.service.impl;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.data.dto.NotificationDto;
@@ -7,10 +13,6 @@ import me.geohod.geohodbackend.data.mapper.NotificationMapper;
 import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
 import me.geohod.geohodbackend.service.IAppNotificationService;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,15 +26,20 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
         if (limit == null || limit < 1 || limit > 100) {
             limit = 20;
         }
-        if (isRead == null) {
-            isRead = false;
-        }
         List<Notification> notifications;
         if (cursorAfterId == null) {
             // Fetch first page
-            notifications = notificationRepository.findByUserIdAndIsReadOrderByIdDesc(userId, isRead, org.springframework.data.domain.PageRequest.of(0, limit));
+            if (isRead == null) {
+                notifications = notificationRepository.findByUserIdOrderByIdDesc(userId, PageRequest.of(0, limit));
+            } else {
+                notifications = notificationRepository.findByUserIdAndIsReadOrderByIdDesc(userId, isRead, PageRequest.of(0, limit));
+            }
         } else {
-            notifications = notificationRepository.findByUserIdAndIsReadAfterCursor(userId, isRead, cursorAfterId, limit);
+            if (isRead == null) {
+                notifications = notificationRepository.findByUserIdAfterCursor(userId, cursorAfterId, limit);
+            } else {
+                notifications = notificationRepository.findByUserIdAndIsReadAfterCursor(userId, isRead, cursorAfterId, limit);
+            }
         }
         return notifications.stream().map(notificationMapper::toDto).toList();
     }
@@ -71,4 +78,4 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
         Notification savedNotification = notificationRepository.save(notification);
         return notificationMapper.toDto(savedNotification);
     }
-} 
+}
