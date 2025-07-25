@@ -42,23 +42,20 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
            "WHERE e.author_id = :userId")
     ReviewRatingProjection calculateUserRating(UUID userId);
     
-    interface ReviewRatingProjection {
-        BigDecimal getAverageRating();
-        Long getTotalCount();
-    }
+    record ReviewRatingProjection(BigDecimal averageRating, Long totalCount) {}
 
     // Projection for review with author info
-    interface ReviewWithAuthorProjection {
-        UUID getId();
-        UUID getEventId();
-        UUID getAuthorId();
-        String getAuthorUsername();
-        String getAuthorImageUrl();
-        int getRating();
-        String getComment();
-        boolean getIsHidden();
-        java.time.Instant getCreatedAt();
-    }
+    record ReviewWithAuthorProjection(
+        UUID id,
+        UUID eventId,
+        UUID authorId,
+        String authorUsername,
+        String authorImageUrl,
+        int rating,
+        String comment,
+        boolean isHidden,
+        java.time.Instant createdAt
+    ) {}
 
     /**
      * Fetch reviews for a user (event author) with author info, optionally filtering hidden reviews.
