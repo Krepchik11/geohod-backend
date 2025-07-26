@@ -9,8 +9,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
 import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
 import me.geohod.geohodbackend.data.model.Event;
@@ -22,6 +25,7 @@ import me.geohod.geohodbackend.service.IUserRatingService;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
@@ -56,8 +60,8 @@ public class ReviewServiceImpl implements IReviewService {
         
         Review savedReview = reviewRepository.save(review);
         
-        // Update user rating for the event author asynchronously
-        userRatingService.updateUserRatingAsync(event.getAuthorId());
+        // Update user rating for the event author asynchronously after transaction commit
+        scheduleUserRatingUpdateAfterTransaction(event.getAuthorId());
         
         return savedReview;
     }
@@ -122,5 +126,28 @@ public class ReviewServiceImpl implements IReviewService {
     @Override
     public Optional<Review> getUserReviewForEvent(UUID userId, UUID eventId) {
         return reviewRepository.findByEventIdAndAuthorId(eventId, userId);
+    }
+    
+    private void scheduleUserRatingUpdateAfterTransaction(UUID userId) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    log.debug("Transaction committed, scheduling async rating update for user: {}", userId);
+                    userRatingService.updateUserRatingAsync(userId);
+                }
+                
+                @Override
+                public void afterCompletion(int status) {
+                    if (status != TransactionSynchronization.STATUS_COMMITTED) {
+                        log.debug("Transaction rolled back, skipping rating update for user: {}", userId);
+                    }
+                }
+            });
+        } else {
+            // Fallback: execute immediately if no transaction synchronization
+            log.warn("No transaction synchronization active, executing rating update immediately");
+            userRatingService.updateUserRatingAsync(userId);
+        }
     }
 }
