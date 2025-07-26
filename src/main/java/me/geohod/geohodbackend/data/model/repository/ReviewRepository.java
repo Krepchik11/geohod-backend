@@ -22,6 +22,15 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
     
     Optional<Review> findByEventIdAndAuthorId(UUID eventId, UUID authorId);
     
+    /**
+     * Find a review by its ID and the author ID of the associated event.
+     * @param reviewId the ID of the review
+     * @param eventAuthorId the author ID of the event
+     * @return an Optional containing the review if found and the event author matches, empty otherwise
+     */
+    @Query("SELECT r FROM Review r JOIN r.event e WHERE r.id = :reviewId AND e.authorId = :eventAuthorId")
+    Optional<Review> findByIdAndEventAuthorId(UUID reviewId, UUID eventAuthorId);
+    
     @Query("SELECT r.* FROM reviews r " +
            "JOIN events e ON r.event_id = e.id " +
            "WHERE e.author_id = :userId " +
