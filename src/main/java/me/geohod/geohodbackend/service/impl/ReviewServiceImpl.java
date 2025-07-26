@@ -64,9 +64,9 @@ public class ReviewServiceImpl implements IReviewService {
 
     @Override
     @Transactional
-    public void hideReview(UUID reviewId, UUID authorId) {
-        Review review = reviewRepository.findByIdAndAuthorId(reviewId, authorId)
-                .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
+    public void hideReview(UUID reviewId, UUID eventAuthorId) {
+        Review review = reviewRepository.findByIdAndEventAuthorId(reviewId, eventAuthorId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found or you are not the event author: " + reviewId));
 
         review.hide();
         reviewRepository.save(review);
@@ -74,9 +74,9 @@ public class ReviewServiceImpl implements IReviewService {
 
     @Override
     @Transactional
-    public void unhideReview(UUID reviewId, UUID authorId) {
-        Review review = reviewRepository.findByIdAndAuthorId(reviewId, authorId)
-                .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
+    public void unhideReview(UUID reviewId, UUID eventAuthorId) {
+        Review review = reviewRepository.findByIdAndEventAuthorId(reviewId, eventAuthorId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found or you are not the event author: " + reviewId));
 
         review.unhide();
         reviewRepository.save(review);
