@@ -33,10 +33,10 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
         *         matches, empty otherwise
         */
        @Query("""
-                     SELECT r FROM reviews r
-                     JOIN events e
+                     SELECT r.* FROM reviews r
+                     JOIN events e ON r.event_id = e.id
                      WHERE r.id = :reviewId
-                     AND e.authorId = :eventAuthorId
+                     AND e.author_id = :eventAuthorId
                                       """)
        Optional<Review> findByIdAndEventAuthorId(UUID reviewId, UUID eventAuthorId);
 
