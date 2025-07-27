@@ -76,7 +76,7 @@ public class ReviewServiceTest {
         
         Review review = new Review(eventId, eventAuthorId, 5, "Great event!");
 
-        when(reviewRepository.findByIdAndAuthorId(reviewId, eventAuthorId)).thenReturn(Optional.of(review));
+        when(reviewRepository.findByIdAndEventAuthorId(reviewId, eventAuthorId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         
         reviewService.hideReview(reviewId, eventAuthorId);
@@ -93,7 +93,7 @@ public class ReviewServiceTest {
         Review review = new Review(eventId, eventAuthorId, 5, "Great event!");
         review.hide();
 
-        when(reviewRepository.findByIdAndAuthorId(reviewId, eventAuthorId)).thenReturn(Optional.of(review));
+        when(reviewRepository.findByIdAndEventAuthorId(reviewId, eventAuthorId)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         
         reviewService.unhideReview(reviewId, eventAuthorId);
