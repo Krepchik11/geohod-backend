@@ -11,6 +11,8 @@ echo "🚀 Starting Development Deployment..."
 # Load environment variables
 if [ -f "$SCRIPT_DIR/.env.dev" ]; then
     export $(cat "$SCRIPT_DIR/.env.dev" | grep -v '^#' | xargs)
+    # Use optimized profile by default
+    export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev-optimized}
     echo "✅ Environment variables loaded"
 else
     echo "❌ .env.dev file not found!"

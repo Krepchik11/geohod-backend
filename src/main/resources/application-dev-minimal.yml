@@ -1,0 +1,45 @@
+# Ultra-Minimal Configuration for Memory-Constrained Environments
+logging:
+  level:
+    root: WARN
+    me.geohod: WARN
+    org.springframework: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 1
+      idle-timeout: 180000
+      max-lifetime: 600000
+      connection-timeout: 10000
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+geohod:
+  processor:
+    in-app:
+      delay: 15000
+    telegram:
+      delay: 15000
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
