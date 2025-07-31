@@ -24,9 +24,9 @@ services:
       - LOGGING_LEVEL_ME_GEOHOD=DEBUG
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
       # JVM memory settings
-      - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport -XX:MaxRAMPercentage=55.0 
+      - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport -XX:MaxRAMPercentage=35.0 
       # Debug agent (optional, disable to save memory)
-      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     depends_on:
       postgres-dev:
         condition: service_healthy
@@ -41,11 +41,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
+          memory: 128M
+          cpus: '0.5'
         reservations:
-          memory: 256M
-          cpus: '0.2'
+          memory: 128M
+          cpus: '0.1'
 
   postgres-dev:
     image: postgres:17-alpine
