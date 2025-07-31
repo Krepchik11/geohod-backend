@@ -35,7 +35,7 @@ This directory contains all configuration files and scripts needed to deploy the
 
 The development environment has been optimized to reduce memory consumption by approximately 60%:
 
-- **JRE instead of JDK**: Reduced base image size
+- **Alpine JRE instead of JDK**: Reduced base image size using eclipse-temurin:23-jre-alpine
 - **JVM Heap Limits**: Constrained to 384MB maximum
 - **Gradle Memory Limits**: Constrained to 512MB maximum
 - **PostgreSQL Optimization**: Reduced memory usage to ~128MB

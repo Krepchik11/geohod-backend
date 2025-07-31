@@ -1,12 +1,10 @@
-FROM openjdk:23-jre-slim
+FROM eclipse-temurin:23-jre-alpine
 
 WORKDIR /app
 
 # Install required packages (minimal)
-RUN apt-get update && apt-get install -y \
-    wget \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+RUN apk add --no-cache \
+    wget
 
 # Copy Gradle wrapper and build files
 COPY gradlew gradlew.bat ./
