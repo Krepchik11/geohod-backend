@@ -32,14 +32,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.5'
-        reservations:
-          memory: 1G
-          cpus: '0.5'
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 2G
+    #       cpus: '1.5'
+    #     reservations:
+    #       memory: 1G
+    #       cpus: '0.5'
 
   postgres-prod:
     image: postgres:17-alpine
@@ -62,14 +62,14 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
-          cpus: '0.3'
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 1G
+    #       cpus: '1.0'
+    #     reservations:
+    #       memory: 512M
+    #       cpus: '0.3'
 
 volumes:
   geohod_postgres_data_prod:
