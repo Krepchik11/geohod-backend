@@ -1,0 +1,92 @@
+# Development Environment Docker Compose Configuration
+# Project: geohod-dev
+
+services:
+  geohod-app-dev:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.dev
+    image: geohod-backend:dev
+    container_name: geohod-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "5005:5005"  # Debug port
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-dev:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - GEOHOD_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - GEOHOD_TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
+      - GEOHOD_CREATED_EVENT_LINK_TEMPLATE=${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}
+      - GEOHOD_REVIEW_LINK_TEMPLATE=${GEOHOD_REVIEW_LINK_TEMPLATE}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_ME_GEOHOD=TRACE
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    volumes:
+      - ../../src:/app/src
+      - ../../build.gradle:/app/build.gradle
+      - ../../settings.gradle:/app/settings.gradle
+      - gradle-cache-dev:/root/.gradle
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    networks:
+      - geohod-dev-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.2'
+
+  postgres-dev:
+    image: postgres:17-alpine
+    container_name: geohod-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - geohod_postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - geohod-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.2'
+
+volumes:
+  geohod_postgres_data_dev:
+    external: true
+  gradle-cache-dev:
+
+networks:
+  geohod-dev-network:
+    name: geohod-dev-network
+    driver: bridge
