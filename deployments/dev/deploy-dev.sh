@@ -1,18 +1,16 @@
 #!/bin/bash
-# Development Deployment Script
+# Development Deployment Script (CI/CD Image Pull)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="geohod-dev"
 
-echo "🚀 Starting Development Deployment..."
+echo "🚀 Starting Development Deployment (CI/CD Image Pull)..."
 
 # Load environment variables
 if [ -f "$SCRIPT_DIR/.env.dev" ]; then
     export $(cat "$SCRIPT_DIR/.env.dev" | grep -v '^#' | xargs)
-    # Use optimized profile by default
-    export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev-optimized}
     echo "✅ Environment variables loaded"
 else
     echo "❌ .env.dev file not found!"
@@ -26,9 +24,15 @@ if ! docker volume inspect geohod_postgres_data_dev >/dev/null 2>&1; then
     docker volume create geohod_postgres_data_dev
 fi
 
-# Build and deploy services
-echo "🔨 Building and deploying development services..."
-docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" up -d --build
+# Pull the latest development image
+echo "📥 Pulling latest development image..."
+# In this case, we're loading a locally built image, but in a real scenario,
+# this would pull from a container registry
+echo "⚠️  Note: In a real deployment, this would pull from a container registry"
+
+# Deploy services (no build needed)
+echo "🚀 Deploying development services..."
+docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be healthy..."

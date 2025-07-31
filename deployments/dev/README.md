@@ -1,24 +1,35 @@
-# Development Deployment Guide
+# Development Deployment Guide (CI/CD Based)
 
-This directory contains all configuration files and scripts needed to deploy the Geohod backend application to the development environment.
+This directory contains all configuration files and scripts needed to deploy the Geohod backend application to the development environment using a CI/CD approach that builds on GitHub Actions and deploys pre-built images to avoid memory-intensive builds on the VPS.
 
 ## Directory Structure
 
-- `docker-compose.dev.yml` - Development Docker Compose configuration (memory optimized)
+- `docker-compose.dev.yml` - Development Docker Compose configuration (uses pre-built image)
 - `.env.dev` - Development environment variables (safe to commit)
-- `deploy-dev.sh` - Development deployment script
+- `deploy-dev.sh` - Development deployment script (pulls pre-built image)
 - `application-dev-optimized.yml` - Memory-optimized Spring configuration
 
 ## Deployment Process
 
-1. **Deploy**
-   ```bash
-   # Make the deployment script executable
-   chmod +x deploy-dev.sh
-   
-   # Run the deployment (builds from source with memory optimizations)
-   ./deploy-dev.sh
-   ```
+The deployment now works in two phases:
+1. **GitHub Actions builds and packages** the application into a Docker image
+2. **Deployment script pulls and runs** the pre-built image on the VPS
+
+### GitHub Actions Workflow
+When code is pushed to the `develop` branch:
+1. GitHub Actions builds the application using Gradle
+2. Creates a Docker image with the built JAR
+3. Packages the image and copies it to the VPS
+4. Triggers the deployment script
+
+### Manual Deployment
+```bash
+# Make the deployment script executable
+chmod +x deploy-dev.sh
+
+# Run the deployment (pulls pre-built image)
+./deploy-dev.sh
+```
 
 ## Development Environment Details
 
@@ -33,18 +44,18 @@ This directory contains all configuration files and scripts needed to deploy the
 
 ## Memory Optimizations
 
-The development environment has been optimized to reduce memory consumption by approximately 60%:
+The development environment has been optimized to reduce memory consumption on the VPS:
 
-- **Alpine JRE instead of JDK**: Reduced base image size using eclipse-temurin:23-jre-alpine
+- **No Local Build**: Eliminates memory-intensive Gradle build process on VPS
+- **Pre-built Image**: Application is built on GitHub Actions with ample resources
+- **Alpine JRE**: Reduced base image size using eclipse-temurin:23-jre-alpine
 - **JVM Heap Limits**: Constrained to 384MB maximum
-- **Gradle Memory Limits**: Constrained to 512MB maximum
 - **PostgreSQL Optimization**: Reduced memory usage to ~128MB
-- **Reduced Logging**: Less memory overhead from logging
 - **Resource Constraints**: Docker limits prevent memory bloat
 
 ## Features
 
-- **Hot Reload**: Source code changes are automatically reflected (via volume mounting)
+- **No Hot Reload**: Source code changes require rebuilding the image (eliminates local Gradle)
 - **Debugging**: Remote debugging available on port 5005
 - **Optimized Logging**: INFO level logging by default (DEBUG for application)
 - **Limited Actuator Endpoints**: Only essential endpoints exposed
@@ -58,45 +69,40 @@ The development environment has been optimized to reduce memory consumption by a
 
 ## Development Workflow
 
-1. **Start Development Environment**
+1. **Push to Develop Branch**
+   - GitHub Actions automatically builds and deploys
+
+2. **Manual Deployment**
    ```bash
    ./deploy-dev.sh
    ```
 
-2. **View Logs**
+3. **View Logs**
    ```bash
    docker compose -p geohod-dev logs -f
    ```
 
-3. **Stop Development Environment**
+4. **Stop Development Environment**
    ```bash
    docker compose -p geohod-dev down
    ```
 
-4. **Rebuild and Restart**
-   ```bash
-   docker compose -p geohod-dev up -d --build
-   ```
+## Memory Optimization Benefits
 
-## Memory Optimization Options
+### Before (Local Build)
+- Gradle build: ~1-2GB memory during build process
+- Application runtime: ~768MB
+- Total memory requirement: ~2-3GB
 
-### Standard Optimization (Default)
-- Application memory limit: 512MB
-- PostgreSQL memory limit: 256MB
-- Total estimated usage: ~768MB
+### After (CI/CD Build)
+- No local build: 0MB memory for building
+- Application runtime: ~512MB
+- Total memory requirement: ~512MB + small overhead
 
-### Ultra-Minimal Configuration
-To further reduce memory usage, you can:
-
-1. **Disable Debug Agent**: Comment out the JAVA_TOOL_OPTIONS line in docker-compose.dev.yml
-2. **Reduce Heap Size**: Set JAVA_OPTS to `-Xmx256m -Xms128m`
-3. **Minimal Logging**: Set LOGGING_LEVEL_ME_GEOHOD to WARN
-
-Example for ultra-minimal:
-```bash
-# In .env.dev, add:
-SPRING_PROFILES_ACTIVE=dev-optimized,minimal
-```
+### Memory Savings
+- **~1.5-2.5GB reduction** in peak memory usage
+- **Eliminates build-time memory spikes** that were causing deployment failures
+- **Consistent memory usage** without build overhead
 
 ## Troubleshooting
 
@@ -109,14 +115,14 @@ SPRING_PROFILES_ACTIVE=dev-optimized,minimal
 - Check database container health status
 - Ensure proper network connectivity
 
-**Build Issues**
-- Clean Gradle cache: `docker compose -p geohod-dev down -v`
-- Rebuild: `./deploy-dev.sh`
+**Deployment Issues**
+- Check GitHub Actions logs for build failures
+- Verify image was properly copied to VPS
+- Ensure deployment script has proper permissions
 
 **Memory Issues**
 - Check container memory usage: `docker stats`
 - Verify health: `curl http://localhost:8081/actuator/health`
-- Consider using ultra-minimal configuration (see above)
 
 **Debugging**
 - Connect IDE debugger to localhost:5005

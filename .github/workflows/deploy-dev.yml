@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-development:
+  build-and-deploy-development:
     runs-on: ubuntu-latest
     environment: development
     
@@ -14,13 +14,40 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up JDK 23
+      uses: actions/setup-java@v4
+      with:
+        java-version: '23'
+        distribution: 'temurin'
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Build with Gradle
+      run: ./gradlew build -x test
+
+    - name: Build Docker image
+      run: |
+        docker build -f .github/Dockerfile.dev -t geohod-backend:dev-latest .
+
+    - name: Save Docker image
+      run: |
+        docker save geohod-backend:dev-latest | gzip > geohod-backend-dev-latest.tar.gz
+
     - name: Copy files to server
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ vars.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
-        source: "deployments/dev/,src/,build.gradle,settings.gradle,Dockerfile.dev,gradle/,gradlew,gradlew.bat"
+        source: "geohod-backend-dev-latest.tar.gz,deployments/dev/"
         target: "~/geohod-backend-dev/"
 
     - name: Deploy to development
@@ -31,6 +58,9 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
           cd ~/geohod-backend-dev
+          
+          # Load Docker image
+          docker load < geohod-backend-dev-latest.tar.gz
           
           # Create .env.dev file
           cat > deployments/dev/.env.dev << EOF
@@ -49,3 +79,6 @@ jobs:
           
           # Run deployment
           ./deployments/dev/deploy-dev.sh
+          
+          # Cleanup
+          rm geohod-backend-dev-latest.tar.gz

@@ -1,0 +1,18 @@
+FROM eclipse-temurin:23-jre-alpine AS runtime
+
+WORKDIR /app
+
+# Copy the built JAR file
+COPY ./build/libs/*.jar geohod.jar
+
+# Set memory constraints for development
+ENV JAVA_OPTS="-Xmx384m -Xms192m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
+
+EXPOSE 8080 5005
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# Run with memory optimization
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar geohod.jar"]

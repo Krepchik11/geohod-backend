@@ -1,12 +1,9 @@
-# Development Environment Docker Compose Configuration (Memory Optimized)
+# Development Environment Docker Compose Configuration (CI/CD Built Image)
 # Project: geohod-dev
 
 services:
   geohod-app-dev:
-    build:
-      context: ../../
-      dockerfile: Dockerfile.dev
-    image: geohod-backend:dev
+    image: geohod-backend:dev-latest
     container_name: geohod-backend-dev
     restart: unless-stopped
     ports:
@@ -31,12 +28,7 @@ services:
       # JVM memory settings
       - JAVA_OPTS=-Xmx384m -Xms192m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication
       # Debug agent (optional, disable to save memory)
-      # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-    volumes:
-      - ../../src:/app/src
-      - ../../build.gradle:/app/build.gradle
-      - ../../settings.gradle:/app/settings.gradle
-      - gradle-cache-dev:/root/.gradle
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     depends_on:
       postgres-dev:
         condition: service_healthy
@@ -103,7 +95,6 @@ services:
 volumes:
   geohod_postgres_data_dev:
     external: true
-  gradle-cache-dev:
 
 networks:
   geohod-dev-network:
