@@ -24,7 +24,7 @@ services:
       - LOGGING_LEVEL_ME_GEOHOD=DEBUG
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
       # JVM memory settings
-      - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport -XX:MaxRAMPercentage=35.0 
+      - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 
       # Debug agent (optional, disable to save memory)
       # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     depends_on:
@@ -55,15 +55,14 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      # PostgreSQL memory optimizations
       - POSTGRES_SHARED_BUFFERS=64MB
-      - POSTGRES_EFFECTIVE_CACHE_SIZE=128MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=64MB
       - POSTGRES_WORK_MEM=4MB
       - POSTGRES_MAINTENANCE_WORK_MEM=32MB
     command: >
       postgres
       -c shared_buffers=64MB
-      -c effective_cache_size=128MB
+      -c effective_cache_size=64MB
       -c work_mem=4MB
       -c maintenance_work_mem=32MB
       -c max_connections=20
@@ -84,7 +83,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
           cpus: '0.5'
         reservations:
           memory: 128M
