@@ -49,7 +49,7 @@ The development environment has been optimized to reduce memory consumption on t
 - **No Local Build**: Eliminates memory-intensive Gradle build process on VPS
 - **Pre-built Image**: Application is built on GitHub Actions with ample resources
 - **Alpine JRE**: Reduced base image size using eclipse-temurin:23-jre-alpine
-- **JVM Heap Limits**: Constrained to 384MB maximum
+- **Container-Aware JVM**: Uses -XX:+UseContainerSupport and -XX:MaxRAMPercentage=75.0 for optimal memory management
 - **PostgreSQL Optimization**: Reduced memory usage to ~128MB
 - **Resource Constraints**: Docker limits prevent memory bloat
 

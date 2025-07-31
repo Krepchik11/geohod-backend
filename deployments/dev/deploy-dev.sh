@@ -30,6 +30,10 @@ echo "📥 Pulling latest development image..."
 # this would pull from a container registry
 echo "⚠️  Note: In a real deployment, this would pull from a container registry"
 
+# Remove existing containers to ensure fresh deployment
+echo "🧹 Cleaning up existing containers..."
+docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" down
+
 # Deploy services (no build needed)
 echo "🚀 Deploying development services..."
 docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" up -d
