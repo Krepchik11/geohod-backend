@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Deploy to Production (Podman)
 
 on:
   push:
@@ -30,16 +30,21 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
+    - name: Install Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman podman-compose
+
     - name: Build with Gradle
       run: ./gradlew build -x test
 
-    - name: Build Docker image
+    - name: Build Podman image
       run: |
-        docker build -f .github/Dockerfile -t geohod-backend:latest .
+        podman build -f .github/Dockerfile -t geohod-backend:latest .
 
-    - name: Save Docker image
+    - name: Save Podman image
       run: |
-        docker save geohod-backend:latest | gzip > geohod-backend-latest.tar.gz
+        podman save geohod-backend:latest | gzip > geohod-backend-latest.tar.gz
 
     - name: Copy files to server
       uses: appleboy/scp-action@v0.1.7
@@ -59,8 +64,14 @@ jobs:
         script: |
           cd ~/geohod-backend
           
-          # Load Docker image
-          docker load < geohod-backend-latest.tar.gz
+          # Install Podman on remote server if not already installed
+          if ! command -v podman &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y podman podman-compose
+          fi
+          
+          # Load Podman image
+          podman load < geohod-backend-latest.tar.gz
           
           # Create .env.prod file
           cat > deployments/prod/.env.prod << EOF
@@ -76,8 +87,8 @@ jobs:
           
           # Make scripts executable
           chmod +x deployments/prod/deploy-prod.sh
+          chmod +x deployments/prod/deploy-prod-podman.sh
           
-          # Run deployment
           ./deployments/prod/deploy-prod.sh
           
           # Cleanup

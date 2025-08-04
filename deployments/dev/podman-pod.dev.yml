@@ -1,17 +1,26 @@
-# Development Environment Docker Compose Configuration (CI/CD Built Image)
-# Project: geohod-dev
+version: '4'
+
+pods:
+  geohod-dev-pod:
+    network: geohod-dev-network
+    hostname: geohod-dev
+    labels:
+      - "environment=development"
+      - "project=geohod"
+      - "version=dev"
 
 services:
   geohod-app-dev:
     image: geohod-backend:dev-latest
     container_name: geohod-backend-dev
+    pod: geohod-dev-pod
     restart: unless-stopped
     ports:
       - "8081:8080"
-      - "5005:5005"  # Debug port
+      - "5005:5005"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-dev:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - GEOHOD_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
@@ -23,71 +32,36 @@ services:
       - LOGGING_LEVEL_ROOT=INFO
       - LOGGING_LEVEL_ME_GEOHOD=DEBUG
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
-      # JVM memory settings
-      - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 
-      # Debug agent (optional, disable to save memory)
-      # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-    depends_on:
-      postgres-dev:
-        condition: service_healthy
-    networks:
-      - geohod-dev-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
       interval: 45s
       timeout: 15s
       retries: 3
       start_period: 90s
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.1'
-
+    annotations:
+      - "io.podman.description=Geohod backend dev app"
+      
   postgres-dev:
-    image: postgres:17-alpine
+    image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres-dev
+    pod: geohod-dev-pod
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_SHARED_BUFFERS=64MB
-      - POSTGRES_EFFECTIVE_CACHE_SIZE=64MB
-      - POSTGRES_WORK_MEM=4MB
-      - POSTGRES_MAINTENANCE_WORK_MEM=32MB
     command: >
       postgres
-      -c shared_buffers=64MB
-      -c effective_cache_size=64MB
-      -c work_mem=4MB
-      -c maintenance_work_mem=32MB
-      -c max_connections=20
-      -c random_page_cost=1.1
-      -c effective_io_concurrency=200
     volumes:
       - geohod_postgres_data_dev:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    networks:
-      - geohod-dev-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 15s
       timeout: 10s
       retries: 5
       start_period: 45s
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: '0.5'
-        reservations:
-          memory: 128M
-          cpus: '0.1'
+    annotations:
+      - "io.podman.description=Geohod backend dev db"
 
 volumes:
   geohod_postgres_data_dev:

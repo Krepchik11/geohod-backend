@@ -1,16 +1,25 @@
-# Production Environment Docker Compose Configuration
-# Project: geohod-prod
+version: '4'
+
+pods:
+  geohod-prod-pod:
+    network: geohod-prod-network
+    hostname: geohod-prod
+    labels:
+      - "environment=production"
+      - "project=geohod"
+      - "version=prod"
 
 services:
   geohod-app:
     image: geohod-backend:latest
     container_name: geohod-backend-prod
+    pod: geohod-prod-pod
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-prod:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - GEOHOD_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
@@ -21,29 +30,19 @@ services:
       - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=20
       - LOGGING_LEVEL_ROOT=INFO
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
-    depends_on:
-      postgres-prod:
-        condition: service_healthy
-    networks:
-      - geohod-prod-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-    # deploy:
-    #   resources:
-    #     limits:
-    #       memory: 2G
-    #       cpus: '1.5'
-    #     reservations:
-    #       memory: 1G
-    #       cpus: '0.5'
-
+    annotations:
+      - "io.podman.description=Geohod backend prod app"
+      
   postgres-prod:
-    image: postgres:17-alpine
+    image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres-prod
+    pod: geohod-prod-pod
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
@@ -52,24 +51,14 @@ services:
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - geohod_postgres_data_prod:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - geohod-prod-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-    # deploy:
-    #   resources:
-    #     limits:
-    #       memory: 1G
-    #       cpus: '1.0'
-    #     reservations:
-    #       memory: 512M
-    #       cpus: '0.3'
+    annotations:
+      - "io.podman.description=Geohod backend drop db"
 
 volumes:
   geohod_postgres_data_prod:
