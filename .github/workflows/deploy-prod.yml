@@ -1,4 +1,4 @@
-name: Deploy to Production (Podman)
+name: Deploy to prod
 
 on:
   push:
