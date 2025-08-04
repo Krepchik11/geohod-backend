@@ -1,4 +1,4 @@
-name: Deploy to Production (Podman)
+name: Deploy to prod
 
 on:
   push:
@@ -63,12 +63,6 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
           cd ~/geohod-backend
-          
-          # Install Podman on remote server if not already installed
-          if ! command -v podman &> /dev/null; then
-            sudo apt-get update
-            sudo apt-get install -y podman podman-compose
-          fi
           
           # Load Podman image
           podman load < geohod-backend-latest.tar.gz
