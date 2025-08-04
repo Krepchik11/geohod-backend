@@ -1,0 +1,31 @@
+[Unit]
+Description=Geohod Backend PostgreSQL Database
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=geohod
+Group=geohod
+Environment=POSTGRES_DB=geohod
+Environment=POSTGRES_USER=geohod
+Environment=POSTGRES_PASSWORD=geohod
+Environment=POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+
+ExecStart=/usr/bin/podman run \
+  --name geohod-postgres-prod \
+  --pod geohod-prod-pod \
+  --rm \
+  --log-driver=journald \
+  --memory=300M \
+  --cpus=1.0 \
+  -v geohod_postgres_data_prod:/var/lib/postgresql/data \
+  docker.io/library/postgres:17-alpine
+
+ExecStop=/usr/bin/podman stop geohod-postgres-prod
+
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

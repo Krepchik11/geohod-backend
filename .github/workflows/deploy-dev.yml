@@ -1,0 +1,89 @@
+name: Deploy to Development (Podman)
+
+on:
+  # push:
+  #   branches: [ develop ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy-development:
+    runs-on: ubuntu-latest
+    environment: development
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 23
+      uses: actions/setup-java@v4
+      with:
+        java-version: '23'
+        distribution: 'temurin'
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Install Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman podman-compose
+
+    - name: Build with Gradle
+      run: ./gradlew build -x test
+
+    - name: Build Podman image
+      run: |
+        podman build -f .github/Dockerfile -t geohod-backend:dev-latest .
+
+    - name: Save Podman image
+      run: |
+        podman save geohod-backend:dev-latest | gzip > geohod-backend-dev-latest.tar.gz
+
+    - name: Copy files to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ vars.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        source: "geohod-backend-dev-latest.tar.gz,deployments/dev/"
+        target: "~/geohod-backend-dev/"
+
+    - name: Deploy to development
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ vars.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          cd ~/geohod-backend-dev
+
+          # Load Podman image
+          podman load < geohod-backend-dev-latest.tar.gz
+          
+          # Create .env.dev file
+          cat > deployments/dev/.env.dev << EOF
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
+          CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}
+          GEOHOD_CREATED_EVENT_LINK_TEMPLATE=${{ vars.GEOHOD_CREATED_EVENT_LINK_TEMPLATE }}
+          GEOHOD_REVIEW_LINK_TEMPLATE=${{ vars.GEOHOD_REVIEW_LINK_TEMPLATE }}
+          EOF
+          
+          # Make scripts executable
+          chmod +x deployments/dev/deploy-dev.sh
+          chmod +x deployments/dev/deploy-dev-podman.sh
+          
+          ./deployments/dev/deploy-dev.sh
+          
+          # Cleanup
+          rm geohod-backend-dev-latest.tar.gz

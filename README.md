@@ -53,50 +53,6 @@ The API supports versioning with backward compatibility:
 
 This project uses Liquibase for database schema management. Migrations are automatically applied when the application starts.
 
-## API Endpoints
-
-### Event Management
-- `GET /api/events` - List events
-- `POST /api/events` - Create event
-- `GET /api/events/{id}` - Get event details
-- `PUT /api/events/{id}` - Update event
-- `DELETE /api/events/{id}` - Cancel event
-- `POST /api/events/{id}/finish` - Finish event
-
-### Event Participation
-- `POST /api/events/{id}/register` - Register for event
-- `POST /api/events/{id}/unregister` - Unregister from event
-- `GET /api/events/{id}/participants` - Get event participants
-- `DELETE /api/events/{id}/participants/{userId}` - Remove participant
-
-### Reviews & Ratings (v2)
-- `POST /api/v2/reviews` - Submit review (authenticated user only)
-- `GET /api/v2/users/{id}/reviews` - Get user reviews (paged)
-- `GET /api/v2/users/{id}/rating` - Get user average rating
-- `PATCH /api/v2/reviews/{id}/hide` - Hide review (event organizer only)
-- `PATCH /api/v2/reviews/{id}/unhide` - Unhide review (event organizer only)
-
-### Notifications (v2)
-- `GET /api/v2/notifications` - Get notifications (cursor-based pagination)
-  - Query params: `limit` (default: 20), `isRead` (default: false), `cursorId` (optional)
-- `POST /api/v2/notifications/{id}/dismiss` - Mark notification as read
-- `POST /api/v2/notifications/dismiss-all` - Mark all notifications as read
-
-### Authentication
-All endpoints require Telegram authentication via `Authentication` header.
-
-## Prod deployment
-
-### Required environment variables
-
-- `SPRING_DATASOURCE_URL` - PostgreSQL URL
-- `SPRING_DATASOURCE_USERNAME` - DB username
-- `SPRING_DATASOURCE_PASSWORD` - DB password
-- `GEOHOD_TELEGRAM_BOT_TOKEN` - Telegram bot API token
-- `GEOHOD_TELEGRAM_BOT_USERNAME` - Telegram bot username
-- `GEOHOD_CREATED_EVENT_LINK_TEMPLATE` - Link template for event created notification
-  - Parameters: `{botName}`, `{eventId}`
-
 ### Docker deployment
 
 1. Build image:
@@ -118,20 +74,3 @@ docker run -d \
 -e SPRING_PROFILES_ACTIVE=dev \
 geohod-backend:latest
 ```
-
-### GitHub Actions deployment
-
-Project includes GitHub Actions workflow that automatically builds and deploys the application new release published.
-
-1. Builds the application
-2. Creates a Docker image
-3. Transfers the image to the production VPS
-4. Runs container with the specified environment variables
-
-Required GitHub Variables:
-- `VPS_HOST` - VPS hostname or IP address
-
-Required GitHub Secrets for deployment:
-- `VPS_USER` - VPS username
-- `VPS_SSH_KEY` - SSH private key for VPS access
-- `SECRET_VARS` - Comma-separated list of environment variables in format `KEY=VALUE`
