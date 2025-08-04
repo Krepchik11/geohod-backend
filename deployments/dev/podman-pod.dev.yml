@@ -1,26 +1,16 @@
 version: '4'
 
-pods:
-  geohod-dev-pod:
-    network: geohod-dev-network
-    hostname: geohod-dev
-    labels:
-      - "environment=development"
-      - "project=geohod"
-      - "version=dev"
-
 services:
   geohod-app-dev:
     image: geohod-backend:dev-latest
     container_name: geohod-backend-dev
-    pod: geohod-dev-pod
     restart: unless-stopped
     ports:
       - "8081:8080"
       - "5005:5005"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-dev:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - GEOHOD_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
@@ -38,13 +28,10 @@ services:
       timeout: 15s
       retries: 3
       start_period: 90s
-    annotations:
-      - "io.podman.description=Geohod backend dev app"
-      
+  
   postgres-dev:
     image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres-dev
-    pod: geohod-dev-pod
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
@@ -60,8 +47,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 45s
-    annotations:
-      - "io.podman.description=Geohod backend dev db"
 
 volumes:
   geohod_postgres_data_dev:
