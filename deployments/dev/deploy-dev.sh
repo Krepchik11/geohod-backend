@@ -1,10 +1,27 @@
 #!/bin/bash
 # Development Deployment Script (CI/CD Image Pull)
+# Podman-only version
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="geohod-dev"
+
+# Check if Podman is installed
+if ! command -v podman &> /dev/null; then
+    echo "❌ Podman not found. Please install Podman."
+    exit 1
+fi
+
+# Check if podman-compose is installed
+if ! command -v podman-compose &> /dev/null; then
+    echo "❌ podman-compose not found. Please install podman-compose."
+    exit 1
+fi
+
+CONTAINER_RUNTIME="podman"
+COMPOSE_COMMAND="podman-compose"
+echo "🐳 Using Podman as container runtime"
 
 echo "🚀 Starting Development Deployment (CI/CD Image Pull)..."
 
@@ -19,24 +36,22 @@ fi
 
 # Check if required volumes exist
 echo "🔍 Checking required volumes..."
-if ! docker volume inspect geohod_postgres_data_dev >/dev/null 2>&1; then
+if ! $CONTAINER_RUNTIME volume inspect geohod_postgres_data_dev >/dev/null 2>&1; then
     echo "📦 Creating development database volume..."
-    docker volume create geohod_postgres_data_dev
+    $CONTAINER_RUNTIME volume create geohod_postgres_data_dev
 fi
 
-# Pull the latest development image
-echo "📥 Pulling latest development image..."
-# In this case, we're loading a locally built image, but in a real scenario,
-# this would pull from a container registry
-echo "⚠️  Note: In a real deployment, this would pull from a container registry"
+# Determine which compose file to use
+COMPOSE_FILE="$SCRIPT_DIR/podman-pod.dev.yml"
+echo "🔧 Using pod-based configuration: $COMPOSE_FILE"
 
 # Remove existing containers to ensure fresh deployment
 echo "🧹 Cleaning up existing containers..."
-docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" down
+$COMPOSE_COMMAND -f "$COMPOSE_FILE" -p "$PROJECT_NAME" down
 
 # Deploy services (no build needed)
 echo "🚀 Deploying development services..."
-docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" up -d
+$COMPOSE_COMMAND -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be healthy..."
@@ -52,8 +67,9 @@ if curl -f http://localhost:8081/actuator/health >/dev/null 2>&1; then
 else
     echo "❌ Health check failed!"
     echo "📋 Recent logs:"
-    docker compose -f "$SCRIPT_DIR/docker-compose.dev.yml" -p "$PROJECT_NAME" logs --tail=20
+    $COMPOSE_COMMAND -f "$COMPOSE_FILE" -p "$PROJECT_NAME" logs --tail=20
     exit 1
 fi
 
 echo "🎉 Development environment is ready!"
+echo "🔧 Deployed with $CONTAINER_RUNTIME using $COMPOSE_FILE"

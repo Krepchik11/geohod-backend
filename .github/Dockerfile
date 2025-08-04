@@ -1,4 +1,4 @@
-FROM eclipse-temurin:23-jre-alpine AS runtime
+FROM docker.io/library/eclipse-temurin:23-jre-alpine AS runtime
 
 WORKDIR /app
 
@@ -9,4 +9,4 @@ EXPOSE 8080
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "geohod.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=90.0", "-jar", "geohod.jar"]

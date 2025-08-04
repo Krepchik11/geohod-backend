@@ -1,25 +1,42 @@
 logging:
   level:
-    org.springframework.security: debug
-    org.springframework.web.cors: debug
+    root: INFO
+    me.geohod: DEBUG
+    org.springframework.security: WARN
+    org.springframework.web.cors: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:54321/geohod
-    username: geohod
-    password: secret
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
 
 geohod:
-  telegram-bot:
-    token: ${GEOHOD_TELEGRAM_BOT_TOKEN:dev-token}
-    username: ${GEOHOD_TELEGRAM_BOT_USERNAME:dev-bot}
-  linkTemplates:
-    eventRegistrationLink: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE:https://t.me/{botName}/{eventId}}
   processor:
     in-app:
-      delay: 5000
+      delay: 10000
     telegram:
-      delay: 5000
+      delay: 10000
 
 springdoc:
   api-docs:

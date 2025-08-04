@@ -1,6 +1,4 @@
 #!/bin/bash
-# Shared Health Check Script for Geohod Environments
-
 set -e
 
 ENVIRONMENT=${1:-"prod"}
@@ -33,7 +31,7 @@ while [ $SECONDS -lt $HEALTHCHECK_TIMEOUT ]; do
     
     # Show service status
     echo "📋 Service status:"
-    docker compose -p $PROJECT_NAME ps
+    podman-compose -p $PROJECT_NAME ps
     
     exit 0
   fi
@@ -43,5 +41,5 @@ done
 
 echo "❌ Health check failed after $HEALTHCHECK_TIMEOUT seconds!"
 echo "📋 Recent logs:"
-docker compose -p $PROJECT_NAME logs --tail=20
+podman-compose -p $PROJECT_NAME logs --tail=20
 exit 1
