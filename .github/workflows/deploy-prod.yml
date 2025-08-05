@@ -46,13 +46,48 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build -x test
 
-    - name: Build Podman image
+    - name: Set image tags for production
       run: |
-        podman build -f .github/Dockerfile -t geohod-backend:latest .
+        # Validate GITHUB_SHA is available
+        if [ -z "$GITHUB_SHA" ]; then
+          echo "❌ GITHUB_SHA is not set"
+          exit 1
+        fi
+        
+        COMMIT_SHA=${GITHUB_SHA:0:7}
+        
+        # Validate commit SHA format
+        if [[ ! "$COMMIT_SHA" =~ ^[a-f0-9]{7}$ ]]; then
+          echo "❌ Invalid commit SHA format: $COMMIT_SHA"
+          exit 1
+        fi
+        
+        if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+          # Release deployment
+          RELEASE_VERSION=${GITHUB_REF_NAME#v}  # Remove 'v' prefix
+          
+          # Validate release version format
+          if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+            echo "❌ Invalid release version format: $RELEASE_VERSION"
+            exit 1
+          fi
+          
+          echo "PRIMARY_TAG=geohod-backend:v${RELEASE_VERSION}" >> $GITHUB_ENV
+          echo "✅ Generated release tag: v${RELEASE_VERSION}"
+        else
+          # Manual deployment from main branch
+          echo "PRIMARY_TAG=geohod-backend:prod-${COMMIT_SHA}" >> $GITHUB_ENV
+          echo "✅ Generated commit tag: prod-${COMMIT_SHA}"
+        fi
+        echo "LATEST_TAG=geohod-backend:latest" >> $GITHUB_ENV
+
+    - name: Build Podman image with dynamic tags
+      run: |
+        podman build -f .github/Dockerfile -t ${{ env.PRIMARY_TAG }} -t ${{ env.LATEST_TAG }} .
 
     - name: Save Podman image
       run: |
-        podman save geohod-backend:latest | gzip > geohod-backend-latest.tar.gz
+        podman save ${{ env.PRIMARY_TAG }} | gzip > geohod-backend-prod.tar.gz
 
     - name: Copy files to server
       uses: appleboy/scp-action@v0.1.7
@@ -60,7 +95,7 @@ jobs:
         host: ${{ vars.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
-        source: "geohod-backend-latest.tar.gz,deployments/prod/"
+        source: "geohod-backend-prod.tar.gz,deployments/prod/"
         target: "~/geohod-backend/"
 
     - name: Deploy to production
@@ -73,7 +108,7 @@ jobs:
           cd ~/geohod-backend
           
           # Load Podman image
-          podman load < geohod-backend-latest.tar.gz
+          podman load < geohod-backend-prod.tar.gz
           
           # Create .env.prod file
           cat > deployments/prod/.env.prod << EOF
@@ -85,6 +120,7 @@ jobs:
           CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}
           GEOHOD_CREATED_EVENT_LINK_TEMPLATE=${{ vars.GEOHOD_CREATED_EVENT_LINK_TEMPLATE }}
           GEOHOD_REVIEW_LINK_TEMPLATE=${{ vars.GEOHOD_REVIEW_LINK_TEMPLATE }}
+          IMAGE_TAG=${{ env.PRIMARY_TAG }}
           EOF
           
           # Make scripts executable
@@ -94,4 +130,4 @@ jobs:
           ./deployments/prod/deploy-prod.sh
           
           # Cleanup
-          rm geohod-backend-latest.tar.gz
+          rm geohod-backend-prod.tar.gz
