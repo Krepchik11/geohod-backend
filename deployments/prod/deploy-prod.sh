@@ -29,6 +29,14 @@ echo "🚀 Starting Production Deployment..."
 if [ -f "$SCRIPT_DIR/.env.prod" ]; then
     export $(cat "$SCRIPT_DIR/.env.prod" | grep -v '^#' | xargs)
     echo "✅ Environment variables loaded"
+    
+    # Validate IMAGE_TAG is set
+    if [ -z "$IMAGE_TAG" ]; then
+        echo "⚠️  IMAGE_TAG not set, using default: geohod-backend:latest"
+        export IMAGE_TAG="geohod-backend:latest"
+    else
+        echo "🐳 Using image tag: $IMAGE_TAG"
+    fi
 else
     echo "❌ .env.prod file not found!"
     exit 1

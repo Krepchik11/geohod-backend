@@ -2,11 +2,13 @@ version: '4'
 
 services:
   geohod-app:
-    image: geohod-backend:latest
+    image: ${IMAGE_TAG:-geohod-backend:latest}
     container_name: geohod-backend-prod
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - postgres-prod
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-prod:5432/${POSTGRES_DB}

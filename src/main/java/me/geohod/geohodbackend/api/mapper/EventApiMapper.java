@@ -3,7 +3,6 @@ package me.geohod.geohodbackend.api.mapper;
 import java.util.UUID;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
 
 import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
 import me.geohod.geohodbackend.api.dto.request.EventFinishRequest;

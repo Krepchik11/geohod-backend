@@ -29,6 +29,14 @@ echo "🚀 Starting Development Deployment (CI/CD Image Pull)..."
 if [ -f "$SCRIPT_DIR/.env.dev" ]; then
     export $(cat "$SCRIPT_DIR/.env.dev" | grep -v '^#' | xargs)
     echo "✅ Environment variables loaded"
+    
+    # Validate IMAGE_TAG is set
+    if [ -z "$IMAGE_TAG" ]; then
+        echo "⚠️  IMAGE_TAG not set, using default: geohod-backend:dev-latest"
+        export IMAGE_TAG="geohod-backend:dev-latest"
+    else
+        echo "🐳 Using image tag: $IMAGE_TAG"
+    fi
 else
     echo "❌ .env.dev file not found!"
     exit 1
