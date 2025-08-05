@@ -1,16 +1,24 @@
 name: Deploy to develop
 
 on:
-  # push:
-  #   branches: [ develop ]
   workflow_dispatch:
 
 jobs:
   build-and-deploy-development:
     runs-on: ubuntu-latest
     environment: development
+    if: github.ref_name == 'develop'
     
     steps:
+    - name: Validate branch
+      run: |
+        if [ "${{ github.ref_name }}" != "develop" ]; then
+          echo "This workflow can only be triggered from the 'develop' branch."
+          echo "Current branch: ${{ github.ref_name }}"
+          exit 1
+        fi
+        echo "Branch validation passed. Running on 'develop' branch."
+
     - name: Checkout code
       uses: actions/checkout@v4
 

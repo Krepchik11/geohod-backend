@@ -1,16 +1,24 @@
 name: Deploy to prod
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
     environment: production
+    if: github.ref_name == 'main'
     
     steps:
+    - name: Validate branch
+      run: |
+        if [ "${{ github.ref_name }}" != "main" ]; then
+          echo "This workflow can only be triggered from the 'main' branch."
+          echo "Current branch: ${{ github.ref_name }}"
+          exit 1
+        fi
+        echo "Branch validation passed. Running on 'main' branch."
+
     - name: Checkout code
       uses: actions/checkout@v4
 
