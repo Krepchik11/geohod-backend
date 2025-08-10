@@ -44,14 +44,15 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
           set -euo pipefail
-          # Non-interactive sudo capability check for the privileged wrapper
-          if ! sudo -n -l 2>/dev/null | grep -q '/usr/local/bin/geohod-deploy-systemd.sh'; then
-            echo "ERROR: deploy user does not have NOPASSWD sudo for /usr/local/bin/geohod-deploy-systemd.sh" >&2
+          # Non-interactive sudo capability check for the privileged wrapper.
+          # For dev deployments we expect the dev-specific privileged wrapper to be allowed.
+          if ! sudo -n -l 2>/dev/null | grep -q '/usr/local/bin/geohod-deploy-systemd-dev.sh'; then
+            echo "ERROR: deploy user does not have NOPASSWD sudo for /usr/local/bin/geohod-deploy-systemd-dev.sh" >&2
             echo "Please add via visudo (example):" >&2
-            echo "  deployuser ALL=(root) NOPASSWD: /usr/local/bin/geohod-deploy-systemd.sh" >&2
+            echo "  deployuser ALL=(root) NOPASSWD: /usr/local/bin/geohod-deploy-systemd-dev.sh" >&2
             exit 1
           fi
-          echo "OK: deploy user can run the privileged wrapper via sudo"
+          echo "OK: deploy user can run the privileged dev wrapper via sudo"
 
     - name: Set up JDK 23
       uses: actions/setup-java@v4
@@ -241,7 +242,7 @@ jobs:
           fi
 
           echo "Invoking privileged deploy wrapper (sudo) to install systemd units and load image..."
-          sudo /usr/local/bin/geohod-deploy-systemd.sh install "$STAGING_DIR"
+          sudo /usr/local/bin/geohod-deploy-systemd-dev.sh install "$STAGING_DIR"
 
           # Optional: run healthcheck if helper present
           if [ -x "$STAGING_DIR/healthcheck.sh" ]; then

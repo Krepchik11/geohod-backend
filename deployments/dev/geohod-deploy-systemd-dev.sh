@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Minimal privileged installer wrapper for Geohod dev systemd deployment
-# Path (repository): deployments/dev/geohod-deploy-systemd.sh
+# Path (repository): deployments/dev/geohod-deploy-systemd-dev.sh
 #
 # Responsibilities (minimal):
 # - Validate staging directory and required artifacts
@@ -46,7 +46,7 @@ Commands:
 Notes:
   - staging-dir must be accessible and owned/managed by the deploy user (CI).
   - This script performs privileged operations and should be invoked via sudo by the deploy user:
-      sudo /usr/local/bin/geohod-deploy-systemd.sh install /tmp/staging
+      sudo /usr/local/bin/geohod-deploy-systemd-dev.sh install /tmp/staging
 EOF
 }
 
