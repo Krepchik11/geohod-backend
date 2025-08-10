@@ -1,0 +1,14 @@
+[Unit]
+Description=Geohod dev Pod (meta unit)
+After=network.target container-geohod-postgres-dev.service
+Wants=container-geohod-postgres-dev.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/podman pod create --name geohod-dev-pod --share net --publish 8081:8080 --publish 5005:5005
+ExecStop=/usr/bin/podman pod rm -f geohod-dev-pod
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
