@@ -139,10 +139,6 @@ jobs:
         echo "Created artifacts:"
         ls -lh "${IMAGE_TAR}" "${IMAGE_TAR_LATEST}" || true
 
-    - name: Secret check (already performed earlier)
-      run: |
-        echo "Secret check moved earlier in the workflow"
-
     - name: Render env file from GitHub Secrets (runner-only; not committed)
       run: |
         set -euo pipefail
