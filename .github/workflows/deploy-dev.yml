@@ -159,30 +159,44 @@ jobs:
     - name: Pack deployment artifacts (runner-side)
       run: |
         set -euo pipefail
-        # Package a single deploy artifact tarball that the runner user can create/read.
-        # This avoids appleboy/scp's internal tar step which may run as a different user
-        # and fail on strict file permissions for secrets (tar: Permission denied).
         ARTIFACT="geohod-deploy-artifacts-${COMMIT_SHA}.tar.gz"
-        echo "Creating deployment artifact: ${ARTIFACT}"
+        STAGING_LAYOUT="geohod-deploy-staging-${COMMIT_SHA}"
+        echo "Creating staging layout: ${STAGING_LAYOUT}"
 
-        # Verify the image tar exists
+        # Clean previous staging if any
+        rm -rf "${STAGING_LAYOUT}"
+        mkdir -p "${STAGING_LAYOUT}/systemd"
+
+        # Ensure image tar exists and copy into staging root
         if [ -z "${IMAGE_TAR:-}" ] || [ ! -f "${IMAGE_TAR}" ]; then
           echo "ERROR: expected image tar missing: ${IMAGE_TAR:-<unset>}" >&2
           ls -lah || true
           exit 1
         fi
+        cp -f -- "${IMAGE_TAR}" "${STAGING_LAYOUT}/"
 
-        # Create the archive as the runner user (has permission to read geohod-dev.env)
-        tar -czf "${ARTIFACT}" \
-          "${IMAGE_TAR}" "${IMAGE_TAR_LATEST}" \
-          deployments/dev/systemd/*.service \
-          geohod-dev.env \
-          deployments/shared/healthcheck.sh
+        # Copy latest tar if present
+        if [ -n "${IMAGE_TAR_LATEST:-}" ] && [ -f "${IMAGE_TAR_LATEST}" ]; then
+          cp -f -- "${IMAGE_TAR_LATEST}" "${STAGING_LAYOUT}/"
+        fi
 
-        echo "Pack complete; artifact size:"
-        ls -lh "${ARTIFACT}" || true
-        # Export artifact name for later steps
+        # Copy unit files into the expected staging/systemd/ path
+        cp -f -- deployments/dev/systemd/*.service "${STAGING_LAYOUT}/systemd/" || true
+
+        # Copy env and healthcheck into staging root
+        cp -f -- geohod-dev.env "${STAGING_LAYOUT}/" || true
+        cp -f -- deployments/shared/healthcheck.sh "${STAGING_LAYOUT}/" || true
+
+        # Restrict permissions in staging to avoid accidental world-readable secrets
+        chmod -R go-rwx "${STAGING_LAYOUT}" || true
+
+        # Create single archive from the staging layout so extraction produces the expected structure
+        tar -C "${STAGING_LAYOUT}" -czf "${ARTIFACT}" .
+
+        # Export artifact name and cleanup staging layout
         echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
+        ls -lh "${ARTIFACT}" || true
+        rm -rf "${STAGING_LAYOUT}"
 
     - name: Copy deployment artifact to server (single tarball)
       uses: appleboy/scp-action@v0.1.7
