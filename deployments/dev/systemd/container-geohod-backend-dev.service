@@ -1,0 +1,19 @@
+[Unit]
+Description=Geohod Backend container (dev)
+After=network.target
+Wants=geohod-dev-pod.service
+
+[Service]
+Restart=on-failure
+RestartSec=5
+ExecStartPre=/usr/bin/podman image exists localhost/geohod-backend:dev-latest || /usr/bin/podman pull localhost/geohod-backend:dev-latest
+ExecStart=/usr/bin/podman run --rm --name geohod-backend-dev \
+  --pod geohod-dev-pod \
+  -e GEOHOD_ENV_FILE=/etc/geohod/geohod-dev.env \
+  -v /var/lib/geohod/backend-data:/var/lib/geohod/backend-data \
+  localhost/geohod-backend:dev-latest
+ExecStop=/usr/bin/podman stop geohod-backend-dev || true
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

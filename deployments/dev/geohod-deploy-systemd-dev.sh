@@ -122,20 +122,33 @@ install_unit_files() {
 
   # Copy each .service file into /etc/systemd/system/
   local failed=0
+  local copied=0
   for f in "$unit_dir"/*.service; do
     [ -e "$f" ] || continue
     local dest="$SYSTEMD_DIR/$(basename "$f")"
-    cp -f -- "$f" "$dest" || { err "Failed to copy $f -> $dest"; failed=1; continue; }
-    chown root:root "$dest"
-    chmod 644 "$dest"
-    log "Installed unit: $(basename "$f")"
+    if cp -f -- "$f" "$dest"; then
+      chown root:root "$dest"
+      chmod 644 "$dest"
+      log "Installed unit: $(basename "$f") -> $dest"
+      copied=$((copied+1))
+    else
+      err "Failed to copy $f -> $dest"
+      failed=1
+      continue
+    fi
   done
 
-  if [ "$failed" -ne 0 ]; then
+  if [ "$copied" -eq 0 ]; then
+    err "No unit files were copied from staging ($unit_dir). Expected at least one .service file."
     return 1
   fi
 
-  log "Unit files installed to $SYSTEMD_DIR"
+  if [ "$failed" -ne 0 ]; then
+    err "One or more unit files failed to copy"
+    return 1
+  fi
+
+  log "Unit files installed to $SYSTEMD_DIR (count: $copied)"
   return 0
 }
 
@@ -150,10 +163,27 @@ enable_and_start_units() {
   systemctl daemon-reload
 
   for u in "${units[@]}"; do
+    log "Checking unit file exists for: $u"
+    if [ ! -f "$SYSTEMD_DIR/$u" ]; then
+      err "Unit file missing: $SYSTEMD_DIR/$u"
+      err "Aborting enable/start sequence"
+      return 1
+    fi
+
     log "Enabling unit: $u"
-    systemctl enable "$u" || err "systemctl enable failed for $u" || return 1
+    if ! systemctl enable "$u"; then
+      err "systemctl enable failed for $u"
+      systemctl status "$u" --no-pager || true
+      return 1
+    fi
+
     log "Starting unit: $u"
-    systemctl restart "$u" || { err "Failed to start $u"; return 1; }
+    if ! systemctl restart "$u"; then
+      err "Failed to start $u"
+      systemctl status "$u" --no-pager || true
+      return 1
+    fi
+
     # Wait a moment for service state to settle
     sleep 2
   done
