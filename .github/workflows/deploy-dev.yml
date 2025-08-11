@@ -181,7 +181,21 @@ jobs:
         fi
 
         # Copy unit files into the expected staging/systemd/ path
-        cp -f -- deployments/dev/systemd/*.service "${STAGING_LAYOUT}/systemd/" || true
+        # Fail loud if no unit files are present so staging cannot be empty
+        shopt -s nullglob
+        unit_files=(deployments/dev/systemd/*.service)
+        shopt -u nullglob
+        if [ "${#unit_files[@]}" -eq 0 ]; then
+          echo "ERROR: no unit files found in deployments/dev/systemd; aborting packaging" >&2
+          ls -lah deployments/dev || true
+          exit 1
+        fi
+        for f in "${unit_files[@]}"; do
+          echo "Staging unit file: $f"
+          cp -f -- "$f" "${STAGING_LAYOUT}/systemd/" || { echo "ERROR: failed to copy $f to ${STAGING_LAYOUT}/systemd/"; exit 1; }
+        done
+        echo "Staged unit files:"
+        ls -lh "${STAGING_LAYOUT}/systemd/" || true
 
         # Copy env and healthcheck into staging root
         cp -f -- geohod-dev.env "${STAGING_LAYOUT}/" || true
