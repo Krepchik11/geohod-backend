@@ -52,12 +52,17 @@ jobs:
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
-          CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}
+          LOGGING_LEVEL_ROOT=WARN
+          LOGGING_LEVEL_ME_GEOHOD=DEBUG
+          SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+          SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+          SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+          GEOHOD_TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GEOHOD_TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
           GEOHOD_CREATED_EVENT_LINK_TEMPLATE=${{ vars.GEOHOD_CREATED_EVENT_LINK_TEMPLATE }}
           GEOHOD_REVIEW_LINK_TEMPLATE=${{ vars.GEOHOD_REVIEW_LINK_TEMPLATE }}
           GEOHOD_IMAGE_TAG=dev-${{ steps.vars.outputs.sha_short }}
+          CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}
           EOF
 
       - name: Create deployment artifact archive
