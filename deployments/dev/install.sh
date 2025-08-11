@@ -1,20 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-# This script must be run as root via sudo.
-if [ "$(id -u)" -ne 0 ]; then
-  echo "This script requires superuser privileges. Please run with sudo." >&2
-  exit 1
-fi
+# This script runs as the deployment user, not root.
 
-# Determine the home directory of the user who invoked sudo
-SUDO_USER_HOME=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
-STAGING_DIR="${SUDO_USER_HOME}/geohod-backend-dev"
-CONFIG_DIR="/etc/geohod"
+STAGING_DIR="${HOME}/geohod-backend-dev"
+# Per XDG Base Directory Specification, user-specific config files are in ~/.config
+CONFIG_DIR="${HOME}/.config/geohod"
+# Per systemd spec, user services are in ~/.config/systemd/user
+SERVICE_DIR="${HOME}/.config/systemd/user"
 SERVICE_NAME="geohod-backend-dev"
 ENV_FILE="geohod-dev.env"
 
-echo "--- Starting Geohod Backend Dev Deployment ---"
+echo "--- Starting Geohod Backend Dev User Deployment ---"
 
 # 1. Validate required files exist in staging area
 echo "--> Validating artifacts in ${STAGING_DIR}..."
@@ -30,11 +27,10 @@ echo "Artifacts validated."
 echo "--> Updating environment configuration..."
 mkdir -p "${CONFIG_DIR}"
 cp "${STAGING_DIR}/${ENV_FILE}" "${CONFIG_DIR}/${ENV_FILE}"
-chown root:root "${CONFIG_DIR}/${ENV_FILE}"
-chmod 640 "${CONFIG_DIR}/${ENV_FILE}"
 echo "Environment file placed at ${CONFIG_DIR}/${ENV_FILE}"
 
 # 3. Load the new image from tarball
+# The GEOHOD_IMAGE_TAG is needed to find the correct tarball.
 source "${CONFIG_DIR}/${ENV_FILE}"
 IMAGE_TARBALL="${STAGING_DIR}/geohod-backend-${GEOHOD_IMAGE_TAG}.tar.gz"
 
@@ -45,20 +41,19 @@ if ! podman load -i "${IMAGE_TARBALL}"; then
 fi
 echo "Image loaded successfully."
 
-# 4. Update and enable systemd service
-echo "--> Updating systemd service..."
-cp "${STAGING_DIR}/${SERVICE_NAME}.service" "/etc/systemd/system/${SERVICE_NAME}.service"
-chown root:root "/etc/systemd/system/${SERVICE_NAME}.service"
-chmod 644 "/etc/systemd/system/${SERVICE_NAME}.service"
+# 4. Update and enable systemd user service
+echo "--> Updating systemd user service..."
+mkdir -p "${SERVICE_DIR}"
+cp "${STAGING_DIR}/${SERVICE_NAME}.service" "${SERVICE_DIR}/${SERVICE_NAME}.service"
 
-echo "--> Reloading systemd daemon and restarting service..."
-systemctl daemon-reload
-systemctl enable "${SERVICE_NAME}"
-systemctl restart "${SERVICE_NAME}"
+echo "--> Reloading systemd user daemon and restarting service..."
+systemctl --user daemon-reload
+systemctl --user enable "${SERVICE_NAME}"
+systemctl --user restart "${SERVICE_NAME}"
 
 # 5. Clean up old images
 echo "--> Cleaning up old images..."
 podman image prune -f --filter "label=stage=dev" --filter "until=24h"
 
-echo "--- Geohod Backend dev deployment finished successfully ---"
+echo "--- Geohod Backend dev user deployment finished successfully ---"
 exit 0

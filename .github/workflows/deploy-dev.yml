@@ -103,4 +103,4 @@ jobs:
             tar -xzvf ~/geohod-backend-dev/geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz -C ~/geohod-backend-dev/
             # Run the installer script with sudo
             chmod +x /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh
-            sudo /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh
+            /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh

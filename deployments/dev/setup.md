@@ -5,18 +5,18 @@
 1.  **Create Deploy User & Directories:**
     ```bash
     # As root or with sudo
-    useradd -m -s /bin/bash vps-user
-    mkdir -p /home/vps-user/geohod-backend-dev
-    chown -R vps-user:vps-user /home/vps-user/geohod-backend-dev
+    useradd -m -s /bin/bash geohod_backend_dev
+    mkdir -p /home/geohod_backend_dev/geohod-backend-dev
+    chown -R geohod_backend_dev:geohod_backend_dev /home/geohod_backend_dev/geohod-backend-dev
     ```
 
-2.  **Configure Sudo:** The deploy user needs passwordless `sudo` access **only** for the installer script. Run `sudo visudo` and add the following line, replacing `vps-user` with the correct username:
-
+2.  **Enable User Lingering:** This crucial step allows the user's `systemd` services to run even when the user is not logged in. This command must be run as root once.
+    ```bash
+    # As root or with sudo
+    loginctl enable-linger geohod_backend_dev
     ```
-    vps-user ALL=(root) NOPASSWD: /home/vps-user/geohod-backend-dev/staging/install.sh
-    ```
 
-3.  **SSH Access:** Add the public key corresponding to the `VPS_SSH_KEY` GitHub secret to the `~/.ssh/authorized_keys` file for the `vps-user`.
+3.  **SSH Access:** Add the public key corresponding to the `VPS_SSH_KEY` GitHub secret to the `~/.ssh/authorized_keys` file for the `geohod_backend_dev` user.
 
 ### Running a Deployment
 
