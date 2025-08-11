@@ -31,6 +31,16 @@ readonly REQUIRED_ARTIFACT_IMAGE_GLOB="geohod-backend-dev-*.tar.gz"
 readonly REQUIRED_ENV_NAME="geohod-dev.env"
 readonly PG_IMG="docker.io/library/postgres:17-alpine"
 
+# Host data paths (used for bind mounts in systemd unit files).
+# These defaults can be overridden by exporting PG_UID/PG_GID/BACKEND_UID/BACKEND_GID
+# in the environment before invoking this script (useful for CI).
+readonly POSTGRES_DATA_DIR="/var/lib/geohod/postgres"
+readonly BACKEND_DATA_DIR="/var/lib/geohod/backend-data"
+readonly DEFAULT_PG_UID="${PG_UID:-999}"
+readonly DEFAULT_PG_GID="${PG_GID:-$DEFAULT_PG_UID}"
+readonly DEFAULT_BACKEND_UID="${BACKEND_UID:-1000}"
+readonly DEFAULT_BACKEND_GID="${BACKEND_GID:-$DEFAULT_BACKEND_UID}"
+
 log() { echo "[$SCRIPT_NAME] $*"; }
 err() { echo "[$SCRIPT_NAME] ERROR: $*" >&2; }
 
@@ -110,6 +120,40 @@ copy_env_and_secrets() {
 
   log "Environment and secrets copied to $ETC_DIR with strict permissions"
   return 0
+}
+
+# Ensure required host data directories exist and have safe ownership/permissions.
+# Defaults can be overridden by exporting PG_UID/PG_GID/BACKEND_UID/BACKEND_GID before invoking this script.
+ensure_data_dirs() {
+  log "Ensuring host data directories exist and have correct permissions"
+  local failed=0
+
+  for d in "$POSTGRES_DATA_DIR" "$BACKEND_DATA_DIR"; do
+    if [ ! -d "$d" ]; then
+      log "Creating directory: $d"
+      mkdir -p "$d" || { err "Failed to create $d"; failed=1; continue; }
+    fi
+  done
+
+  # Attempt to set ownership using supplied/default UIDs/GIDs. If chown fails (e.g., non-root),
+  # log a warning but continue — the systemd unit/podman run may still fail later if ownership is required.
+  if chown "${DEFAULT_PG_UID}:${DEFAULT_PG_GID}" "$POSTGRES_DATA_DIR" 2>/dev/null; then
+    log "Set ownership ${DEFAULT_PG_UID}:${DEFAULT_PG_GID} on $POSTGRES_DATA_DIR"
+  else
+    log "Warning: failed to chown $POSTGRES_DATA_DIR (check UID/GID or run as root)"
+  fi
+
+  if chown "${DEFAULT_BACKEND_UID}:${DEFAULT_BACKEND_GID}" "$BACKEND_DATA_DIR" 2>/dev/null; then
+    log "Set ownership ${DEFAULT_BACKEND_UID}:${DEFAULT_BACKEND_GID} on $BACKEND_DATA_DIR"
+  else
+    log "Warning: failed to chown $BACKEND_DATA_DIR (check UID/GID or run as root)"
+  fi
+
+  # Apply conservative permissions
+  chmod 700 "$POSTGRES_DATA_DIR" || true
+  chmod 750 "$BACKEND_DATA_DIR" || true
+
+  [ "$failed" -eq 0 ]
 }
 
 install_unit_files() {
@@ -294,6 +338,9 @@ main_install() {
 
   # Install units
   install_unit_files "$staging" || return 40
+
+  # Ensure host data directories exist & have correct ownership so Podman bind mounts succeed.
+  ensure_data_dirs || { err "Failed to prepare host data directories"; return 50; }
 
   # Enable and start
   enable_and_start_units || return 40
