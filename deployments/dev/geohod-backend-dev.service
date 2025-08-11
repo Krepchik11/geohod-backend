@@ -1,0 +1,26 @@
+[Unit]
+Description=Geohod Backend (Dev)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=always
+TimeoutStartSec=5min
+
+# Load environment variables from a dedicated config file
+EnvironmentFile=/etc/geohod/geohod-dev.env
+
+# Stop and remove any existing container with the same name on service stop.
+ExecStop=/usr/bin/podman stop -t 10 %n
+ExecStopPost=/usr/bin/podman rm -f %n
+
+# Start the container. The image is expected to be available locally.
+# The GEOHOD_IMAGE_TAG var is loaded from the EnvironmentFile, defining which image tag to use.
+ExecStart=/usr/bin/podman run --rm --name %n \
+  --env-file=/etc/geohod/geohod-dev.env \
+  --publish 8081:8080 \
+  --label stage=dev \
+  geohod-backend:${GEOHOD_IMAGE_TAG}
+
+[Install]
+WantedBy=multi-user.target
