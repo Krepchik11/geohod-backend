@@ -20,7 +20,7 @@ echo "--- Starting Geohod Backend Dev Deployment ---"
 echo "--> Validating artifacts in ${STAGING_DIR}..."
 if [ ! -f "${STAGING_DIR}/${ENV_FILE}" ] || \
    [ ! -f "${STAGING_DIR}/${SERVICE_NAME}.service" ] || \
-   ! ls "${STAGING_DIR}"/geohod-backend-dev-*.tar.gz 1> /dev/null 2>&1; then
+   [ -z "$(find "${STAGING_DIR}" -name 'geohod-backend-dev-*.tar.gz' -print -quit)" ]; then
     echo "Error: Missing required deployment files in ${STAGING_DIR}." >&2
     exit 1
 fi

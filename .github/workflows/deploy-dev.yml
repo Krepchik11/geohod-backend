@@ -69,13 +69,26 @@ jobs:
           cp deployments/dev/* staging/
           tar -czvf geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz -C staging .
 
-      - name: Transfer artifact to VPS
+      - name: Prepare remote server by cleaning up old artifacts
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            # Remove old artifacts and extracted files to ensure a clean slate
+            rm -f ~/geohod-backend-dev/geohod-deploy-artifacts-*.tar.gz
+            rm -rf ~/geohod-backend-dev/{geohod-backend-dev-*.tar.gz,geohod-dev.env,install.sh,setup.md,geohod-backend-dev.service}
+            echo "Old artifacts cleaned up."
+
+      - name: Transfer new artifact to VPS
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "geohod-deploy-artifacts-*.tar.gz"
+          source: "geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz"
           target: "~/geohod-backend-dev"
 
       - name: Execute remote deployment
@@ -86,8 +99,8 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
-            # Unpack the archive in the user's home directory
-            tar -xzvf ~/geohod-backend-dev/geohod-deploy-artifacts-*.tar.gz -C ~/geohod-backend-dev/
+            # Unpack the specific archive using its unique name
+            tar -xzvf ~/geohod-backend-dev/geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz -C ~/geohod-backend-dev/
             # Run the installer script with sudo
             chmod +x /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh
             sudo /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh
