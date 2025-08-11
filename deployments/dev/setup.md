@@ -33,22 +33,21 @@
 ```ini
 [Unit]
 Description=Geohod Postgres container (dev)
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
+Type=exec
 Restart=on-failure
-RestartSec=5
-ExecStartPre=mkdir -p %h/geohod-backend-dev/postgres_data
-ExecStartPre=/usr/bin/podman pull docker.io/library/postgres:17-alpine
-EnvironmentFile=%h/.config/geohod/postgres-dev.env
-ExecStart=/usr/bin/podman run -d --name geohod-postgres-dev --network geohod-net \
-  -e POSTGRES_DB=${POSTGRES_DB} \
-  -e POSTGRES_USER=${POSTGRES_USER} \
-  -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-  -v %h/geohod-backend-dev/postgres_data:/var/lib/postgresql/data \
+RestartSec=5s
+TimeoutStartSec=120s
+
+ExecStart=/usr/bin/podman run --name geohod-postgres-dev \
+  --network geohod-dev-net \
+  --rm \
+  --mount type=volume,source=geohod-postgres-dev_data,destination=/var/lib/postgresql/data \
+  --env-file=%h/.config/geohod/postgres-dev.env \
   docker.io/library/postgres:17-alpine
-ExecStop=/usr/bin/podman stop geohod-postgres-dev
-TimeoutStartSec=120
 
 [Install]
 WantedBy=default.target
