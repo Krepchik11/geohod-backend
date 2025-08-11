@@ -89,4 +89,5 @@ jobs:
             # Unpack the archive in the user's home directory
             tar -xzvf ~/geohod-backend-dev/geohod-deploy-artifacts-*.tar.gz -C ~/geohod-backend-dev/
             # Run the installer script with sudo
+            chmod +x /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh
             sudo /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh
