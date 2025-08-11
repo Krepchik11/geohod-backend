@@ -67,7 +67,7 @@ jobs:
           mv geohod-dev.env staging/
           # This assumes the service file is in deployments/dev/
           cp deployments/dev/* staging/
-          tar -czvf geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz staging
+          tar -czvf geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz -C staging .
 
       - name: Transfer artifact to VPS
         uses: appleboy/scp-action@v1.0.0
@@ -89,4 +89,4 @@ jobs:
             # Unpack the archive in the user's home directory
             tar -xzvf ~/geohod-backend-dev/geohod-deploy-artifacts-*.tar.gz -C ~/geohod-backend-dev/
             # Run the installer script with sudo
-            sudo /home/${{ secrets.VPS_USER }}/geohod-backend-dev/staging/install.sh
+            sudo /home/${{ secrets.VPS_USER }}/geohod-backend-dev/install.sh

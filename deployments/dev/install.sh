@@ -9,7 +9,7 @@ fi
 
 # Determine the home directory of the user who invoked sudo
 SUDO_USER_HOME=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
-STAGING_DIR="${SUDO_USER_HOME}/geohod-backend-dev/staging"
+STAGING_DIR="${SUDO_USER_HOME}/geohod-backend-dev"
 CONFIG_DIR="/etc/geohod"
 SERVICE_NAME="geohod-backend-dev"
 ENV_FILE="geohod-dev.env"
