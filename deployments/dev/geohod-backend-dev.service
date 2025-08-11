@@ -17,6 +17,7 @@ ExecStopPost=/usr/bin/podman rm -f %n
 # Start the container. The image is expected to be available locally.
 # The GEOHOD_IMAGE_TAG var is loaded from the EnvironmentFile, defining which image tag to use.
 ExecStart=/usr/bin/podman run --rm --name %n \
+  --network geohod-dev-net \
   --env-file=%h/.config/geohod/geohod-dev.env \
   --publish 8081:8080 \
   --label stage=dev \

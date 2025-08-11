@@ -23,7 +23,12 @@ if [ ! -f "${STAGING_DIR}/${ENV_FILE}" ] || \
 fi
 echo "Artifacts validated."
 
-# 2. Setup configuration
+# 2. Create shared network
+# This command is idempotent. It will do nothing if the network already exists.
+echo "--> Ensuring 'geohod-net' network exists..."
+podman network create geohod-dev-net || true
+
+# 3. Setup configuration
 echo "--> Updating environment configuration..."
 mkdir -p "${CONFIG_DIR}"
 cp "${STAGING_DIR}/${ENV_FILE}" "${CONFIG_DIR}/${ENV_FILE}"
