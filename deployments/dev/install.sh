@@ -36,7 +36,7 @@ echo "Environment file placed at ${CONFIG_DIR}/${ENV_FILE}"
 
 # 3. Load the new image from tarball
 source "${CONFIG_DIR}/${ENV_FILE}"
-IMAGE_TARBALL="${STAGING_DIR}/geohod-backend-dev-${GEOHOD_IMAGE_TAG}.tar.gz"
+IMAGE_TARBALL="${STAGING_DIR}/geohod-backend-${GEOHOD_IMAGE_TAG}.tar.gz"
 
 echo "--> Loading image from ${IMAGE_TARBALL}..."
 if ! podman load -i "${IMAGE_TARBALL}"; then

@@ -1,11 +1,8 @@
 ### One-Time Server Setup
 
-1.  **Install Podman:** Ensure `podman` is installed on the VPS.
-    ```bash
-    sudo apt-get update && sudo apt-get install -y podman
-    ```
+0.  **Install Podman:** Ensure `podman` is installed on the VPS.
 
-2.  **Create Deploy User & Directories:** (Replace `vps-user` with your actual deploy username)
+1.  **Create Deploy User & Directories:**
     ```bash
     # As root or with sudo
     useradd -m -s /bin/bash vps-user
@@ -13,13 +10,13 @@
     chown -R vps-user:vps-user /home/vps-user/geohod-backend-dev
     ```
 
-3.  **Configure Sudo:** The deploy user needs passwordless `sudo` access **only** for the installer script. Run `sudo visudo` and add the following line, replacing `vps-user` with the correct username:
+2.  **Configure Sudo:** The deploy user needs passwordless `sudo` access **only** for the installer script. Run `sudo visudo` and add the following line, replacing `vps-user` with the correct username:
 
     ```
     vps-user ALL=(root) NOPASSWD: /home/vps-user/geohod-backend-dev/staging/install.sh
     ```
 
-4.  **SSH Access:** Add the public key corresponding to the `VPS_SSH_KEY` GitHub secret to the `~/.ssh/authorized_keys` file for the `vps-user`.
+3.  **SSH Access:** Add the public key corresponding to the `VPS_SSH_KEY` GitHub secret to the `~/.ssh/authorized_keys` file for the `vps-user`.
 
 ### Running a Deployment
 
