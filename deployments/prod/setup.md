@@ -42,7 +42,7 @@ Restart=on-failure
 RestartSec=5s
 TimeoutStartSec=120s
 
-ExecStartPre=/usr/bin/podman network inspect geohod-prod-net >/dev/null || /usr/bin/podman network create geohod-prod-net
+ExecStartPre=/bin/sh -c '/usr/bin/podman network inspect geohod-prod-net >/dev/null || /usr/bin/podman network create geohod-prod-net'
 
 ExecStart=/usr/bin/podman run --name geohod-postgres-prod \
   --network geohod-prod-net \
