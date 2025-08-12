@@ -19,7 +19,7 @@ ExecStopPost=/usr/bin/podman rm -f %n
 ExecStart=/usr/bin/podman run --rm --name %n \
   --network geohod-prod-net \
   --env-file=%h/.config/geohod/geohod-prod.env \
-  --publish 8081:8080 \
+  --publish 8080:8080 \
   --label stage=prod \
   geohod-backend:${GEOHOD_IMAGE_TAG}
 
