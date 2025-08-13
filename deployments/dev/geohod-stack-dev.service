@@ -1,5 +1,5 @@
 [Unit]
-Description=Geohod Backend Stack (Dev v2)
+Description=Geohod Backend Stack
 Wants=network-online.target
 After=network-online.target
 
@@ -9,7 +9,7 @@ Type=forking
 TimeoutStartSec=5min
 
 # Set the working directory to where podman-compose.yml is located
-WorkingDirectory=%h/geohod-backend-dev/v2
+WorkingDirectory=%h/geohod-backend-dev
 
 ExecStart=/usr/bin/podman-compose -f podman-compose.yml up -d
 ExecStop=/usr/bin/podman-compose -f podman-compose.yml down

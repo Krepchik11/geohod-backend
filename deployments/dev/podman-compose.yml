@@ -1,7 +1,7 @@
 services:
   backend:
     image: geohod-backend:dev-latest
-    container_name: geohod-backend-dev-v2
+    container_name: geohod-backend-dev
     restart: always
     env_file: .env
     ports:
@@ -10,25 +10,25 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - geohod-dev-net-v2
+      - geohod-dev-net
 
   postgres:
     image: docker.io/library/postgres:17-alpine
-    container_name: geohod-postgres-dev-v2
+    container_name: geohod-postgres-dev
     restart: always
     env_file: .env
     volumes:
-      - geohod-postgres-dev-v2-data:/var/lib/postgresql/data
+      - geohod-postgres-dev-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - geohod-dev-net-v2
+      - geohod-dev-net
 
 volumes:
-  geohod-postgres-dev-v2-data:
+  geohod-postgres-dev-data:
 
 networks:
-  geohod-dev-net-v2:
+  geohod-dev-net:
