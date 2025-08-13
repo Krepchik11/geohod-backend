@@ -1,7 +1,8 @@
 services:
-  geohod-backend-dev:
+  backend:
     image: geohod-backend:dev-latest
     container_name: geohod-backend-dev
+    pod: geohod-pod-dev
     restart: always
     env_file: .env
     ports:
@@ -9,12 +10,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - geohod-net-dev
 
-  geohod-postgres-dev:
+  postgres:
     image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres-dev
+    pod: geohod-pod-dev
     restart: always
     env_file: .env
     volumes:
@@ -24,12 +24,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - geohod-net-dev
 
 volumes:
   geohod-postgres-dev-data:
 
-networks:
-  geohod-net-dev:
-    external: true
+pods:
+  geohod-pod-dev:
+    container_name: geohod-pod-dev
