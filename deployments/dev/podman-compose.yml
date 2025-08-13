@@ -32,3 +32,4 @@ volumes:
 
 networks:
   geohod-dev-net:
+    external: true

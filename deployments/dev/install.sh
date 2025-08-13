@@ -5,8 +5,18 @@ STAGING_DIR="${HOME}/geohod-backend-dev"
 SERVICE_NAME="geohod-backend-dev"
 IMAGE_TARBALL="${STAGING_DIR}/geohod-backend-image.tar.gz"
 SERVICE_DIR="${HOME}/.config/systemd/user"
+NETWORK_NAME="geohod-net-dev"
 
 echo "--- Starting Geohod Backend Deployment ---"
+
+echo "--> Checking for and creating Podman network '${NETWORK_NAME}'..."
+if ! podman network exists "${NETWORK_NAME}"; then
+  podman network create "${NETWORK_NAME}"
+  echo "    Network '${NETWORK_NAME}' created successfully."
+else
+  echo "    Network '${NETWORK_NAME}' already exists. Skipping creation."
+fi
+# ---
 
 echo "--> Setting up systemd user service..."
 mkdir -p "${SERVICE_DIR}"
