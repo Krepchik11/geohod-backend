@@ -1,5 +1,5 @@
 services:
-  backend:
+  geohod-backend-dev:
     image: geohod-backend:dev-latest
     container_name: geohod-backend-dev
     restart: always
@@ -12,7 +12,7 @@ services:
     networks:
       - geohod-dev-net
 
-  postgres:
+  geohod-postgres-dev:
     image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres-dev
     restart: always
@@ -31,5 +31,5 @@ volumes:
   geohod-postgres-dev-data:
 
 networks:
-  geohod-dev-net:
+  geohod-net-dev:
     external: true

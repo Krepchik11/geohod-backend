@@ -16,7 +16,6 @@ if ! podman network exists "${NETWORK_NAME}"; then
 else
   echo "    Network '${NETWORK_NAME}' already exists. Skipping creation."
 fi
-# ---
 
 echo "--> Setting up systemd user service..."
 mkdir -p "${SERVICE_DIR}"
