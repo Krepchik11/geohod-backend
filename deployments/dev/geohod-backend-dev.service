@@ -1,5 +1,5 @@
 [Unit]
-Description=Geohod Backend Stack
+Description=Geohod Backend dev
 Wants=network-online.target
 After=network-online.target
 

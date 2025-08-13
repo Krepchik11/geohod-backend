@@ -20,15 +20,8 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4.4.2
-
       - name: Build with Gradle
         run: ./gradlew build -x test
-
-      - name: Get short commit SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Set up Podman
         run: |
@@ -38,63 +31,48 @@ jobs:
       - name: Build Podman image
         run: |
           podman build \
-            -t geohod-backend:prod-${{ steps.vars.outputs.sha_short }} \
-            -t geohod-backend:prod-latest \
+            -t geohod-backend:latest \
             -f ./.github/Dockerfile .
 
       - name: Save Podman image to tarball
-        run: |
-          podman save -o geohod-backend-prod-${{ steps.vars.outputs.sha_short }}.tar.gz geohod-backend:prod-${{ steps.vars.outputs.sha_short }}
+        run: podman save -o geohod-backend-image.tar.gz geohod-backend:latest
 
-      - name: Render environment file
+      - name: Create .env file
         run: |
-          cat << EOF > geohod-prod.env
+          cat << EOF > .env
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           LOGGING_LEVEL_ROOT=WARN
           LOGGING_LEVEL_ME_GEOHOD=DEBUG
-          SPRING_DATASOURCE_URL=jdbc:postgresql://geohod-postgres-prod:5432/${{ secrets.POSTGRES_DB }}
+          SPRING_DATASOURCE_URL=jdbc:postgresql://geohod-postgres:5432/${{ secrets.POSTGRES_DB }}
           SPRING_DATASOURCE_USERNAME=${{ secrets.POSTGRES_USER }}
           SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           GEOHOD_TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
           GEOHOD_TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
           GEOHOD_CREATED_EVENT_LINK_TEMPLATE=${{ vars.GEOHOD_CREATED_EVENT_LINK_TEMPLATE }}
           GEOHOD_REVIEW_LINK_TEMPLATE=${{ vars.GEOHOD_REVIEW_LINK_TEMPLATE }}
-          GEOHOD_IMAGE_TAG=prod-${{ steps.vars.outputs.sha_short }}
           CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}
           EOF
 
-      - name: Create deployment artifact archive
-        run: |
-          mkdir staging
-          mv geohod-backend-prod-${{ steps.vars.outputs.sha_short }}.tar.gz staging/
-          mv geohod-prod.env staging/
-          # This assumes the service file is in deployments/prod/
-          cp deployments/prod/* staging/
-          tar -czvf geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz -C staging .
-
-      - name: Prepare remote server by cleaning up old artifacts
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ vars.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -e
-            # Remove old artifacts and extracted files to ensure a clean slate
-            rm -f ~/geohod-backend/geohod-deploy-artifacts-*.tar.gz
-            rm -rf ~/geohod-backend/{geohod-backend-prod-*.tar.gz,geohod-prod.env,install.sh,setup.md,geohod-backend-prod.service}
-            echo "Old artifacts cleaned up."
-
-      - name: Transfer new artifact to VPS
+      - name: Transfer env & artifacts to VPS
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz"
+          source: ".env,geohod-backend-image.tar.gz"
           target: "~/geohod-backend"
+
+      - name: Transfer configuration to VPS
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "deployments/prod/podman-compose.yml,deployments/prod/install.sh,deployments/prod/geohod-backend-prod.service"
+          target: "~/geohod-backend"
+          strip_components: 2
 
       - name: Execute remote deployment
         uses: appleboy/ssh-action@v1.0.0
@@ -104,8 +82,5 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
-            # Unpack the specific archive using its unique name
-            tar -xzvf ~/geohod-backend/geohod-deploy-artifacts-${{ steps.vars.outputs.sha_short }}.tar.gz -C ~/geohod-backend/
-            # Run the installer script with sudo
-            chmod +x /home/${{ secrets.VPS_USER }}/geohod-backend/install.sh
-            /home/${{ secrets.VPS_USER }}/geohod-backend/install.sh
+            chmod +x ~/geohod-backend/install.sh
+            ~/geohod-backend/install.sh

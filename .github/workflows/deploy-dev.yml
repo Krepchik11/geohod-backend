@@ -70,7 +70,7 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "deployments/dev/podman-compose.yml,deployments/dev/install.sh,deployments/dev/geohod-stack-dev.service"
+          source: "deployments/dev/podman-compose.yml,deployments/dev/install.sh,deployments/dev/geohod-backend-dev.service"
           target: "~/geohod-backend-dev"
           strip_components: 2
 
