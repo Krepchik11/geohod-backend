@@ -32,7 +32,7 @@ jobs:
         run: |
           podman build \
             -t geohod-backend:latest \
-            --label stage=prod
+            --label stage=prod \
             -f ./.github/Dockerfile .
 
       - name: Save Podman image to tarball
