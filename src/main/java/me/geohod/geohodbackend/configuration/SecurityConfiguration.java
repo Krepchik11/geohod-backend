@@ -1,8 +1,5 @@
 package me.geohod.geohodbackend.configuration;
 
-import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
-import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +18,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
+import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
 
 @Configuration
 @EnableWebSecurity
@@ -47,7 +47,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
-                    .requestMatchers("/api/v2/**").authenticated()
                     .anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
                 .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -61,7 +60,7 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
-                "https://client.geohod.ru",
+                "https://app.geohod.ru",
                 "https://localhost:3000",
                 "https://127.0.0.1:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
