@@ -32,6 +32,7 @@ jobs:
         run: |
           podman build \
             -t geohod-backend:latest \
+            --label stage=prod
             -f ./.github/Dockerfile .
 
       - name: Save Podman image to tarball
@@ -70,7 +71,7 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "deployments/prod/podman-compose.yml,deployments/prod/install.sh,deployments/prod/geohod-backend-prod.service"
+          source: "deployments/prod/podman-compose.yml,deployments/prod/install.sh,deployments/prod/geohod-backend.service"
           target: "~/geohod-backend"
           strip_components: 2
 
