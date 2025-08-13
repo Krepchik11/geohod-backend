@@ -1,5 +1,5 @@
 services:
-  geohod-backend:
+  backend:
     image: geohod-backend:latest
     container_name: geohod-backend
     pod: geohod-pod
@@ -13,7 +13,7 @@ services:
     networks:
       - geohod-net
 
-  geohod-postgres:
+  postgres:
     image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres
     pod: geohod-pod
@@ -32,6 +32,6 @@ services:
 volumes:
   geohod-postgres-data:
 
-pods:
-  geohod-pod:
-    container_name: geohod-pod
+networks:
+  geohod-net:
+    external: true
