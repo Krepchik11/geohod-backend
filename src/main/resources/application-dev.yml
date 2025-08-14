@@ -21,6 +21,11 @@ spring:
       hibernate:
         format_sql: false
         use_sql_comments: false
+  mvc:
+    cors:
+      allowed-origins:
+        - "https://localhost:3000"
+        - "https://127.0.0.1:3000"
 
 management:
   endpoints:
