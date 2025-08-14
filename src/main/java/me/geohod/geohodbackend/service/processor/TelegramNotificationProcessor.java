@@ -46,7 +46,7 @@ public class TelegramNotificationProcessor {
     @Scheduled(fixedDelayString = "${geohod.processor.telegram.delay:5000}")
     @Transactional
     public void process() {
-        log.debug("Starting Telegram notification processing");
+        log.trace("Starting Telegram notification processing");
         List<EventLog> unprocessedLogs = eventLogService.findUnprocessed(100, PROCESSOR_NAME);
 
         for (EventLog log : unprocessedLogs) {
@@ -67,7 +67,7 @@ public class TelegramNotificationProcessor {
             EventLog lastProcessedLog = unprocessedLogs.get(unprocessedLogs.size() - 1);
             progressService.updateProgress(PROCESSOR_NAME, lastProcessedLog.getCreatedAt(), lastProcessedLog.getId());
         }
-        log.debug("Finished Telegram notification processing");
+        log.trace("Finished Telegram notification processing");
     }
 
     private NotificationType mapEventType(me.geohod.geohodbackend.data.model.eventlog.EventType eventType) {

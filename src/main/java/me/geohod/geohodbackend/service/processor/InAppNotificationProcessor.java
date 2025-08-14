@@ -43,7 +43,7 @@ public class InAppNotificationProcessor {
     @Scheduled(fixedDelayString = "${geohod.processor.in-app.delay:5000}")
     @Transactional
     public void process() {
-        log.debug("Starting in-app notification processing");
+        log.trace("Starting in-app notification processing");
         List<EventLog> unprocessedLogs = eventLogService.findUnprocessed(100, PROCESSOR_NAME);
 
         for (EventLog eventLog : unprocessedLogs) {
@@ -58,14 +58,14 @@ public class InAppNotificationProcessor {
             EventLog lastProcessedLog = unprocessedLogs.get(unprocessedLogs.size() - 1);
             progressService.updateProgress(PROCESSOR_NAME, lastProcessedLog.getCreatedAt(), lastProcessedLog.getId());
         }
-        log.debug("Finished in-app notification processing");
+        log.trace("Finished in-app notification processing");
     }
 
     private void processEventLog(EventLog eventLog) {
         eventRepository.findById(eventLog.getEventId()).ifPresent(event -> {
             NotificationType type = mapEventTypeToNotificationType(eventLog.getType());
             if (type == null) {
-                log.debug("Skipping event log {} - no notification type mapping for {}", eventLog.getId(), eventLog.getType());
+                log.trace("Skipping event log {} - no notification type mapping for {}", eventLog.getId(), eventLog.getType());
                 return;
             }
 
@@ -81,7 +81,7 @@ public class InAppNotificationProcessor {
                 appNotificationService.createNotification(request);
             }
             
-            log.debug("Created {} notifications for event log {}", recipients.size(), eventLog.getId());
+            log.trace("Created {} notifications for event log {}", recipients.size(), eventLog.getId());
         });
     }
 
