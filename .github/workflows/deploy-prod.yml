@@ -44,8 +44,7 @@ jobs:
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          LOGGING_LEVEL_ROOT=WARN
-          LOGGING_LEVEL_ME_GEOHOD=DEBUG
+          LOGGING_LEVEL_ROOT=ERROR
           SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${{ secrets.POSTGRES_DB }}
           SPRING_DATASOURCE_USERNAME=${{ secrets.POSTGRES_USER }}
           SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
