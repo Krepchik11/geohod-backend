@@ -1,3 +1,9 @@
+logging:
+  level:
+    io:
+      micrometer:
+        prometheus: OFF
+
 server:
   port: 8080
 spring:
