@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
 import me.geohod.geohodbackend.data.model.repository.EventLogRepository;
@@ -15,6 +16,7 @@ import me.geohod.geohodbackend.service.IEventLogService;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventLogServiceImpl implements IEventLogService {
 
     private final EventLogRepository eventLogRepository;
@@ -33,8 +35,7 @@ public class EventLogServiceImpl implements IEventLogService {
             EventLog eventLog = new EventLog(eventId, type, payload);
             eventLogRepository.save(eventLog);
         } catch (Exception e) {
-            // Log error but don't fail the calling transaction
-            System.err.println("Failed to create async log entry: " + e.getMessage());
+            log.error("Failed to create async log entry: {}", e.getMessage(), e);
         }
     }
 

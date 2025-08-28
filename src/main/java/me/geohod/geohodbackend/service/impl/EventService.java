@@ -91,13 +91,11 @@ public class EventService implements IEventService {
     @Override
     @Transactional
     public void finishEvent(FinishEventDto finishDto) {
-        // Optimized: Use single database operation to finish event
         int updated = eventRepository.finishEvent(finishDto.eventId());
         if (updated == 0) {
             throw new IllegalStateException("Event not found or already finished");
         }
 
-        // Defer logging to async processing for better performance
         String payload = String.format("{\"sendDonationRequest\": %b, \"donationInfo\": \"%s\", \"sendPollLink\": %b}",
                 finishDto.sendDonationRequest(), finishDto.donationInfo(), finishDto.sendPollLink());
         eventLogService.createLogEntryAsync(finishDto.eventId(), EventType.EVENT_FINISHED_FOR_REVIEW_LINK, payload);
