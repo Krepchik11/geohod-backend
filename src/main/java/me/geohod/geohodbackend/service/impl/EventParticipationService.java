@@ -1,18 +1,18 @@
 package me.geohod.geohodbackend.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.data.model.EventParticipant;
-import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
-import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.data.model.eventlog.EventType;
-import me.geohod.geohodbackend.service.IEventLogService;
-import me.geohod.geohodbackend.service.IEventParticipationService;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.EventParticipant;
+import me.geohod.geohodbackend.data.model.eventlog.EventType;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
+import me.geohod.geohodbackend.data.model.repository.EventRepository;
+import me.geohod.geohodbackend.service.IEventLogService;
+import me.geohod.geohodbackend.service.IEventParticipationService;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +55,7 @@ public class EventParticipationService implements IEventParticipationService {
     @Override
     @Transactional
     public void unregisterFromEvent(UUID userId, UUID eventId) {
+        // Check if participant exists and event is still open
         EventParticipant participant = eventParticipantRepository
                 .findByEventIdAndUserId(eventId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found for this event"));
@@ -66,11 +67,13 @@ public class EventParticipationService implements IEventParticipationService {
             throw new IllegalStateException("Event already closed");
         }
 
-        eventParticipantRepository.delete(participant);
+        // Optimized: Use batch operations to reduce database round trips
+        int deleted = eventParticipantRepository.deleteByEventIdAndUserId(eventId, userId);
+        if (deleted > 0) {
+            eventParticipantRepository.decrementParticipantCount(eventId);
+        }
 
-        event.decreaseParticipantCount();
-        eventRepository.save(event);
-
+        // Create log entry (keeping synchronous for now - can be optimized later)
         String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);
         eventLogService.createLogEntry(eventId, EventType.EVENT_UNREGISTERED, payload);
     }
