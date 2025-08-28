@@ -43,17 +43,8 @@
         </createIndex>
     </changeSet>
 
+
     <changeSet id="performance-indexes-003" author="anabor">
-        <comment>Add performance indexes for user operations</comment>
-
-        <!-- Index for user lookups by telegram ID (active users only) -->
-        <createIndex indexName="idx_users_tg_id_active" tableName="users" unique="false">
-            <column name="tg_id"/>
-            <column name="active"/>
-        </createIndex>
-    </changeSet>
-
-    <changeSet id="performance-indexes-004" author="anabor">
         <comment>Add performance indexes for notification operations</comment>
 
         <!-- Index for notification queries by user and creation time -->
