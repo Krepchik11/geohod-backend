@@ -13,4 +13,5 @@
     <include file="db.changelog-1.7-keyset-pagination-fix.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.8-review-unique-constraint.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-1.9-add-event-id-to-notifications.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2.0-performance-indexes.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
