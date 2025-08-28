@@ -40,17 +40,14 @@ public class UserService implements IUserService {
     public User createOrUpdateUser(String tgId, String tgUsername, String firstName, String lastName, String tgImageUrl) {
         User existingUser = userRepository.findByTgId(tgId).orElse(null);
         if (existingUser != null) {
-            // Update existing user
             existingUser.updateDetails(tgUsername, firstName, lastName, tgImageUrl);
             return userRepository.save(existingUser);
         } else {
-            // Try to create new user (handle constraint violation)
             try {
                 User newUser = new User(tgId, tgUsername, firstName, lastName, tgImageUrl);
                 return userRepository.save(newUser);
             } catch (DataIntegrityViolationException e) {
-                // Another thread created the user, fetch and return it
-                log.debug("User creation race condition detected for tgId: {}, retrying...", tgId);
+                log.debug("User creation race condition for tgId: {}", tgId);
                 return userRepository.findByTgId(tgId)
                     .orElseThrow(() -> new RuntimeException("Failed to create or find user"));
             }
