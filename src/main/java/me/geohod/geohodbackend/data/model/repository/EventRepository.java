@@ -17,6 +17,6 @@ public interface EventRepository extends CrudRepository<Event, UUID> {
     int finishEvent(@Param("eventId") UUID eventId);
 
     @Modifying
-    @Query("UPDATE events SET participant_count = participant_count - 1 WHERE id = :eventId AND participant_count > 0")
+    @Query("UPDATE events SET current_participants = current_participants - 1 WHERE id = :eventId AND current_participants > 0")
     int decrementParticipantCount(@Param("eventId") UUID eventId);
 }
