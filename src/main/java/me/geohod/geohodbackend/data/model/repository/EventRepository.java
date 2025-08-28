@@ -12,9 +12,11 @@ import me.geohod.geohodbackend.data.model.Event;
 
 @Repository
 public interface EventRepository extends CrudRepository<Event, UUID> {
-
-    // Optimized method for finishing events in a single operation
     @Modifying
     @Query("UPDATE events SET status = 'FINISHED', updated_at = CURRENT_TIMESTAMP WHERE id = :eventId AND status != 'FINISHED'")
     int finishEvent(@Param("eventId") UUID eventId);
+
+    @Modifying
+    @Query("UPDATE events SET participant_count = participant_count - 1 WHERE id = :eventId AND participant_count > 0")
+    int decrementParticipantCount(@Param("eventId") UUID eventId);
 }

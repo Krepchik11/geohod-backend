@@ -22,12 +22,7 @@ public interface EventParticipantRepository extends CrudRepository<EventParticip
 
     boolean existsByEventIdAndUserId(UUID eventId, UUID userId);
 
-    // Optimized methods for unregister operation
     @Modifying
     @Query("DELETE FROM event_participants WHERE event_id = :eventId AND user_id = :userId")
     int deleteByEventIdAndUserId(@Param("eventId") UUID eventId, @Param("userId") UUID userId);
-
-    @Modifying
-    @Query("UPDATE events SET participant_count = participant_count - 1 WHERE id = :eventId AND participant_count > 0")
-    int decrementParticipantCount(@Param("eventId") UUID eventId);
 }

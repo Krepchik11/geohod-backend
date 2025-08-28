@@ -55,35 +55,20 @@ public class EventParticipationService implements IEventParticipationService {
     @Override
     @Transactional
     public void unregisterFromEvent(UUID userId, UUID eventId) {
-        // Check if participant exists and event is still open
-        EventParticipant participant = eventParticipantRepository
-                .findByEventIdAndUserId(eventId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Participant not found for this event"));
-
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
-
-        if (event.isCanceled() || event.isFinished()) {
-            throw new IllegalStateException("Event already closed");
-        }
-
-        // Optimized: Use batch operations to reduce database round trips
-        int deleted = eventParticipantRepository.deleteByEventIdAndUserId(eventId, userId);
-        if (deleted > 0) {
-            eventParticipantRepository.decrementParticipantCount(eventId);
-        }
-
-        // Create log entry (keeping synchronous for now - can be optimized later)
-        String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);
-        eventLogService.createLogEntry(eventId, EventType.EVENT_UNREGISTERED, payload);
+        performUnregister(userId, eventId);
     }
 
     @Override
     @Transactional
     public void unregisterParticipantFromEvent(UUID participantId, UUID eventId) {
-        EventParticipant participant = eventParticipantRepository.findByEventIdAndId(eventId, participantId)
+        UUID userId = eventParticipantRepository.findByEventIdAndId(eventId, participantId)
+                .map(EventParticipant::getUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found for this event"));
 
+        performUnregister(userId, eventId);
+    }
+
+    private void performUnregister(UUID userId, UUID eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
 
@@ -91,12 +76,14 @@ public class EventParticipationService implements IEventParticipationService {
             throw new IllegalStateException("Event already closed");
         }
 
-        eventParticipantRepository.delete(participant);
+        int deleted = eventParticipantRepository.deleteByEventIdAndUserId(eventId, userId);
+        if (deleted > 0) {
+            eventRepository.decrementParticipantCount(eventId);
+        } else {
+            throw new IllegalArgumentException("Participant not found for this event");
+        }
 
-        event.decreaseParticipantCount();
-        eventRepository.save(event);
-
-        String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", participant.getUserId(), eventId);
+        String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);
         eventLogService.createLogEntry(eventId, EventType.EVENT_UNREGISTERED, payload);
     }
 }
