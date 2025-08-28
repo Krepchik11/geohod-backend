@@ -1,8 +1,8 @@
 package me.geohod.geohodbackend.service.impl;
 
+import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,19 +39,25 @@ public class UserService implements IUserService {
     @Transactional
     public User createOrUpdateUser(String tgId, String tgUsername, String firstName, String lastName, String tgImageUrl) {
         User existingUser = userRepository.findByTgId(tgId).orElse(null);
+
         if (existingUser != null) {
-            existingUser.updateDetails(tgUsername, firstName, lastName, tgImageUrl);
-            return userRepository.save(existingUser);
-        } else {
-            try {
-                User newUser = new User(tgId, tgUsername, firstName, lastName, tgImageUrl);
-                return userRepository.save(newUser);
-            } catch (DataIntegrityViolationException e) {
-                log.debug("User creation race condition for tgId: {}", tgId);
-                return userRepository.findByTgId(tgId)
-                    .orElseThrow(() -> new RuntimeException("Failed to create or find user"));
+            if (hasUserDataChanged(existingUser, tgUsername, firstName, lastName, tgImageUrl)) {
+                existingUser.updateDetails(tgUsername, firstName, lastName, tgImageUrl);
+                return userRepository.save(existingUser);
+            } else {
+                return existingUser;
             }
+        } else {
+            User newUser = new User(tgId, tgUsername, firstName, lastName, tgImageUrl);
+            return userRepository.save(newUser);
         }
+    }
+
+    private boolean hasUserDataChanged(User user, String newUsername, String newFirstName, String newLastName, String newImageUrl) {
+        return !Objects.equals(user.getTgUsername(), newUsername) ||
+               !Objects.equals(user.getFirstName(), newFirstName) ||
+               !Objects.equals(user.getLastName(), newLastName) ||
+               !Objects.equals(user.getTgImageUrl(), newImageUrl);
     }
 }
 
