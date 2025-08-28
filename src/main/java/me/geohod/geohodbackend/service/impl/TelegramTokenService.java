@@ -1,22 +1,25 @@
 package me.geohod.geohodbackend.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.api.dto.TelegramInitDataDto;
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.TelegramInitDataDto;
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +69,12 @@ public class TelegramTokenService {
         String[] pairs = tgInitData.split("&");
         for (String pair : pairs) {
             String[] keyValue = pair.split("=", 2);
-            map.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8),
-                    URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8));
+            if (keyValue.length == 2) {
+                map.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8),
+                        URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8));
+            } else {
+                map.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8), "");
+            }
         }
         return map;
     }
