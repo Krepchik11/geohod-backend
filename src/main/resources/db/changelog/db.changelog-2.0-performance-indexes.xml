@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Performance indexes for event operations -->
+    <changeSet id="performance-indexes-001" author="anabor">
+        <comment>Add performance indexes for event participant operations</comment>
+
+        <!-- Index for event participant lookups by event_id and user_id -->
+        <createIndex indexName="idx_event_participants_event_user" tableName="event_participants" unique="false">
+            <column name="event_id"/>
+            <column name="user_id"/>
+        </createIndex>
+
+        <!-- Index for event status and update time queries -->
+        <createIndex indexName="idx_events_status_updated" tableName="events" unique="false">
+            <column name="status"/>
+            <column name="updated_at"/>
+        </createIndex>
+
+        <!-- Index for event queries by author and status -->
+        <createIndex indexName="idx_events_author_status" tableName="events" unique="false">
+            <column name="author_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="performance-indexes-002" author="anabor">
+        <comment>Add performance indexes for review operations</comment>
+
+        <!-- Index for review lookups by event and author -->
+        <createIndex indexName="idx_reviews_event_author" tableName="reviews" unique="false">
+            <column name="event_id"/>
+            <column name="author_id"/>
+        </createIndex>
+
+        <!-- Index for review queries by author and hidden status -->
+        <createIndex indexName="idx_reviews_author_hidden" tableName="reviews" unique="false">
+            <column name="author_id"/>
+            <column name="is_hidden"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="performance-indexes-003" author="anabor">
+        <comment>Add performance indexes for user operations</comment>
+
+        <!-- Index for user lookups by telegram ID (active users only) -->
+        <createIndex indexName="idx_users_tg_id_active" tableName="users" unique="false">
+            <column name="tg_id"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="performance-indexes-004" author="anabor">
+        <comment>Add performance indexes for notification operations</comment>
+
+        <!-- Index for notification queries by user and creation time -->
+        <createIndex indexName="idx_notifications_user_created" tableName="notifications" unique="false">
+            <column name="user_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
