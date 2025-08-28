@@ -12,91 +12,87 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 
-/**
- * Global exception handler for consistent error responses across the API.
- * Provides structured error responses and proper logging for debugging.
- */
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<String>> handleIllegalArgumentException(
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(
             IllegalArgumentException e, HttpServletRequest request) {
 
         log.warn("Invalid request parameter at {}: {}", request.getRequestURI(), e.getMessage());
 
         return ResponseEntity.badRequest()
-                .body(new ApiResponse<>("ERROR", "Invalid request: " + e.getMessage(), null));
+                .body(ApiResponse.error("Invalid request: " + e.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<String>> handleIllegalStateException(
+    public ResponseEntity<ApiResponse<?>> handleIllegalStateException(
             IllegalStateException e, HttpServletRequest request) {
 
         log.warn("Invalid state for operation at {}: {}", request.getRequestURI(), e.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ApiResponse<>("ERROR", "Operation not allowed: " + e.getMessage(), null));
+                .body(ApiResponse.error("Operation not allowed: " + e.getMessage()));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<String>> handleDataIntegrityViolation(
+    public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(
             DataIntegrityViolationException e, HttpServletRequest request) {
 
         log.error("Data integrity violation at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ApiResponse<>("ERROR", "Data conflict occurred. Please try again.", null));
+                .body(ApiResponse.error("Data conflict occurred. Please try again."));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<String>> handleAccessDeniedException(
+    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(
             AccessDeniedException e, HttpServletRequest request) {
 
         log.warn("Access denied at {}: {}", request.getRequestURI(), e.getMessage());
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ApiResponse<>("ERROR", "Access denied", null));
+                .body(ApiResponse.error("Access denied"));
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiResponse<String>> handleAuthenticationException(
+    public ResponseEntity<ApiResponse<?>> handleAuthenticationException(
             AuthenticationException e, HttpServletRequest request) {
 
         log.warn("Authentication failed at {}: {}", request.getRequestURI(), e.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiResponse<>("ERROR", "Authentication required", null));
+                .body(ApiResponse.error("Authentication required"));
     }
 
     @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<ApiResponse<String>> handleSecurityException(
+    public ResponseEntity<ApiResponse<?>> handleSecurityException(
             SecurityException e, HttpServletRequest request) {
 
         log.error("Security violation at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiResponse<>("ERROR", "Authentication failed", null));
+                .body(ApiResponse.error("Authentication failed"));
     }
 
     @ExceptionHandler(TelegramNotificationException.class)
-    public ResponseEntity<ApiResponse<String>> handleTelegramNotificationException(
+    public ResponseEntity<ApiResponse<?>> handleTelegramNotificationException(
             TelegramNotificationException e, HttpServletRequest request) {
 
         log.error("Telegram notification failed at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>("ERROR", "Notification service temporarily unavailable", null));
+                .body(ApiResponse.error("Notification service temporarily unavailable"));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGenericException(
+    public ResponseEntity<ApiResponse<?>> handleGenericException(
             Exception e, HttpServletRequest request) {
 
         log.error("Unexpected error at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>("ERROR", "An unexpected error occurred. Please try again later.", null));
+                .body(ApiResponse.error("An unexpected error occurred. Please try again later."));
     }
 }
