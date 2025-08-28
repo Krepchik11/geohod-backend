@@ -66,8 +66,13 @@ public class TelegramTokenService {
         String[] pairs = tgInitData.split("&");
         for (String pair : pairs) {
             String[] keyValue = pair.split("=", 2);
-            map.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8),
-                    URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8));
+            if (keyValue.length == 2) {
+                map.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8),
+                        URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8));
+            } else {
+                // Handle malformed pairs gracefully - parameters without "="
+                map.put(URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8), "");
+            }
         }
         return map;
     }
