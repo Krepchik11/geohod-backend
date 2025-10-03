@@ -21,24 +21,20 @@ GEOHOD_TELEGRAM_BOT_USERNAME=your_telegram_bot_username
 
 ### Run locally
 
-1. Start the required services:
+0. Build project:
 ```bash
-docker compose up -d
+./gradlew clean build -x test
 ```
 
-2. Run the application (default profile, Swagger disabled):
+1. Start project:
 ```bash
-./gradlew bootRun
+docker compose up -d --build
 ```
 
-3. **To enable Swagger UI and OpenAPI docs:**
-   - Run with the `dev` profile:
+**To enable Swagger UI and OpenAPI docs:**
+   - Set the environment variable (for deployment, CI, or Docker):
      ```bash
-     ./gradlew bootRun --args='--spring.profiles.active=dev'
-     ```
-   - Or set the environment variable (for deployment, CI, or Docker):
-     ```bash
-     SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+     SPRING_PROFILES_ACTIVE=dev
      ```
    - Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
    - OpenAPI JSON: [http://localhost:8080/api-docs](http://localhost:8080/api-docs)

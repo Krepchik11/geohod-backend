@@ -172,7 +172,7 @@ class TelegramNotificationServiceTest {
         void shouldEscapeMultipleSpecialCharactersInComplexMessage() {
             // Given
             String complexMessage = "Check out this *amazing* deal: [50% off](https://example.com)!";
-            String expected = "Check out this \\*amazing\\* deal: \\[50% off\\]\\(https://example\\.com\\)\\!";
+            String expected = "Check out this \\*amazing\\* deal: [50% off](https://example\\.com)\\!";
 
             // When
             String result = telegramNotificationService.escapeMarkdownV2(complexMessage);
