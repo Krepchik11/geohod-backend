@@ -1,6 +1,21 @@
 package me.geohod.geohodbackend.api.controller.v2;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.request.EventRegisterRequest;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
@@ -13,12 +28,6 @@ import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.IEventService;
 import me.geohod.geohodbackend.service.IParticipantProjectionService;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v2/events")
@@ -30,8 +39,13 @@ public class EventParticipationController {
     private final IParticipantProjectionService participantProjectionService;
 
     @PostMapping("/{eventId}/register")
-    public ApiResponse<EventRegisterResponse> registerForEvent(@PathVariable UUID eventId,
-                                                                  @AuthenticationPrincipal TelegramPrincipal principal) {
+    @Operation(summary = "Register for an event", description = "Registers the authenticated user for the specified event. Optionally accepts a body with amountOfParticipants (1-3), defaults to 1.")
+    public ApiResponse<EventRegisterResponse> registerForEvent(
+            @PathVariable UUID eventId,
+            @RequestBody(required = false) EventRegisterRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        int amount = (request != null) ? request.amountOfParticipants() : 1;
+        // TODO: Integrate with service once updated to support amountOfParticipants
         UUID loggedUserId = principal.userId();
         participationService.registerForEvent(loggedUserId, eventId);
         return ApiResponse.success(new EventRegisterResponse("success"));
