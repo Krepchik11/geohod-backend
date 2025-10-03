@@ -42,3 +42,5 @@ Gotchas:
 - Ensure Telegram authentication is required (no extra permitAll on the path).
 - Use projection DTOs for read queries to avoid N+1 and over-fetching.
 - For optional bodies, test both with and without request body to confirm defaults work.
+- Recent application: Added user details and stats endpoints following the steps, creating dedicated DTO records and placeholder controller methods.
+- Ensure map fields like reviewsByRating always include keys 1-5 even if zero.
