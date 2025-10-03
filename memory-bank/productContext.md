@@ -24,7 +24,7 @@ The primary users are communities and individuals who use Telegram for communica
 *   **Event Management**: Create, update, cancel, and finish events with detailed projections and lifecycle tracking.
 *   **Event Participation**: Register for or unregister from events; list and manage participants. Supports registering multiple participants (up to 3) in a single request via the `amountOfParticipants` field in the register endpoint, with a default of 1 for backward compatibility.
 *   **Reviews and Ratings**: Submit and update reviews (one per user per event); aggregate user ratings based on review scores.
-*   **Users**: Automatic user creation and updates via Telegram authentication; retrieve user details and settings.
+*   **Users**: Automatic user creation and updates via Telegram authentication; retrieve user details, aggregated statistics (ratings, event involvement), and settings.
 *   **Notifications**: Reliable delivery of in-app and Telegram notifications using an outbox pattern for events like registrations and updates.
 *   **Authentication**: Stateless validation of Telegram WebApp init data.
 *   **API Versioning**: v1 for legacy compatibility; v2 as the primary interface with consistent `ApiResponse<T>` wrappers.

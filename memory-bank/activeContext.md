@@ -16,6 +16,8 @@ The current focus is on enhancing the v2 API endpoints, including updates to eve
 
 *   **v2 Event Participation API Update** (2025-10-03): Updated the register endpoint (`POST /api/v2/events/{eventId}/register`) to accept an optional `EventRegisterRequest` body with an `amountOfParticipants` field (integer, default: 1, range: 1-10, validated with `@Min(1)` and `@Max(10)`). This enables registering multiple participants in a single request while maintaining backward compatibility for requests without a body.
 
+*   **v2 User API Enhancements** (2025-10-03): Added endpoints for user details (GET /api/v2/users/{id}) and stats (GET /api/v2/users/{id}/stats) with new DTOs UserDetailsResponse and UserStatsResponse. Placeholders use sample data for contract definition.
+
 ## Next Steps
 
 1.  Implement service layer and model support for the new UserSettings fields (`paymentGatewayUrl`, `showBecomeOrganizer`).
@@ -23,6 +25,7 @@ The current focus is on enhancing the v2 API endpoints, including updates to eve
 3.  Implement service integration for multi-participant registration in `EventParticipationService`, handling the `amountOfParticipants` logic, including capacity checks and participant creation.
 4.  Review the newly updated Memory Bank files for accuracy and completeness.
 5.  Begin work on any active development tasks, using the Memory Bank as a guide.
+6. Implement service layer for new User API endpoints (e.g., IUserService methods for fetching user details and stats).
 
 ## Key Learnings & Insights
 
