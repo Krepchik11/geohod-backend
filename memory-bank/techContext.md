@@ -35,3 +35,4 @@
 *   The use of `spring-data-jdbc` suggests a focus on simpler data mapping and more direct control over SQL, compared to JPA/Hibernate.
 *   The project uses MapStruct for mapping between data layers (e.g., DTOs to domain models), which is a compile-time dependency that helps ensure type safety and performance.
 *   Authentication is a critical and custom component, tightly coupled with Telegram's authentication flow.
+*   API Design: The UserSettings API employs a granular update pattern with dedicated PUT endpoints for individual fields (e.g., `/max-participants`, `/payment-gateway-url`), using specific request DTOs. This approach supports partial updates efficiently while maintaining a clear contract, serving as a best practice for handling user preferences.

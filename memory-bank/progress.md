@@ -29,6 +29,8 @@ Based on the initial analysis of the codebase and `README.md`, the following cor
 *   **Build Status:** All compilation errors have been resolved.
 *   **Review System Enhancements**: Implemented one-to-one user-to-event reviews and provided an API endpoint to retrieve a user's existing review for an event.
 
+*   **UserSettings API Updates (2025-10-03)**: Completed API contract updates for UserSettings. Added `paymentGatewayUrl` and `showBecomeOrganizer` fields to DTOs, deprecated and ignored `defaultDonationAmount`, updated the mapper, removed the PATCH endpoint, and added three specific PUT endpoints (`/max-participants`, `/payment-gateway-url`, `/show-become-organizer`) with dedicated request DTOs (`MaxParticipantsRequest`, `PaymentGatewayUrlRequest`, `ShowBecomeOrganizerRequest`). This establishes the API contract for granular user settings updates. Task completed. Future implications: Service layer and database model need to support the new fields.
+
 ## Known Issues & Blockers
 
 *   **No Known Issues:** The keyset pagination fix and review system enhancements have been successfully implemented and tested. No known issues or blockers remain.

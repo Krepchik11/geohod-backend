@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-The current focus was on enhancing the review system to enforce one-to-one user-to-event reviews and provide an API endpoint to retrieve a user's existing review for an event.
+The current focus is on enhancing the UserSettings API to support granular updates for user preferences, including payment gateway configuration and organizer visibility.
 
 ## Recent Changes
 
@@ -12,10 +12,14 @@ The current focus was on enhancing the review system to enforce one-to-one user-
 *   Implemented the `getUserReviewForEvent` method in `ReviewServiceImpl`.
 *   The keyset pagination fix has been successfully implemented and tested.
 
+*   **UserSettings API Enhancements**: Added `paymentGatewayUrl` and `showBecomeOrganizer` fields to UserSettings DTOs. Deprecated and ignored `defaultDonationAmount`. Updated the mapper. Removed the PATCH endpoint for UserSettings. Added three specific PUT endpoints: `/max-participants` (with `MaxParticipantsRequest`), `/payment-gateway-url` (with `PaymentGatewayUrlRequest`), and `/show-become-organizer` (with `ShowBecomeOrganizerRequest`). This establishes granular update capabilities for user settings.
+
 ## Next Steps
 
-1.  Review the newly updated Memory Bank files for accuracy and completeness.
-2.  Begin work on any active development tasks, using the Memory Bank as a guide.
+1.  Implement service layer and model support for the new UserSettings fields (`paymentGatewayUrl`, `showBecomeOrganizer`).
+2.  Add database migrations to include the new fields in the UserSettings table.
+3.  Review the newly updated Memory Bank files for accuracy and completeness.
+4.  Begin work on any active development tasks, using the Memory Bank as a guide.
 
 ## Key Learnings & Insights
 
