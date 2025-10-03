@@ -1,19 +1,25 @@
 package me.geohod.geohodbackend.api.controller.v2;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.response.UserDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.UserResponse;
+import me.geohod.geohodbackend.api.dto.response.UserStatsResponse;
 import me.geohod.geohodbackend.api.dto.review.ReviewResponse;
 import me.geohod.geohodbackend.api.mapper.ReviewApiMapper;
 import me.geohod.geohodbackend.api.mapper.UserApiMapper;
@@ -21,7 +27,6 @@ import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.dto.UserDto;
 import me.geohod.geohodbackend.data.dto.UserRatingDto;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
 import me.geohod.geohodbackend.service.IUserService;
@@ -56,5 +61,17 @@ public class UserController {
     public ApiResponse<Double> getUserRating(@PathVariable UUID id) {
         UserRatingDto rating = userRatingService.getUserRating(id);
         return ApiResponse.success(rating.averageRating().doubleValue());
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get user details by ID")
+    public ResponseEntity<ApiResponse<UserDetailsResponse>> getUserDetails(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.success(new UserDetailsResponse("Sample Name", "@sample_username", "https://example.com/avatar.jpg")));
+    }
+
+    @GetMapping("/{id}/stats")
+    @Operation(summary = "Get user statistics by ID")
+    public ResponseEntity<ApiResponse<UserStatsResponse>> getUserStats(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.success(new UserStatsResponse(3.9, 50, 10, 200, Map.of(1, 0, 2, 5, 3, 10, 4, 20, 5, 15))));
     }
 }
