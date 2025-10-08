@@ -52,7 +52,7 @@ public class UserSettingsController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @Valid @RequestBody DefaultMaxParticipantsRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), request.defaultMaxParticipants());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), request.defaultMaxParticipants(), dto.paymentGatewayUrl(), dto.showBecomeOrganizer());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
         UserSettingsResponse response = userSettingsMapper.toResponse(saved);
         return ApiResponse.success(response);
@@ -63,8 +63,7 @@ public class UserSettingsController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @Valid @RequestBody PaymentGatewayUrlRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        // paymentGatewayUrl not yet supported in service DTO; no change applied
-        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(), request.paymentGatewayUrl(), dto.showBecomeOrganizer());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
         UserSettingsResponse response = userSettingsMapper.toResponse(saved);
         return ApiResponse.success(response);
@@ -75,11 +74,10 @@ public class UserSettingsController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @Valid @RequestBody ShowBecomeOrganizerRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        // showBecomeOrganizer not yet supported in service DTO; no change applied
-        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(), dto.paymentGatewayUrl(), request.showBecomeOrganizer());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
         UserSettingsResponse response = userSettingsMapper.toResponse(saved);
         return ApiResponse.success(response);
     }
 
-} 
+}

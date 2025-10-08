@@ -1,9 +1,15 @@
 package me.geohod.geohodbackend.user_settings.service;
 
-import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
 import java.util.UUID;
+
+import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
 
 public interface IUserSettingsService {
     UserSettingsDto getUserSettings(UUID userId);
     UserSettingsDto updateUserSettings(UUID userId, UserSettingsDto userSettingsDto);
-} 
+
+    UserSettingsDto updateDefaultDonationAmount(UUID userId, String amount);
+    UserSettingsDto updateDefaultMaxParticipants(UUID userId, Integer maxParticipants);
+    UserSettingsDto updatePaymentGatewayUrl(UUID userId, String paymentGatewayUrl);
+    UserSettingsDto updateShowBecomeOrganizer(UUID userId, Boolean showBecomeOrganizer);
+}

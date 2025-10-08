@@ -1,9 +1,13 @@
 package me.geohod.geohodbackend.user_settings.service;
 
-import me.geohod.geohodbackend.user_settings.data.model.UserSettings;
-import me.geohod.geohodbackend.user_settings.data.repository.UserSettingsRepository;
-import me.geohod.geohodbackend.user_settings.mapper.UserSettingsMapper;
-import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,11 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import me.geohod.geohodbackend.user_settings.data.model.UserSettings;
+import me.geohod.geohodbackend.user_settings.data.repository.UserSettingsRepository;
+import me.geohod.geohodbackend.user_settings.mapper.UserSettingsMapper;
+import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
 
 @ExtendWith(MockitoExtension.class)
 class UserSettingsServiceTest {
@@ -33,8 +36,8 @@ class UserSettingsServiceTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        entity = new UserSettings(userId, "10", 5);
-        dto = new UserSettingsDto("10", 5);
+        entity = new UserSettings(userId, "10", 5, "https://example.com/payment", true);
+        dto = new UserSettingsDto("10", 5, "https://example.com/payment", true);
     }
 
     @Test
@@ -58,7 +61,7 @@ class UserSettingsServiceTest {
         when(repository.findByUserId(userId)).thenReturn(Optional.of(entity));
         when(repository.save(entity)).thenReturn(entity);
         when(mapper.toDto(entity)).thenReturn(dto);
-        UserSettingsDto input = new UserSettingsDto("20", 10);
+        UserSettingsDto input = new UserSettingsDto("20", 10, "https://example.com/payment2", false);
         UserSettingsDto result = service.updateUserSettings(userId, input);
         assertEquals(dto, result);
     }
@@ -66,7 +69,6 @@ class UserSettingsServiceTest {
     @Test
     void updateUserSettings_whenNotExists_createsAndReturnsDto() {
         when(repository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(mapper.toEntity(dto)).thenReturn(entity);
         when(repository.save(any(UserSettings.class))).thenReturn(entity);
         when(mapper.toDto(entity)).thenReturn(dto);
         UserSettingsDto result = service.updateUserSettings(userId, dto);
@@ -75,14 +77,15 @@ class UserSettingsServiceTest {
 
     @Test
     void updateUserSettings_handlesNulls() {
-        UserSettingsDto input = new UserSettingsDto(null, null);
-        UserSettings entityWithNulls = new UserSettings(userId, null, null);
+        UserSettingsDto input = new UserSettingsDto(null, null, null, null);
+        UserSettings entityWithNulls = new UserSettings(userId, null, null, null, null);
         when(repository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(mapper.toEntity(input)).thenReturn(entityWithNulls);
         when(repository.save(any(UserSettings.class))).thenReturn(entityWithNulls);
         when(mapper.toDto(entityWithNulls)).thenReturn(input);
         UserSettingsDto result = service.updateUserSettings(userId, input);
         assertNull(result.defaultDonationAmount());
         assertNull(result.defaultMaxParticipants());
+        assertNull(result.paymentGatewayUrl());
+        assertNull(result.showBecomeOrganizer());
     }
-} 
+}
