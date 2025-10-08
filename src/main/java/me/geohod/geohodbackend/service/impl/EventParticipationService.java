@@ -23,7 +23,7 @@ public class EventParticipationService implements IEventParticipationService {
 
     @Override
     @Transactional
-    public void registerForEvent(UUID userId, UUID eventId) {
+    public void registerForEvent(UUID userId, UUID eventId, int participantCount) {
         boolean userAlreadyParticipated = eventParticipantRepository.existsByEventIdAndUserId(eventId, userId);
 
         if (userAlreadyParticipated) {
@@ -41,12 +41,13 @@ public class EventParticipationService implements IEventParticipationService {
             throw new IllegalStateException("Registration closed, event finished");
         }
 
-        event.increaseParticipantCount();
+        for (int i = 0; i < participantCount; i++) {
+            EventParticipant participant = new EventParticipant(eventId, userId);
+            eventParticipantRepository.save(participant);
+            event.increaseParticipantCount();
+        }
 
         eventRepository.save(event);
-
-        EventParticipant participant = new EventParticipant(eventId, userId);
-        eventParticipantRepository.save(participant);
 
         String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);
         eventLogService.createLogEntry(eventId, EventType.EVENT_REGISTERED, payload);
@@ -76,11 +77,14 @@ public class EventParticipationService implements IEventParticipationService {
             throw new IllegalStateException("Event already closed");
         }
 
-        int deleted = eventParticipantRepository.deleteByEventIdAndUserId(eventId, userId);
-        if (deleted > 0) {
-            eventRepository.decrementParticipantCount(eventId);
-        } else {
+        int deletedCount = eventParticipantRepository.deleteByEventIdAndUserId(eventId, userId);
+
+        if (deletedCount == 0) {
             throw new IllegalArgumentException("Participant not found for this event");
+        }
+
+        for (int i = 0; i < deletedCount; i++) {
+            eventRepository.decrementParticipantCount(eventId);
         }
 
         String payload = String.format("{\"userId\": \"%s\", \"eventId\": \"%s\"}", userId, eventId);

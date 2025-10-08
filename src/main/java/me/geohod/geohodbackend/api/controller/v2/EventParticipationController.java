@@ -45,9 +45,8 @@ public class EventParticipationController {
             @RequestBody(required = false) EventRegisterRequest request,
             @AuthenticationPrincipal TelegramPrincipal principal) {
         int amount = (request != null) ? request.amountOfParticipants() : 1;
-        // TODO: Integrate with service once updated to support amountOfParticipants
         UUID loggedUserId = principal.userId();
-        participationService.registerForEvent(loggedUserId, eventId);
+        participationService.registerForEvent(loggedUserId, eventId, amount);
         return ApiResponse.success(new EventRegisterResponse("success"));
     }
 

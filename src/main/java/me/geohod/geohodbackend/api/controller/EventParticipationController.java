@@ -1,5 +1,18 @@
 package me.geohod.geohodbackend.api.controller;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
@@ -12,13 +25,6 @@ import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.IEventService;
 import me.geohod.geohodbackend.service.IParticipantProjectionService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController(value = "EventParticipationControllerV2")
 @RequestMapping("/api/v1/events")
@@ -31,11 +37,11 @@ public class EventParticipationController {
 
     @PostMapping("/{eventId}/register")
     public ResponseEntity<EventRegisterResponse> registerForEvent(@PathVariable UUID eventId,
-                                                                  @AuthenticationPrincipal TelegramPrincipal principal) {
-        UUID loggedUserId = principal.userId();
-        participationService.registerForEvent(loggedUserId, eventId);
-        return ResponseEntity.ok(new EventRegisterResponse("success"));
-    }
+                                                                   @AuthenticationPrincipal TelegramPrincipal principal) {
+         UUID loggedUserId = principal.userId();
+         participationService.registerForEvent(loggedUserId, eventId, 1);
+         return ResponseEntity.ok(new EventRegisterResponse("success"));
+     }
 
     @DeleteMapping("/{eventId}/unregister")
     public ResponseEntity<EventUnregisterResponse> unregisterFromEvent(@PathVariable UUID eventId,

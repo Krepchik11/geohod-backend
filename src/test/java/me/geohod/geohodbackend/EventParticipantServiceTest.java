@@ -48,7 +48,7 @@ public class EventParticipantServiceTest {
         IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, eventLogService);
 
         // When
-        service.registerForEvent(userId, eventId);
+        service.registerForEvent(userId, eventId, 1);
 
         // Then
         verify(eventLogService, times(1)).createLogEntry(eq(eventId), eq(EventType.EVENT_REGISTERED), anyString());
@@ -60,12 +60,15 @@ public class EventParticipantServiceTest {
         UUID userId = UUID.randomUUID();
         UUID eventId = UUID.randomUUID();
         Event event = spy(new Event("Test Event", "Description", Instant.now(), 10, UUID.randomUUID()));
-        EventParticipant participant = new EventParticipant(eventId, userId);
-        event.increaseParticipantCount();
+
+        // Create two participant records (simulating a user who registered for 2 participants)
+        EventParticipant participant1 = new EventParticipant(eventId, userId);
+        EventParticipant participant2 = new EventParticipant(eventId, userId);
+        event.increaseParticipantCount(); // +1 for first record
+        event.increaseParticipantCount(); // +1 for second record
 
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(participantRepository.deleteByEventIdAndUserId(eventId, userId)).thenReturn(1);
-
+        when(participantRepository.deleteByEventIdAndUserId(eventId, userId)).thenReturn(2);
 
         IEventParticipationService service = new EventParticipationService(participantRepository, eventRepository, eventLogService);
 
@@ -76,3 +79,4 @@ public class EventParticipantServiceTest {
         verify(eventLogService, times(1)).createLogEntry(eq(eventId), eq(EventType.EVENT_UNREGISTERED), anyString());
     }
 }
+
