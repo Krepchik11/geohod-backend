@@ -58,3 +58,10 @@ graph TD
 *   **Strategy Pattern**: The notification system (`InAppNotificationProcessor`, `TelegramNotificationProcessor`) likely uses the Strategy pattern to handle different types of notifications (e.g., in-app vs. Telegram) in a pluggable way.
 *   **Global Exception Handling**: `GlobalExceptionHandler` provides a centralized place to handle exceptions thrown from any layer, ensuring consistent error responses in the API.
 *   **Security via Filters**: `TelegramInitDataAuthenticationFilter` indicates that security is handled by a custom filter in the Spring Security chain, which intercepts requests to perform authentication.
+*   **API Design Patterns - Optional Request Bodies with Defaults** (2025-10-03): For backward compatibility in v2 endpoints, optional request bodies are supported with default values in service logic. Example: The event registration endpoint accepts an optional `EventRegisterRequest` with `amountOfParticipants` defaulting to 1, allowing seamless evolution of the API contract without breaking existing clients.
+
+## API Layer Details (Updated: 2025-10-03)
+
+*   **v2 Controllers**: EventController, EventParticipationController, NotificationController, ReviewController, UserController (now includes endpoints for retrieving user details and statistics: GET /api/v2/users/{id} and GET /api/v2/users/{id}/stats).
+
+*   **DTOs**: New response DTOs: UserDetailsResponse (name: String, username: String, imageUrl: String), UserStatsResponse (overallRating: Double, reviewsCount: Integer, eventsCount: Integer, eventsParticipantsCount: Integer, reviewsByRating: Map<Integer, Integer>).
