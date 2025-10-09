@@ -77,11 +77,18 @@ public class UserStatsServiceImpl implements IUserStatsService {
             throw new IllegalArgumentException("User ID cannot be null");
         }
 
-        return reviewRepository.countReviewsByRatingForUser(userId)
+        Map<Integer, Integer> existingRatings = reviewRepository.countReviewsByRatingForUser(userId)
                 .stream()
                 .collect(Collectors.toMap(
                     ReviewRepository.ReviewRatingCountProjection::rating,
                     projection -> (int) projection.count()
                 ));
+
+        Map<Integer, Integer> completeRatings = new java.util.HashMap<>();
+        for (int rating = 1; rating <= 5; rating++) {
+            completeRatings.put(rating, existingRatings.getOrDefault(rating, 0));
+        }
+
+        return completeRatings;
     }
 }
