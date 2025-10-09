@@ -3,7 +3,7 @@ package me.geohod.geohodbackend.service;
 import java.util.UUID;
 
 public interface IEventParticipationService {
-    void registerForEvent(UUID userId, UUID eventId);
+    void registerForEvent(UUID userId, UUID eventId, int participantCount);
 
     void unregisterFromEvent(UUID userId, UUID eventId);
 
