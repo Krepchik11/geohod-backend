@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remove-unique-constraint-001" author="naborshchikov">
+        <comment>Remove unique constraint ux_event_user_participation to allow multiple participants per user per event</comment>
+
+        <dropUniqueConstraint
+                tableName="event_participants"
+                constraintName="ux_event_user_participation"/>
+    </changeSet>
+
+</databaseChangeLog>
