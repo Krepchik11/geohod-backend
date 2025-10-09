@@ -106,4 +106,13 @@ public interface ReviewRepository extends CrudRepository<Review, UUID>, PagingAn
                      "WHERE e.author_id = :userId " +
                      "AND (:showHidden = true OR r.is_hidden = false)")
        long countReviewsWithAuthorForUser(UUID userId, boolean showHidden);
+
+       @Query("SELECT r.rating, COUNT(*) as count FROM reviews r " +
+                     "JOIN events e ON r.event_id = e.id " +
+                     "WHERE e.author_id = :userId " +
+                     "GROUP BY r.rating " +
+                     "ORDER BY r.rating")
+       List<ReviewRatingCountProjection> countReviewsByRatingForUser(UUID userId);
+
+       record ReviewRatingCountProjection(int rating, long count) {}
 }

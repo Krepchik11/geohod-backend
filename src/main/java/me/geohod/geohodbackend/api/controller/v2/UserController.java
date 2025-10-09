@@ -1,13 +1,11 @@
 package me.geohod.geohodbackend.api.controller.v2;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,10 +24,12 @@ import me.geohod.geohodbackend.api.mapper.UserApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.dto.UserDto;
 import me.geohod.geohodbackend.data.dto.UserRatingDto;
+import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
 import me.geohod.geohodbackend.service.IUserService;
+import me.geohod.geohodbackend.service.IUserStatsService;
 
 @RestController
 @RequestMapping("/api/v2/users")
@@ -40,6 +40,7 @@ public class UserController {
     private final IUserService userService;
     private final IUserRatingService userRatingService;
     private final IReviewService reviewService;
+    private final IUserStatsService userStatsService;
 
     @GetMapping("/by-tg-id/{tgId}")
     public ApiResponse<UserResponse> userByTgId(@PathVariable String tgId) {
@@ -65,13 +66,18 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get user details by ID")
-    public ResponseEntity<ApiResponse<UserDetailsResponse>> getUserDetails(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(new UserDetailsResponse("Sample Name", "@sample_username", "https://example.com/avatar.jpg")));
+    public ApiResponse<UserDetailsResponse> getUserDetails(@PathVariable UUID id) {
+        User user = userService.getUser(id);
+        UserDetailsResponse response = userMapper.mapToDetails(user);
+        return ApiResponse.success(response);
     }
 
     @GetMapping("/{id}/stats")
     @Operation(summary = "Get user statistics by ID")
-    public ResponseEntity<ApiResponse<UserStatsResponse>> getUserStats(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(new UserStatsResponse(3.9, 50, 10, 200, Map.of(1, 0, 2, 5, 3, 10, 4, 20, 5, 15))));
+    public ApiResponse<UserStatsResponse> getUserStats(@PathVariable UUID id) {
+        UserStatsResponse stats = userStatsService.getUserStats(id);
+        return ApiResponse.success(stats);
     }
 }
+
+
