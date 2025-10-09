@@ -12,11 +12,17 @@ import me.geohod.geohodbackend.data.model.Event;
 
 @Repository
 public interface EventRepository extends CrudRepository<Event, UUID> {
-    @Modifying
-    @Query("UPDATE events SET status = 'FINISHED', updated_at = CURRENT_TIMESTAMP WHERE id = :eventId AND status != 'FINISHED'")
-    int finishEvent(@Param("eventId") UUID eventId);
+     @Modifying
+     @Query("UPDATE events SET status = 'FINISHED', updated_at = CURRENT_TIMESTAMP WHERE id = :eventId AND status != 'FINISHED'")
+     int finishEvent(@Param("eventId") UUID eventId);
 
-    @Modifying
-    @Query("UPDATE events SET current_participants = current_participants - 1 WHERE id = :eventId AND current_participants > 0")
-    int decrementParticipantCount(@Param("eventId") UUID eventId);
+     @Modifying
+     @Query("UPDATE events SET current_participants = current_participants - 1 WHERE id = :eventId AND current_participants > 0")
+     int decrementParticipantCount(@Param("eventId") UUID eventId);
+
+     @Query("SELECT COUNT(*) FROM events WHERE author_id = :authorId")
+     long countByAuthorId(@Param("authorId") UUID authorId);
+
+     @Query("SELECT COALESCE(SUM(current_participants), 0) FROM events WHERE author_id = :authorId")
+     long sumParticipantsByAuthorId(@Param("authorId") UUID authorId);
 }
