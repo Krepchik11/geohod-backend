@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="set-show-become-organizer" author="naborshchikov">
+        <comment>Set setting show_become_orginizer for users that already have events</comment>
+
+        <sql>
+            UPDATE user_settings us
+            SET show_become_organizer = false
+            WHERE EXISTS (
+                SELECT 1 
+                FROM events e 
+                WHERE e.author_id = us.user_id
+            )
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
