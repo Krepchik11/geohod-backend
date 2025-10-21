@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,7 +11,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
 import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
 
@@ -21,11 +24,28 @@ import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProv
 public class SecurityConfiguration {
     private final ProviderManager providerManager;
     private final TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider;
+    private final GeohodProperties properties;
 
-    public SecurityConfiguration(TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider) {
+    public SecurityConfiguration(TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider, GeohodProperties properties) {
         this.telegramTokenAuthenticationProvider = telegramTokenAuthenticationProvider;
+        this.properties = properties;
         this.providerManager = new ProviderManager(
                 telegramTokenAuthenticationProvider);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(properties.cors().allowedOrigins());
+        configuration.setAllowedMethods(properties.cors().allowedMethods());
+        configuration.setAllowedHeaders(properties.cors().allowedHeaders());
+        configuration.setAllowCredentials(properties.cors().allowCredentials());
+        configuration.setMaxAge(properties.cors().maxAge());
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
@@ -37,7 +57,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
