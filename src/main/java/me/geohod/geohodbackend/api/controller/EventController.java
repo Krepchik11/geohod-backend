@@ -1,10 +1,33 @@
 package me.geohod.geohodbackend.api.controller;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
 import me.geohod.geohodbackend.api.dto.request.EventFinishRequest;
 import me.geohod.geohodbackend.api.dto.request.EventUpdateRequest;
-import me.geohod.geohodbackend.api.dto.response.*;
+import me.geohod.geohodbackend.api.dto.response.EventCancelResponse;
+import me.geohod.geohodbackend.api.dto.response.EventCreateResponse;
+import me.geohod.geohodbackend.api.dto.response.EventDetailsResponse;
+import me.geohod.geohodbackend.api.dto.response.EventFinishResponse;
+import me.geohod.geohodbackend.api.dto.response.EventUpdateResponse;
 import me.geohod.geohodbackend.api.mapper.EventApiMapper;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
@@ -15,16 +38,6 @@ import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventManager;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -63,7 +76,9 @@ public class EventController {
         CreateEventDto createDto = mapper.map(request, principal.userId());
         EventDto createdEvent = eventService.createEvent(createDto);
 
-        return ResponseEntity.ok(new EventCreateResponse(createdEvent.id().toString(), "success"));
+        EventCreateResponse response = mapper.response(createdEvent);
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{eventId}")
