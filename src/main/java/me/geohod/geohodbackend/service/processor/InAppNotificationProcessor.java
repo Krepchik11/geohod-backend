@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -110,6 +111,7 @@ public class InAppNotificationProcessor {
         }
         // For cancelled and finished, notify all participants
         return eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
-                .map(EventParticipant::getUserId).toList();
+                .map(EventParticipant::getUserId)
+                .collect(Collectors.toSet());
     }
 }
