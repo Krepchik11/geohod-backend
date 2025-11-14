@@ -29,6 +29,7 @@ import me.geohod.geohodbackend.api.dto.response.EventFinishResponse;
 import me.geohod.geohodbackend.api.dto.response.EventUpdateResponse;
 import me.geohod.geohodbackend.api.mapper.EventApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
+import me.geohod.geohodbackend.api.response.PageResponse;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.EventDto;
@@ -55,7 +56,7 @@ public class EventController {
     }
 
     @GetMapping
-    public ApiResponse<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
+    public ApiResponse<PageResponse<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
                                                                    @RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
                                                                    @RequestParam(required = false) List<Event.Status> statuses,
                                                                    @PageableDefault(size = 30) Pageable pageable,
@@ -67,7 +68,7 @@ public class EventController {
                 pageable
         );
         Page<EventDetailsResponse> result = events.map(mapper::response);
-        return ApiResponse.success(result);
+        return ApiResponse.success(new PageResponse<>(result));
     }
 
     @PostMapping
