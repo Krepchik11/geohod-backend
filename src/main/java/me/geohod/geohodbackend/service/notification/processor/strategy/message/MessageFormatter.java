@@ -5,14 +5,12 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class MessageFormatter {
     
