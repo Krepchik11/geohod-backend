@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
 
@@ -17,6 +18,14 @@ public class MessageFormatter {
     
     private final TemplateEngine templateEngine;
     private final MessageTemplateRegistry templateRegistry;
+    
+    public MessageFormatter(TemplateEngine templateEngine, MessageTemplateRegistry templateRegistry, GeohodProperties geohodProperties) {
+        this.templateEngine = templateEngine;
+        this.templateRegistry = templateRegistry;
+        this.botName = geohodProperties.telegramBot().username();
+        this.eventLinkTemplate = geohodProperties.linkTemplates().eventRegistrationLink();
+    }
+
     private final String botName;
     private final String eventLinkTemplate;
     
@@ -178,3 +187,4 @@ public class MessageFormatter {
             .collect(java.util.stream.Collectors.joining(" "));
     }
 }
+
