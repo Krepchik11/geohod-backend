@@ -1,11 +1,12 @@
 package me.geohod.geohodbackend.service;
 
+import java.util.UUID;
+
+import me.geohod.geohodbackend.data.dto.CancelEventDto;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.FinishEventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
-
-import java.util.UUID;
 
 public interface IEventService {
     EventDto event(UUID eventId);
@@ -14,7 +15,7 @@ public interface IEventService {
 
     void updateEventDetails(UpdateEventDto updateDto);
 
-    void cancelEvent(UUID eventId);
+    void cancelEvent(CancelEventDto cancelDto);
 
     void finishEvent(FinishEventDto finishDto);
 }

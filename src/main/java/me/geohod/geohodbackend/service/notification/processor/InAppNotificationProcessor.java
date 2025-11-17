@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.service.processor;
+package me.geohod.geohodbackend.service.notification.processor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,10 +23,10 @@ import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.service.IAppNotificationService;
 import me.geohod.geohodbackend.service.IEventLogService;
-import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
-import me.geohod.geohodbackend.service.notification.NotificationType;
+import me.geohod.geohodbackend.service.notification.IAppNotificationService;
+import me.geohod.geohodbackend.service.notification.INotificationProcessorProgressService;
+import me.geohod.geohodbackend.service.notification.processor.strategy.StrategyNotificationType;
 
 @Component
 @RequiredArgsConstructor
@@ -64,7 +64,7 @@ public class InAppNotificationProcessor {
 
     private void processEventLog(EventLog eventLog) {
         eventRepository.findById(eventLog.getEventId()).ifPresent(event -> {
-            NotificationType type = mapEventTypeToNotificationType(eventLog.getType());
+            StrategyNotificationType type = mapEventTypeToNotificationType(eventLog.getType());
             if (type == null) {
                 log.trace("Skipping event log {} - no notification type mapping for {}", eventLog.getId(), eventLog.getType());
                 return;
@@ -86,21 +86,15 @@ public class InAppNotificationProcessor {
         });
     }
 
-    private NotificationType mapEventTypeToNotificationType(EventType eventType) {
-        return switch (eventType) {
-            case EVENT_CREATED -> NotificationType.EVENT_CREATED;
-            case EVENT_CANCELED -> NotificationType.EVENT_CANCELLED;
-            case EVENT_FINISHED_FOR_REVIEW_LINK -> NotificationType.EVENT_FINISHED;
-            case EVENT_REGISTERED -> NotificationType.PARTICIPANT_REGISTERED;
-            case EVENT_UNREGISTERED -> NotificationType.PARTICIPANT_UNREGISTERED;
-        };
+    private StrategyNotificationType mapEventTypeToNotificationType(EventType eventType) {
+        return StrategyNotificationType.fromEventType(eventType);
     }
 
-    private Collection<UUID> getRecipients(Event event, NotificationType type, String payload) {
-        if (type == NotificationType.EVENT_CREATED) {
+    private Collection<UUID> getRecipients(Event event, StrategyNotificationType type, String payload) {
+        if (type == StrategyNotificationType.EVENT_CREATED) {
             return Collections.singleton(event.getAuthorId());
         }
-        if (type == NotificationType.PARTICIPANT_REGISTERED || type == NotificationType.PARTICIPANT_UNREGISTERED) {
+        if (type == StrategyNotificationType.PARTICIPANT_REGISTERED || type == StrategyNotificationType.PARTICIPANT_UNREGISTERED) {
             try {
                 JsonNode root = objectMapper.readTree(payload);
                 return Collections.singleton(UUID.fromString(root.path("userId").asText()));

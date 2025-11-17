@@ -27,12 +27,12 @@ import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.service.IAppNotificationService;
 import me.geohod.geohodbackend.service.IEventLogService;
-import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
-import me.geohod.geohodbackend.service.processor.InAppNotificationProcessor;
+import me.geohod.geohodbackend.service.notification.IAppNotificationService;
+import me.geohod.geohodbackend.service.notification.INotificationProcessorProgressService;
+import me.geohod.geohodbackend.service.notification.processor.InAppNotificationProcessor;
 
-public class InAppNotificationProcessorTest {
+class InAppNotificationProcessorTest {
     @Mock
     private IEventLogService eventLogService;
     @Mock

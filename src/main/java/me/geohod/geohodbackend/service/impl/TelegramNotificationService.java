@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.data.model.repository.UserRepository;
 import me.geohod.geohodbackend.service.ITelegramBotService;
-import me.geohod.geohodbackend.service.ITelegramNotificationService;
+import me.geohod.geohodbackend.service.notification.ITelegramNotificationService;
 
 @Service
 @RequiredArgsConstructor

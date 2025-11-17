@@ -15,7 +15,7 @@ import me.geohod.geohodbackend.api.dto.notification.NotificationResponse;
 import me.geohod.geohodbackend.api.mapper.NotificationApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
-import me.geohod.geohodbackend.service.IAppNotificationService;
+import me.geohod.geohodbackend.service.notification.IAppNotificationService;
 
 @RestController
 @RequestMapping("/api/v2/notifications")

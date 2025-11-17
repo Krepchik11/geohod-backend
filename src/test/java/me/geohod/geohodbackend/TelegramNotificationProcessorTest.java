@@ -1,5 +1,26 @@
 package me.geohod.geohodbackend;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
@@ -8,57 +29,33 @@ import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.service.IEventLogService;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
-import me.geohod.geohodbackend.service.processor.TelegramNotificationProcessor;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
-import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
-import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.mockito.Mockito.*;
+import me.geohod.geohodbackend.service.notification.INotificationProcessorProgressService;
+import me.geohod.geohodbackend.service.notification.processor.TelegramNotificationProcessor;
+import me.geohod.geohodbackend.service.notification.processor.strategy.NotificationStrategy;
+import me.geohod.geohodbackend.service.notification.processor.strategy.StrategyNotificationType;
+import me.geohod.geohodbackend.service.notification.processor.strategy.StrategyRegistry;
 
 @ExtendWith(MockitoExtension.class)
-public class TelegramNotificationProcessorTest {
-
-    private TelegramNotificationProcessor processor;
-
-    @Mock
-    private IEventLogService eventLogService;
-    @Mock
-    private ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher;
-    @Mock
-    private EventRepository eventRepository;
-    @Mock
-    private IUserService userService;
-    @Mock
-    private GeohodProperties geohodProperties;
-    @Mock
-    private EventParticipantRepository eventParticipantRepository;
-
-    @BeforeEach
-    void setUp() {
-        processor = new TelegramNotificationProcessor(
-                eventLogService,
-                telegramOutboxMessagePublisher,
-                mock(INotificationProcessorProgressService.class),
-                eventRepository,
-                eventParticipantRepository,
-                userService,
-                geohodProperties
-        );
-    }
+class TelegramNotificationProcessorTest {
 
     @Test
-    void testProcess() {
-        // Given
+    void testProcessCallsStrategyAndPublishesNotification(
+            @Mock IEventLogService eventLogService,
+            @Mock ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher,
+            @Mock EventRepository eventRepository,
+            @Mock IUserService userService,
+            @Mock StrategyRegistry strategyRegistry,
+            @Mock INotificationProcessorProgressService notificationProcessorProgressService) {
+        
+        TelegramNotificationProcessor processor = new TelegramNotificationProcessor(
+                eventLogService,
+                telegramOutboxMessagePublisher,
+                eventRepository,
+                userService,
+                strategyRegistry,
+                notificationProcessorProgressService
+        );
+        
         UUID eventId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
@@ -69,11 +66,47 @@ public class TelegramNotificationProcessorTest {
         when(eventLogService.findUnprocessed(anyInt(), anyString())).thenReturn(List.of(log));
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(userService.getUser(authorId)).thenReturn(author);
+        
+        NotificationStrategy mockStrategy = mock(NotificationStrategy.class);
+        when(mockStrategy.isValid(event, log.getPayload().value())).thenReturn(true);
+        when(mockStrategy.createParams(event, log.getPayload().value())).thenReturn(Map.of());
+        when(mockStrategy.getRecipients(event, log.getPayload().value())).thenReturn(Collections.singleton(userId));
+        when(mockStrategy.formatMessage(any(Event.class), any(User.class), any(Map.class)))
+            .thenReturn("Test notification message");
+        
+        when(strategyRegistry.getStrategy(StrategyNotificationType.PARTICIPANT_REGISTERED))
+            .thenReturn(Optional.of(mockStrategy));
 
-        // When
         processor.process();
 
-        // Then
-        verify(telegramOutboxMessagePublisher, times(1)).publish(eq(userId), anyString());
+        verify(strategyRegistry).getStrategy(StrategyNotificationType.PARTICIPANT_REGISTERED);
+        verify(mockStrategy).createParams(event, log.getPayload().value());
+        verify(mockStrategy).getRecipients(event, log.getPayload().value());
+        verify(telegramOutboxMessagePublisher).publish(eq(userId), anyString());
     }
-} 
+
+    @Test
+    void testProcessDoesNothingWhenNoEventLogs(
+            @Mock IEventLogService eventLogService,
+            @Mock ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher,
+            @Mock EventRepository eventRepository,
+            @Mock IUserService userService,
+            @Mock StrategyRegistry strategyRegistry,
+            @Mock INotificationProcessorProgressService notificationProcessorProgressService) {
+        
+        TelegramNotificationProcessor processor = new TelegramNotificationProcessor(
+                eventLogService,
+                telegramOutboxMessagePublisher,
+                eventRepository,
+                userService,
+                strategyRegistry,
+                notificationProcessorProgressService
+        );
+
+        when(eventLogService.findUnprocessed(anyInt(), anyString())).thenReturn(List.of());
+
+        processor.process();
+
+        verify(telegramOutboxMessagePublisher, times(0)).publish(any(UUID.class), anyString());
+    }
+}

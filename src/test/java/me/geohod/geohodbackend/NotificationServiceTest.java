@@ -1,26 +1,28 @@
 package me.geohod.geohodbackend;
 
-import me.geohod.geohodbackend.data.dto.NotificationDto;
-import me.geohod.geohodbackend.data.mapper.NotificationMapper;
-import me.geohod.geohodbackend.data.model.notification.Notification;
-import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
-import me.geohod.geohodbackend.service.impl.AppNotificationServiceImpl;
-import me.geohod.geohodbackend.service.notification.NotificationType;
-import me.geohod.geohodbackend.data.model.eventlog.JsonbString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import me.geohod.geohodbackend.data.dto.NotificationDto;
+import me.geohod.geohodbackend.data.mapper.NotificationMapper;
+import me.geohod.geohodbackend.data.model.eventlog.JsonbString;
+import me.geohod.geohodbackend.data.model.notification.Notification;
+import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
+import me.geohod.geohodbackend.service.impl.AppNotificationServiceImpl;
+import me.geohod.geohodbackend.service.notification.NotificationType;
+import me.geohod.geohodbackend.service.notification.processor.strategy.StrategyNotificationType;
 
 public class NotificationServiceTest {
     @Mock
@@ -40,7 +42,8 @@ public class NotificationServiceTest {
     @Test
     void testFetchNotifications() {
         UUID userId = UUID.randomUUID();
-        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, new JsonbString("payload"));
+        Notification notification = new Notification(userId, StrategyNotificationType.EVENT_CREATED, new JsonbString("payload"));
+        // Use NotificationType in DTO for API compatibility
         NotificationDto notificationDto = new NotificationDto(1L, userId, NotificationType.EVENT_CREATED, "payload", false, null, UUID.randomUUID());
         
         when(notificationRepository.findByUserIdAndIsReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
@@ -56,10 +59,10 @@ public class NotificationServiceTest {
     void testDismiss() {
         Long notificationId = 1L;
         UUID userId = UUID.randomUUID();
-        Notification notification = new Notification(userId, NotificationType.EVENT_CREATED, new JsonbString("payload"));
+        Notification notification = new Notification(userId, StrategyNotificationType.EVENT_CREATED, new JsonbString("payload"));
         when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
         notificationService.dismiss(notificationId, userId);
         assertTrue(notification.isRead());
     }
-} 
+}
