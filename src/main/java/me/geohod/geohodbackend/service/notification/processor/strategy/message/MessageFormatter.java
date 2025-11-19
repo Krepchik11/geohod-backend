@@ -94,10 +94,6 @@ public class MessageFormatter {
         String escaped = message
             .replace("*", "\\*")
             .replace("_", "\\_")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
-            .replace("(", "\\(")
-            .replace(")", "\\)")
             .replace("~", "\\~")
             .replace("`", "\\`")
             .replace(">", "\\>")
@@ -111,12 +107,18 @@ public class MessageFormatter {
             .replace(".", "\\.")
             .replace("!", "\\!");
         
+        escaped = restoreLinkSyntax(escaped);
+        
         if (escaped.length() > 4096) {
             log.warn("Telegram message too long ({} chars), truncating to 4096", escaped.length());
             escaped = escaped.substring(0, 4093) + "...";
         }
         
         return escaped;
+    }
+    
+    private String restoreLinkSyntax(String escaped) {
+        return escaped.replaceAll("\\\\\\[([^\\]]*)\\\\\\]\\\\\\(([^\\)]*)\\\\\\)", "[$1]($2)");
     }
     
     private String applyInAppFormatting(String message) {
