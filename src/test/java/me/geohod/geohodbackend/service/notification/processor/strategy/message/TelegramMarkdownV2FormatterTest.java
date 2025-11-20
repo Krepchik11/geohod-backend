@@ -79,15 +79,25 @@ class TelegramMarkdownV2FormatterTest {
     }
     
     @Test
+    void testUrlWithUnderscoresAndEquals() {
+        TelegramMarkdownV2Formatter formatter = new TelegramMarkdownV2Formatter();
+        
+        // This tests the specific case reported by the user
+        String input = "Link: https://t.me/geohod_local_dev_bot/app?startapp=registration_0a28d86c-7817-4028-8c8c-93924f7dedf7";
+        String result = formatter.format(input);
+        
+        // Underscores and equals should NOT be escaped in plain URLs
+        String expected = "Link: https://t.me/geohod_local_dev_bot/app?startapp=registration_0a28d86c-7817-4028-8c8c-93924f7dedf7";
+        assertEquals(expected, result);
+    }
+    
+    @Test
     void testTemplateVariableLikeContent() {
         TelegramMarkdownV2Formatter formatter = new TelegramMarkdownV2Formatter();
         
         // This simulates what the template engine might produce
         String input = "[Nino](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         String result = formatter.format(input);
-        
-        System.out.println("Input: " + input);
-        System.out.println("Output: " + result);
         
         // This is what we expect to see in the final message
         String expected = "[Nino](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
@@ -101,8 +111,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Text with *bold* and _italic_ and [brackets] and (parens)";
         String result = formatter.format(input);
         
-        // Only bold and italic should be escaped, brackets and parentheses remain unescaped
-        String expected = "Text with \\*bold\\* and \\_italic\\_ and [brackets] and (parens)";
+        // Only bold should be escaped, underscores and brackets remain unescaped to preserve URLs
+        String expected = "Text with \\*bold\\* and _italic_ and [brackets] and (parens)";
         assertEquals(expected, result);
     }
 }

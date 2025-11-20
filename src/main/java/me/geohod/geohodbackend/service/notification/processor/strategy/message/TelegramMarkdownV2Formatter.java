@@ -49,24 +49,22 @@ public class TelegramMarkdownV2Formatter {
         }
         
         return text.replace("\\", "\\\\")    // First to avoid double-escaping
-                   .replace("_", "\\_")
                    .replace("*", "\\*")
                    .replace("~", "\\~")
                    .replace("`", "\\`")
                    .replace(">", "\\>")
                    .replace("#", "\\#")
                    .replace("+", "\\+")
-                   .replace("=", "\\=")
                    .replace("|", "\\|")
                    .replace("{", "\\{")
                    .replace("}", "\\}")
                    .replace("!", "\\!");
         
-        // Note: We're NOT escaping [, ], (, ), -, . here to avoid breaking URLs and dates
+        // Don't escape: _, -, ., =, [, ], (, ) to preserve URLs and common text patterns
     }
     
     private String createLink(String text, String url) {
-        String escapedText = escapeText(text);
+        String escapedText = smartEscape(text);
         String escapedUrl = escapeUrl(url);
         return "[" + escapedText + "](" + escapedUrl + ")";
     }
