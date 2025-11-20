@@ -25,9 +25,9 @@ public class TelegramMarkdownV2Formatter {
         Matcher matcher = LINK_PATTERN.matcher(message);
         
         while (matcher.find()) {
-            // Add properly escaped text before the link
+            // Add text before the link with smart escaping
             String beforeLink = message.substring(lastPosition, matcher.start());
-            result.append(escapeText(beforeLink));
+            result.append(smartEscape(beforeLink));
             
             // Process the link with correct escaping rules
             String linkText = matcher.group(1);
@@ -37,10 +37,32 @@ public class TelegramMarkdownV2Formatter {
             lastPosition = matcher.end();
         }
         
-        // Add remaining text after the last link
-        result.append(escapeText(message.substring(lastPosition)));
+        // Add remaining text after the last link with smart escaping
+        result.append(smartEscape(message.substring(lastPosition)));
         
         return result.toString();
+    }
+    
+    private String smartEscape(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        
+        return text.replace("\\", "\\\\")    // First to avoid double-escaping
+                   .replace("_", "\\_")
+                   .replace("*", "\\*")
+                   .replace("~", "\\~")
+                   .replace("`", "\\`")
+                   .replace(">", "\\>")
+                   .replace("#", "\\#")
+                   .replace("+", "\\+")
+                   .replace("=", "\\=")
+                   .replace("|", "\\|")
+                   .replace("{", "\\{")
+                   .replace("}", "\\}")
+                   .replace("!", "\\!");
+        
+        // Note: We're NOT escaping [, ], (, ), -, . here to avoid breaking URLs and dates
     }
     
     private String createLink(String text, String url) {
@@ -50,8 +72,7 @@ public class TelegramMarkdownV2Formatter {
     }
     
     /**
-     * Escapes text according to Telegram MarkdownV2 rules.
-     * Escapes: _, *, [, ], (, ), ~, `, >, #, +, -, =, |, {, }, ., !
+     * Per spec: escape _, *, [, ], (, ), ~, `, >, #, +, -, =, |, {, }, ., ! outside of links
      */
     private String escapeText(String text) {
         if (text == null || text.isEmpty()) {
