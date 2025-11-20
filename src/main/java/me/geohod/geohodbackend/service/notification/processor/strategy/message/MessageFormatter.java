@@ -16,12 +16,15 @@ public class MessageFormatter {
     
     private final TemplateEngine templateEngine;
     private final MessageTemplateRegistry templateRegistry;
+    private final TelegramMarkdownV2Formatter telegramMarkdownV2Formatter;
     
-    public MessageFormatter(TemplateEngine templateEngine, MessageTemplateRegistry templateRegistry, GeohodProperties geohodProperties) {
+    public MessageFormatter(TemplateEngine templateEngine, MessageTemplateRegistry templateRegistry, 
+                          GeohodProperties geohodProperties, TelegramMarkdownV2Formatter telegramMarkdownV2Formatter) {
         this.templateEngine = templateEngine;
         this.templateRegistry = templateRegistry;
         this.botName = geohodProperties.telegramBot().username();
         this.eventLinkTemplate = geohodProperties.linkTemplates().eventRegistrationLink();
+        this.telegramMarkdownV2Formatter = telegramMarkdownV2Formatter;
     }
 
     private final String botName;
@@ -73,6 +76,9 @@ public class MessageFormatter {
             data.put("contactInfo", contactInfo);
         }
         
+        data.put("contactName", getAuthorFullName(author));
+        data.put("contactLink", buildContactLink(author));
+        
         if (variables != null) {
             data.putAll(variables);
         }
@@ -91,34 +97,8 @@ public class MessageFormatter {
     }
     
     private String applyTelegramFormatting(String message) {
-        String escaped = message
-            .replace("*", "\\*")
-            .replace("_", "\\_")
-            .replace("~", "\\~")
-            .replace("`", "\\`")
-            .replace(">", "\\>")
-            .replace("#", "\\#")
-            .replace("+", "\\+")
-            .replace("-", "\\-")
-            .replace("=", "\\=")
-            .replace("|", "\\|")
-            .replace("{", "\\{")
-            .replace("}", "\\}")
-            .replace(".", "\\.")
-            .replace("!", "\\!");
-        
-        escaped = restoreLinkSyntax(escaped);
-        
-        if (escaped.length() > 4096) {
-            log.warn("Telegram message too long ({} chars), truncating to 4096", escaped.length());
-            escaped = escaped.substring(0, 4093) + "...";
-        }
-        
-        return escaped;
-    }
-    
-    private String restoreLinkSyntax(String escaped) {
-        return escaped.replaceAll("\\\\\\[([^\\]]*)\\\\\\]\\\\\\(([^\\)]*)\\\\\\)", "[$1]($2)");
+        if (message == null) return "";
+        return telegramMarkdownV2Formatter.format(message);
     }
     
     private String applyInAppFormatting(String message) {
@@ -185,6 +165,13 @@ public class MessageFormatter {
         return java.util.stream.Stream.of(author.getFirstName(), author.getLastName())
             .filter(name -> name != null && !name.trim().isEmpty())
             .collect(java.util.stream.Collectors.joining(" "));
+    }
+    
+    private String buildContactLink(User author) {
+        if (author.getTgUsername() != null && !author.getTgUsername().trim().isEmpty()) {
+            return "https://t.me/" + author.getTgUsername();
+        }
+        return "";
     }
 }
 

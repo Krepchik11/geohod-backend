@@ -70,7 +70,7 @@ public class MessageTemplateRegistry {
             """
             Вы создали событие:
 
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}
 
             Ссылка для регистрации:
@@ -85,7 +85,7 @@ public class MessageTemplateRegistry {
             """
             Вы отменили событие:
             
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}
             
             Уведомления об отмене события отправлены следующим участникам:
@@ -101,7 +101,7 @@ public class MessageTemplateRegistry {
             """
             Вы отменили событие:
             
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}
             
             Уведомления об отмене события участникам не направлено""",
@@ -115,7 +115,7 @@ public class MessageTemplateRegistry {
             """
             Событие отменено:
 
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}
             [{{contactName}}]({{contactLink}})""",
             TemplateType.TELEGRAM,
@@ -128,7 +128,7 @@ public class MessageTemplateRegistry {
             """
             Вы зарегистрировались на событие:
 
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}
             [{{contactName}}]({{contactLink}})""",
             TemplateType.TELEGRAM,
@@ -141,7 +141,7 @@ public class MessageTemplateRegistry {
             """
             Вы отменили регистрацию на событие:
 
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}""",
             TemplateType.TELEGRAM,
             Map.of(),
@@ -153,7 +153,7 @@ public class MessageTemplateRegistry {
             """
             Событие завершено:
 
-            [{{eventName}}]({{eventLink}})
+            [{{eventName}}]({{registrationLink}})
             {{eventDate}}
 
             Ваш отзыв важен — оставьте его по [ссылке]({{reviewLink}})""",
