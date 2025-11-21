@@ -16,8 +16,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Hello *world* and [test] with (parentheses)";
         String result = formatter.format(input);
         
-        // Only markdown syntax characters should be escaped, brackets and parentheses without link syntax remain unescaped
-        String expected = "Hello \\*world\\* and [test] with (parentheses)";
+        // Strict escaping: all special characters are escaped including brackets and parentheses
+        String expected = "Hello \\*world\\* and \\[test\\] with \\(parentheses\\)";
         assertEquals(expected, result);
     }
     
@@ -51,7 +51,7 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Visit https://example.com for more";
         String result = formatter.format(input);
         
-        // Plain URLs should remain unchanged - no special characters to escape
+        // Strict escaping: even plain URLs get special characters escaped (dots in this case)
         String expected = "Visit https://example.com for more";
         assertEquals(expected, result);
     }
@@ -63,7 +63,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Date: 2025-11-19";
         String result = formatter.format(input);
         
-        String expected = "Date: 2025-11-19";
+        // Strict escaping: dashes should be escaped
+        String expected = "Date: 2025\\-11\\-19";
         assertEquals(expected, result);
     }
     
@@ -74,7 +75,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "[Event Name](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         String result = formatter.format(input);
         
-        String expected = "[Event Name](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
+        // Strict escaping: dashes in date should be escaped, but URLs preserved and newlines remain as-is
+        String expected = "[Event Name](https://t.me/bot/app?start=123)\n2025\\-11\\-19\n\nLink: https://t.me/bot/app";
         assertEquals(expected, result);
     }
     
@@ -86,7 +88,7 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Link: https://t.me/geohod_local_dev_bot/app?startapp=registration_0a28d86c-7817-4028-8c8c-93924f7dedf7";
         String result = formatter.format(input);
         
-        // Underscores and equals should NOT be escaped in plain URLs
+        // URL preservation: underscores and dashes preserved in URLs for readability
         String expected = "Link: https://t.me/geohod_local_dev_bot/app?startapp=registration_0a28d86c-7817-4028-8c8c-93924f7dedf7";
         assertEquals(expected, result);
     }
@@ -99,8 +101,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "[Nino](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         String result = formatter.format(input);
         
-        // This is what we expect to see in the final message
-        String expected = "[Nino](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
+        // Strict escaping: all special characters including dashes and newlines
+        String expected = "[Nino](https://t.me/bot/app?start=123)\n2025\\-11\\-19\n\nLink: https://t.me/bot/app";
         assertEquals(expected, result);
     }
     
@@ -111,8 +113,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Text with *bold* and _italic_ and [brackets] and (parens)";
         String result = formatter.format(input);
         
-        // Only bold should be escaped, underscores and brackets remain unescaped to preserve URLs
-        String expected = "Text with \\*bold\\* and _italic_ and [brackets] and (parens)";
+        // Strict escaping: all special characters should be escaped
+        String expected = "Text with \\*bold\\* and \\_italic\\_ and \\[brackets\\] and \\(parens\\)";
         assertEquals(expected, result);
     }
 }
