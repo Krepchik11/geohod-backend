@@ -63,8 +63,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "Date: 2025-11-19";
         String result = formatter.format(input);
         
-        // Strict escaping: dashes should be escaped
-        String expected = "Date: 2025\\-11\\-19";
+        // Dashes in dates should not be escaped for readability
+        String expected = "Date: 2025-11-19";
         assertEquals(expected, result);
     }
     
@@ -75,8 +75,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "[Event Name](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         String result = formatter.format(input);
         
-        // Strict escaping: dashes in date should be escaped, but URLs preserved and newlines remain as-is
-        String expected = "[Event Name](https://t.me/bot/app?start=123)\n2025\\-11\\-19\n\nLink: https://t.me/bot/app";
+        // Dashes in dates should not be escaped, but URLs preserved and newlines remain as-is
+        String expected = "[Event Name](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         assertEquals(expected, result);
     }
     
@@ -101,8 +101,8 @@ class TelegramMarkdownV2FormatterTest {
         String input = "[Nino](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         String result = formatter.format(input);
         
-        // Strict escaping: all special characters including dashes and newlines
-        String expected = "[Nino](https://t.me/bot/app?start=123)\n2025\\-11\\-19\n\nLink: https://t.me/bot/app";
+        // Dashes in dates should not be escaped, but other special characters still are
+        String expected = "[Nino](https://t.me/bot/app?start=123)\n2025-11-19\n\nLink: https://t.me/bot/app";
         assertEquals(expected, result);
     }
     

@@ -97,7 +97,7 @@ public class TelegramMarkdownV2Formatter {
 
     private boolean isSpecialChar(char c) {
         return switch (c) {
-            case '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '!' -> true;
+            case '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '=', '|', '{', '}', '!' -> true;
             default -> false;
         };
     }
