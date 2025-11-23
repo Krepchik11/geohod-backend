@@ -2,23 +2,24 @@ FROM eclipse-temurin:23-jdk-alpine AS builder
 
 WORKDIR /app
 
-COPY gradlew ./
-COPY gradle/wrapper/ gradle/wrapper/
-RUN chmod +x gradlew
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
 
-COPY build.gradle settings.gradle ./
-COPY src/ src/
+COPY src src
 
-RUN ./gradlew build --no-daemon
+RUN ./gradlew clean bootJar --no-daemon -x test
 
 FROM eclipse-temurin:23-jre-alpine
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/ build/libs/
-COPY --from=builder /app/build/classes/java/main/ build/classes/java/main/
-COPY --from=builder /app/build/resources/main/ build/resources/main/
+COPY --from=builder /app/build/libs/*.jar app.jar 
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "build/libs/geohod-backend-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
