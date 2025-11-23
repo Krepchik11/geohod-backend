@@ -111,11 +111,13 @@ BUILD SUCCESSFUL
 *   **Notification Progress**: `NotificationProcessorProgress` for tracking processing state
 *   **Event Logging**: Enhanced event tracking with `EventLog` entity and `EventType` enum
 *   **Persistable Pattern**: All entities implement `Persistable<T>` with version control
+*   **Event Sorting Support**: Repository layer enhanced with dynamic ORDER BY clause building based on Pageable sort parameters
 
 ### Testing & Quality Assurance
 *   **Testcontainers Integration**: Real PostgreSQL instances for integration testing
 *   **Strategy Testing**: Dedicated test classes for notification strategies and formatters
 *   **Template Engine Testing**: Comprehensive tests for variable processing and conditionals
+*   **Repository Testing**: Enhanced with `EventProjectionRepositoryTest` for sorting functionality validation
 
 ## Performance & Monitoring
 *   **Database Optimization**: 15+ Liquibase changelogs with performance indexes

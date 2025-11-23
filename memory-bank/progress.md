@@ -5,7 +5,7 @@
 Based on current analysis, the following core features are implemented and functional:
 
 ### Core Features ✅
-*   **Event Management API**: Full CRUD operations for events with lifecycle management.
+*   **Event Management API**: Full CRUD operations for events with lifecycle management. **Enhanced**: Sorting by name, date, status, createdAt, updatedAt with dynamic ORDER BY.
 *   **Event Participation API**: Register, unregister, and manage participants. **Enhanced**: Multi-participant registration (1-10 participants).
 *   **Reviews & Ratings API**: One-to-one user-to-event reviews with database enforcement and user statistics.
 *   **Notification System (Major Enhancement)**: **Complete refactor** to strategy-based system with sophisticated templating and formatting.
@@ -85,6 +85,17 @@ Based on current analysis, the following core features are implemented and funct
   MessageTemplateTest > variableSubstitution() PASSED
   BUILD SUCCESSFUL
   ```
+
+### Event Sorting Implementation ✅
+*   **Repository Enhancement**: Modified `EventProjectionRepository.events()` to support dynamic ORDER BY clauses based on Pageable sort parameters.
+*   **Sorting Fields**: Support for name, date, status, createdAt, updatedAt with proper database column mapping.
+*   **Default Behavior**: Falls back to `e.created_at DESC` when no sort specified or unknown field provided.
+*   **Test Coverage**: Created `EventProjectionRepositoryTest` with Testcontainers integration - all 4 tests passed:
+  - `shouldSortEventsByNameAsc()`
+  - `shouldSortEventsByDateDesc()`  
+  - `shouldSortEventsByStatus()`
+  - `shouldSortEventsByCreatedAtDefault()`
+*   **Backward Compatibility**: API works with and without sort parameters.
 
 ### Multi-Participant Registration ✅
 *   **API Enhancement**: `EventRegisterRequest` with `amountOfParticipants` field (1-10)

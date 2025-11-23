@@ -2,7 +2,20 @@
 
 ## Current Focus (November 2025)
 
-**Primary Focus: Notification System Refactoring Completion (November 2025)**
+**Primary Focus: Event Sorting API Implementation (November 2025)**
+
+The event sorting functionality has been successfully implemented, adding the ability to sort events by name, date, status, createdAt, and updatedAt fields with comprehensive test coverage and backward compatibility.
+
+**Key Implementation Details**:
+- **Repository Layer**: Enhanced `EventProjectionRepository` with dynamic ORDER BY clause building
+- **Test Coverage**: Created `EventProjectionRepositoryTest` with Testcontainers integration
+- **Sorting Support**: name→e.name, date→e.date, status→e.status, createdAt→e.created_at, updatedAt→e.updated_at
+- **Default Behavior**: Falls back to created_at DESC when no sort specified
+- **Backward Compatibility**: API works with and without sort parameters
+- **Test Results**: All 4 sorting tests passed successfully
+- **OpenAPI Documentation**: Added comprehensive sorting documentation for frontend developers with examples and field descriptions
+
+**Previous Focus: Notification System Refactoring Completion (Completed November 2025)**
 
 The notification system refactoring has been successfully completed, introducing a **unified NotificationStrategy pattern** that significantly improves maintainability and reduces code duplication:
 
@@ -12,6 +25,20 @@ The notification system refactoring has been successfully completed, introducing
 4. **Enhanced Architecture**: Cleaner separation of concerns with strategy implementations handling business logic
 
 ## Recent Major Changes
+
+### Event Sorting Implementation Completed (November 2025)
+
+**Dynamic Sorting Support Implementation**:
+- **Repository Enhancement**: Enhanced `EventProjectionRepository.events()` method with dynamic ORDER BY clause building
+- **Sorting Fields**: Complete support for name, date, status, createdAt, updatedAt with proper database column mapping
+- **Implementation**: Custom `buildOrderByClause()` method with switch statement mapping API fields to database columns
+- **Default Behavior**: Smart fallback to `e.created_at DESC` when no sort specified or unknown field provided
+- **Test Coverage**: Created comprehensive `EventProjectionRepositoryTest` with Testcontainers integration
+- **Verification**: All 4 sorting tests passed successfully:
+  - `shouldSortEventsByNameAsc()`
+  - `shouldSortEventsByDateDesc()`
+  - `shouldSortEventsByStatus()`
+  - `shouldSortEventsByCreatedAtDefault()`
 
 ### Notification System Refactoring Completed (November 2025)
 
