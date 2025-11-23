@@ -63,6 +63,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: ".env,/tmp/geohod-backend-image.tar.gz"
           target: "~/geohod-backend-dev"
+          strip_components: 1
 
       - name: Transfer configuration to VPS
         uses: appleboy/scp-action@v1.0.0
