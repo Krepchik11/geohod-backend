@@ -44,44 +44,81 @@ Gotchas:
 - For optional bodies, test both with and without request body to confirm defaults work.
 - Ensure map fields like reviewsByRating always include keys 1-5 even if zero.
 
-## Implement Notification Strategy (New November 2025)
+## Unified Notification Strategy Implementation (Refactored November 2025)
 
-**Last verified**: 2025-11-23 - Critical for Issue-84-optional-notifications
+**Last verified**: 2025-11-23 - **COMPLETED**: Issue-84-optional-notifications
 
-Files typically involved:
-- Strategy: src/main/java/me/geohod/geohodbackend/service/notification/processor/strategy/...
-- Message Templates: src/main/java/me/geohod/geohodbackend/service/notification/processor/strategy/message/...
-- Template Registry: MessageTemplateRegistry with @PostConstruct initialization
-- Message Formatter: MessageFormatter with channel-specific formatting
+**Architecture Overview**: The notification system now uses a unified `NotificationStrategy` interface that supports both In-App and Telegram channels through shared and channel-specific methods.
 
-Steps:
-1. **Create Strategy Implementation**:
-   - Extend `NotificationStrategy` interface
-   - Implement required methods: `createParams()`, `getRecipients()`, `formatMessage()`, `getType()`, `isValid()`
-   - Register in `NotificationStrategyConfiguration` @PostConstruct method
+Files involved:
+- **Strategy Interface**: `src/main/java/me/geohod/geohodbackend/service/notification/processor/strategy/NotificationStrategy.java`
+- **Strategy Registry**: `StrategyRegistry.java` - Centralized strategy selection
+- **Strategy Implementations**: 
+  - `EventCancelledStrategy.java`, `EventCreatedStrategy.java`, `EventFinishedStrategy.java`
+  - `ParticipantRegisteredStrategy.java`, `ParticipantUnregisteredStrategy.java`
+- **Processors**: `InAppNotificationProcessor.java`, `TelegramNotificationProcessor.java`
+- **Templates**: Message templates with Russian text and template engine integration
+- **Formatters**: `TelegramMarkdownV2Formatter.java`, `InAppFormatter.java`
 
-2. **Define Template**:
-   - Create MessageTemplate with ID, Russian text, TemplateType
-   - Support variables: {{eventName}}, {{eventDate}}, {{contactInfo}}, {{registrationLink}}, etc.
-   - Add fallbacks for missing data
-   - Register in MessageTemplateRegistry.initializeDefaultTemplates()
+**Implementation Pattern (November 2025)**:
+1. **Unified Strategy Interface**: 
+   ```java
+   public interface NotificationStrategy {
+       // Shared methods
+       StrategyNotificationType getType();
+       boolean isValid();
+       List<User> getRecipients(EventLog eventLog);
+       
+       // Telegram-specific
+       TelegramSendMessageParams createTelegramParams();
+       String formatTelegramMessage();
+       
+       // In-App-specific  
+       Notification createInAppNotification();
+   }
+   ```
 
-3. **Implement Message Formatting**:
-   - Ensure TelegramMarkdownV2Formatter properly escapes content
-   - Handle special characters: `*`, `_`, `[`, `]`, `(`, `)`, `~`, `` ` ``, `>`, `#`, `+`, `=`, `|`, `{`, `}`, `!`
-   - Preserve plain URLs while escaping markdown formatting
-   - Support template expressions: `{{variable}}`, `{{variable|fallback}}`, `{{variable:50}}`
+2. **Strategy Registry Integration**:
+   ```java
+   @Component
+   public class InAppNotificationProcessor {
+       private final StrategyRegistry strategyRegistry;
+       
+       public void process(EventLog eventLog) {
+           NotificationStrategy strategy = strategyRegistry.getStrategy(eventLog.getType())
+               .orElseThrow(() -> new GeohodException("No strategy found"));
+           // Delegate to strategy...
+       }
+   }
+   ```
 
-4. **Template Engine Integration**:
-   - Support conditional blocks: `{#if condition}content{/if}`
-   - Variable interpolation with fallbacks and length limits
-   - Automatic data context building from events and users
+3. **Refactored Strategy Implementations**:
+   - All five strategies updated to implement unified interface methods
+   - Channel-specific logic isolated in appropriate methods
+   - Consistent validation and recipient determination
 
-5. **Test Strategy**:
-   - Create dedicated test class for the strategy
-   - Test template rendering with various data combinations
-   - Verify Telegram MarkdownV2 formatting works correctly
-   - Test fallback handling for missing variables
+**Benefits Achieved**:
+- **Code Deduplication**: Eliminated hardcoded recipient determination and DTO creation logic
+- **Maintainability**: Cleaner separation of concerns between processors and strategies
+- **Consistency**: Uniform strategy selection and execution across channels
+- **Extensibility**: Easy to add new notification types or channels
+
+**Verification Results (November 2025)**:
+All tests in the service.notification package passed, including updated processor tests:
+```
+InAppNotificationProcessorTest > testProcessWithEventCreatedLog() PASSED
+InAppNotificationProcessorTest > testProcessWithNoUnprocessedLogs() PASSED
+TelegramNotificationProcessorTest > testProcessCallsStrategyAndPublishesNotification(...) PASSED
+TelegramNotificationProcessorTest > testProcessDoesNothingWhenNoEventLogs(...) PASSED
+MessageTemplateTest > variableSubstitution() PASSED
+...
+BUILD SUCCESSFUL
+```
+
+**Template System** (unchanged):
+- Russian-language templates with sophisticated variable interpolation
+- Conditional blocks and fallback values
+- Telegram MarkdownV2 formatting with proper escaping
 
 **Templates Available** (as of November 2025):
 - `event.created` - New event notifications

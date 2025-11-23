@@ -53,29 +53,52 @@
 
 ## Architectural Evolution (November 2025)
 
-### Notification System Architecture
-The notification system has been completely refactored with a sophisticated architecture:
+### Notification System Architecture - Refactored & Completed
+The notification system has been completely refactored with a sophisticated unified architecture:
 
-1. **Strategy Pattern Implementation**:
-   - `StrategyNotificationType` enum (replacing deprecated `NotificationType`)
-   - `StrategyRegistry` for dependency injection and strategy management
-   - Dedicated strategy classes: `EventCreatedStrategy`, `EventCancelledStrategy`, etc.
+1. **Unified Strategy Pattern Implementation**:
+   - `NotificationStrategy` interface with shared and channel-specific methods
+   - **Enhanced Interface**: 
+     - Shared methods: `getType()`, `isValid()`, `getRecipients()`
+     - Telegram-specific: `createTelegramParams()`, `formatTelegramMessage()`
+     - In-App-specific: `createInAppNotification()`
+   - `StrategyRegistry` for centralized strategy management and dependency injection
+   - **Refactored Implementations**: All five strategies updated to implement unified interface:
+     - `EventCreatedStrategy`, `EventCancelledStrategy`, `EventFinishedStrategy`
+     - `ParticipantRegisteredStrategy`, `ParticipantUnregisteredStrategy`
 
-2. **Template Engine**:
+2. **Processor Modernization**:
+   - `InAppNotificationProcessor`: Refactored to inject `StrategyRegistry` and delegate logic
+   - `TelegramNotificationProcessor`: Updated to use new unified method names
+   - **Code Quality**: Removed hardcoded recipient determination and DTO creation logic
+   - **Architecture**: Clean separation of concerns - processors orchestrate, strategies implement
+
+3. **Template Engine** (unchanged):
    - Custom `TemplateEngine` with regex-based variable processing
    - Support for complex expressions: `{{variable|fallback:50}}`
    - Conditional content rendering with `{#if}` blocks
    - Automatic data context building from events and users
 
-3. **Message Formatting Pipeline**:
+4. **Message Formatting Pipeline** (unchanged):
    - `TelegramMarkdownV2Formatter`: Sophisticated escaping for special characters
    - URL preservation for plain links while escaping markdown formatting
    - Channel-specific formatting: Telegram vs in-app text processing
 
-4. **Template Registry**:
+5. **Template Registry** (unchanged):
    - `MessageTemplateRegistry` with `@PostConstruct` initialization
    - Default Russian-language templates for all notification types
    - Type-based template selection (TELEGRAM, IN_APP)
+
+### Verification Results (November 2025)
+All tests passed successfully with the new unified architecture:
+```
+InAppNotificationProcessorTest > testProcessWithEventCreatedLog() PASSED
+InAppNotificationProcessorTest > testProcessWithNoUnprocessedLogs() PASSED
+TelegramNotificationProcessorTest > testProcessCallsStrategyAndPublishesNotification(...) PASSED
+TelegramNotificationProcessorTest > testProcessDoesNothingWhenNoEventLogs(...) PASSED
+MessageTemplateTest > variableSubstitution() PASSED
+BUILD SUCCESSFUL
+```
 
 ### API Design Evolution
 *   **v2 API Enhancement**: Multi-participant registration with `EventRegisterRequest` (1-10 participants)

@@ -84,7 +84,8 @@ graph TD
 
 ### Advanced Patterns (November 2025)
 
-#### 1. **Strategy Pattern for Notifications**
+#### 1. **Unified Strategy Pattern for Notifications (Refactored November 2025)**
+
 ```java
 @Component
 public class StrategyRegistry {
@@ -93,14 +94,34 @@ public class StrategyRegistry {
     public void registerStrategy(StrategyNotificationType type, NotificationStrategy strategy);
     public Optional<NotificationStrategy> getStrategy(StrategyNotificationType type);
 }
+
+public interface NotificationStrategy {
+    // Shared methods for all channels
+    StrategyNotificationType getType();
+    boolean isValid();
+    List<User> getRecipients(EventLog eventLog);
+    
+    // Telegram-specific methods
+    TelegramSendMessageParams createTelegramParams();
+    String formatTelegramMessage();
+    
+    // In-App-specific methods
+    Notification createInAppNotification();
+}
 ```
 
-**Strategy Implementations**:
-- `EventCreatedStrategy`: Handles new event notifications
+**Refactored Strategy Implementations**:
+- `EventCreatedStrategy`: Handles new event notifications with unified interface
 - `EventCancelledStrategy`: Manages event cancellation notifications  
 - `EventFinishedStrategy`: Processes event completion notifications
 - `ParticipantRegisteredStrategy`: Handles participant registration
 - `ParticipantUnregisteredStrategy`: Manages participant deregistration
+
+**Key Improvements**:
+- **Single Interface**: Unified `NotificationStrategy` replaces separate Telegram/In-App strategies
+- **Method Separation**: Channel-specific methods (`createTelegramParams()`, `createInAppNotification()`) 
+- **Registry Delegation**: All processors delegate to `StrategyRegistry` for strategy selection
+- **Code Deduplication**: Eliminated hardcoded recipient determination and DTO creation logic
 
 #### 2. **Template Engine Pattern**
 ```java
@@ -132,7 +153,51 @@ public class TelegramMarkdownV2Formatter {
 - `TelegramMarkdownV2Formatter`: Complex escaping for Telegram's MarkdownV2
 - `InAppFormatter`: Strips all formatting for plain text display
 
-#### 4. **Template Registry Pattern**
+#### 4. **Refactored Processor Pattern (November 2025)**
+
+**Processor Architecture Improvements**:
+```java
+@Component
+public class InAppNotificationProcessor {
+    private final StrategyRegistry strategyRegistry;
+    private final AppNotificationServiceImpl appNotificationService;
+    
+    public void process(EventLog eventLog) {
+        NotificationStrategy strategy = strategyRegistry.getStrategy(eventLog.getType())
+            .orElseThrow(() -> new GeohodException("No strategy found"));
+            
+        if (strategy.isValid()) {
+            List<User> recipients = strategy.getRecipients(eventLog);
+            Notification notification = strategy.createInAppNotification();
+            // Continue with notification processing...
+        }
+    }
+}
+
+@Component
+public class TelegramNotificationProcessor {
+    private final StrategyRegistry strategyRegistry;
+    
+    public void process(EventLog eventLog) {
+        NotificationStrategy strategy = strategyRegistry.getStrategy(eventLog.getType())
+            .orElseThrow(() -> new GeohodException("No strategy found"));
+            
+        if (strategy.isValid()) {
+            TelegramSendMessageParams params = strategy.createTelegramParams();
+            String formattedMessage = strategy.formatTelegramMessage();
+            // Continue with Telegram processing...
+        }
+    }
+}
+```
+
+**Key Changes**:
+- **Strategy Delegation**: Both processors now delegate logic to appropriate strategies
+- **Removed Hardcoded Logic**: Eliminated recipient determination and DTO creation from processors
+- **Consistent Interface**: Unified strategy selection across both processors
+- **Single Responsibility**: Processors handle orchestration, strategies handle business logic
+
+#### 5. **Template Registry Pattern**
 ```java
 @Component
 public class MessageTemplateRegistry {
@@ -144,7 +209,7 @@ public class MessageTemplateRegistry {
 }
 ```
 
-#### 5. **Outbox Pattern**
+#### 6. **Outbox Pattern**
 *   **TelegramOutboxMessage**: Persistent queue for reliable notification delivery
 *   **NotificationProcessorProgress**: Tracks processing state and enables retry mechanisms
 *   **Asynchronous Processing**: Separate processor components for reliable delivery

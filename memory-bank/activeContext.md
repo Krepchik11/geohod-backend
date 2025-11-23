@@ -2,24 +2,37 @@
 
 ## Current Focus (November 2025)
 
-**Primary Focus: Complete Notification System Refactor (Issue-84-optional-notifications)**
+**Primary Focus: Notification System Refactoring Completion (November 2025)**
 
-The project is currently undergoing a **major notification system refactor** with sophisticated templating and formatting capabilities. The new system introduces:
+The notification system refactoring has been successfully completed, introducing a **unified NotificationStrategy pattern** that significantly improves maintainability and reduces code duplication:
 
-1. **Strategy-based notification architecture** with StrategyRegistry and dedicated strategy classes
-2. **Advanced templating engine** supporting variables, conditionals, and fallback values
-3. **Channel-specific formatting** with Telegram MarkdownV2 formatter and in-app text formatting
-4. **Template registry system** with default Russian-language notification templates
+1. **Unified Strategy Interface**: Updated NotificationStrategy to support both In-App and Telegram channels with shared and channel-specific methods
+2. **Strategy Registry Integration**: All processors now delegate to StrategyRegistry for consistent strategy selection
+3. **Code Deduplication**: Eliminated hardcoded recipient determination and DTO creation logic across processors
+4. **Enhanced Architecture**: Cleaner separation of concerns with strategy implementations handling business logic
 
 ## Recent Major Changes
 
-### Notification System Overhaul (October-November 2025)
+### Notification System Refactoring Completed (November 2025)
 
-*   **New Strategy Pattern**: Implemented `StrategyNotificationType` enum replacing the deprecated `NotificationType`
+**Unified Strategy Pattern Implementation**:
+*   **NotificationStrategy Interface Update**: Enhanced to support both channels with:
+    - Shared methods: `getType()`, `isValid()`, `getRecipients()`
+    - Telegram-specific: `createTelegramParams()`, `formatTelegramMessage()`
+    - In-App-specific: `createInAppNotification()`
+*   **Strategy Implementations Refactored**: All five strategies updated to implement unified interface:
+    - `EventCancelledStrategy`, `EventCreatedStrategy`, `EventFinishedStrategy`
+    - `ParticipantRegisteredStrategy`, `ParticipantUnregisteredStrategy`
+*   **Processor Modernization**: 
+    - `InAppNotificationProcessor`: Refactored to use StrategyRegistry and delegate logic
+    - `TelegramNotificationProcessor`: Updated method names for consistency
+*   **Code Quality Improvements**: Removed hardcoded recipient determination and DTO creation logic
+
+**Previous Enhancements (October-November 2025)**:
 *   **Template Engine**: Built sophisticated `TemplateEngine` supporting:
-  - Variable interpolation: `{{variable}}`, `{{variable|fallback}}`, `{{variable:50}}`
-  - Conditional blocks: `{#if condition}content{/if}`
-  - Automatic fallback values for missing variables
+    - Variable interpolation: `{{variable}}`, `{{variable|fallback}}`, `{{variable:50}}`
+    - Conditional blocks: `{#if condition}content{/if}`
+    - Automatic fallback values for missing variables
 *   **Telegram MarkdownV2 Formatter**: Complete implementation with proper escaping for special characters and URL preservation
 *   **MessageTemplate Registry**: System for managing notification templates by ID and type
 *   **Channel-Specific Formatting**: Separate formatting for Telegram (MarkdownV2) and in-app (plain text) notifications

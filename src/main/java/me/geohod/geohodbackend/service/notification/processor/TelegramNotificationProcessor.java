@@ -61,40 +61,39 @@ public class TelegramNotificationProcessor {
             }
 
             strategyRegistry.getStrategy(strategyType).ifPresentOrElse(
-                strategy -> processWithStrategy(strategy, event, eventLog),
-                () -> log.warn("No strategy found for type: {}", strategyType)
-            );
+                    strategy -> processWithStrategy(strategy, event, eventLog),
+                    () -> log.warn("No strategy found for type: {}", strategyType));
         });
     }
 
     private void processWithStrategy(NotificationStrategy strategy, Event event, EventLog eventLog) {
         String payload = eventLog.getPayload().value();
-        
+
         if (!strategy.isValid(event, payload)) {
-            log.warn("Strategy {} cannot handle event {} with payload: {}", 
-                strategy.getType(), event.getId(), payload);
+            log.warn("Strategy {} cannot handle event {} with payload: {}",
+                    strategy.getType(), event.getId(), payload);
             return;
         }
 
         try {
-            Map<String, Object> params = strategy.createParams(event, payload);
+            Map<String, Object> params = strategy.createTelegramParams(event, payload);
             var author = userService.getUser(event.getAuthorId());
-            String message = strategy.formatMessage(event, author, params);
+            String message = strategy.formatTelegramMessage(event, author, params);
             Collection<UUID> recipients = strategy.getRecipients(event, payload);
-            
+
             recipients.forEach(userId -> {
                 try {
                     telegramOutboxMessagePublisher.publish(userId, message);
                     log.debug("Published notification for user {} via strategy {}", userId, strategy.getType());
                 } catch (Exception e) {
-                    log.error("Failed to publish notification for user {} via strategy {}: {}", 
-                        userId, strategy.getType(), e.getMessage(), e);
+                    log.error("Failed to publish notification for user {} via strategy {}: {}",
+                            userId, strategy.getType(), e.getMessage(), e);
                 }
             });
-            
+
         } catch (Exception e) {
-            log.error("Error processing event log {} with strategy {}: {}", 
-                eventLog.getId(), strategy.getType(), e.getMessage(), e);
+            log.error("Error processing event log {} with strategy {}: {}",
+                    eventLog.getId(), strategy.getType(), e.getMessage(), e);
         }
     }
 }

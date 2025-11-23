@@ -71,6 +71,21 @@ Based on current analysis, the following core features are implemented and funct
   - `PUT /api/v2/user/settings` (comprehensive update)
 *   **Migration**: Liquibase changelog for existing user data
 
+### Notification System Refactoring - Verification Results ✅
+*   **Strategy Interface Enhancement**: Unified interface supporting both Telegram and In-App channels
+*   **Strategy Implementations**: All five strategies (EventCancelled, EventCreated, EventFinished, ParticipantRegistered, ParticipantUnregistered) updated
+*   **Processor Modernization**: Both InAppNotificationProcessor and TelegramNotificationProcessor refactored
+*   **Code Quality**: Removed hardcoded recipient determination and DTO creation logic
+*   **Test Results**: All tests passed successfully:
+  ```
+  InAppNotificationProcessorTest > testProcessWithEventCreatedLog() PASSED
+  InAppNotificationProcessorTest > testProcessWithNoUnprocessedLogs() PASSED
+  TelegramNotificationProcessorTest > testProcessCallsStrategyAndPublishesNotification(...) PASSED
+  TelegramNotificationProcessorTest > testProcessDoesNothingWhenNoEventLogs(...) PASSED
+  MessageTemplateTest > variableSubstitution() PASSED
+  BUILD SUCCESSFUL
+  ```
+
 ### Multi-Participant Registration ✅
 *   **API Enhancement**: `EventRegisterRequest` with `amountOfParticipants` field (1-10)
 *   **Service Logic**: Batch participant creation with capacity validation
@@ -83,10 +98,15 @@ Based on current analysis, the following core features are implemented and funct
 
 ## What's Active (Current Focus)
 
+### Notification System Refactoring - COMPLETED ✅
+*   **Status**: Successfully completed unified NotificationStrategy pattern implementation
+*   **Architecture**: Enhanced strategy-based notification system with improved maintainability
+*   **Key Improvements**: Code deduplication, consistent strategy selection, cleaner separation of concerns
+
 ### Issue-84-optional-notifications 🎯
-*   **Status**: Currently working on implementing optional notification preferences
-*   **Architecture**: Leveraging the new strategy-based notification system
-*   **Integration**: Using the enhanced UserSettings system for preference management
+*   **Status**: Architecture completed, ready for optional notification preferences implementation
+*   **Foundation**: New unified strategy system provides the base for optional preferences
+*   **Integration**: Can leverage enhanced UserSettings system for preference management
 
 ### Emerging Features 🔄
 *   **API v3**: Development of enhanced API endpoints

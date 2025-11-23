@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.MessageFormatter;
@@ -23,15 +24,15 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 @Slf4j
 @RequiredArgsConstructor
 public class ParticipantUnregisteredStrategy implements NotificationStrategy {
-    
+
     private final ObjectMapper objectMapper;
     private final MessageFormatter messageFormatter;
-    
+
     @Override
-    public Map<String, Object> createParams(Event event, String payload) {
+    public Map<String, Object> createTelegramParams(Event event, String payload) {
         return new HashMap<>();
     }
-    
+
     @Override
     public Collection<UUID> getRecipients(Event event, String payload) {
         try {
@@ -49,24 +50,34 @@ public class ParticipantUnregisteredStrategy implements NotificationStrategy {
             return Collections.emptyList();
         }
     }
-    
+
     @Override
-    public String formatMessage(Event event, User author, Map<String, Object> params) {
-        return messageFormatter.formatMessageFromTemplate("participant.unregistered", 
-            TemplateType.TELEGRAM, event, author, params);
+    public String formatTelegramMessage(Event event, User author, Map<String, Object> params) {
+        return messageFormatter.formatMessageFromTemplate("participant.unregistered",
+                TemplateType.TELEGRAM, event, author, params);
     }
-    
+
+    @Override
+    public NotificationCreateDto createInAppNotification(UUID userId, Event event,
+            String payload) {
+        return new NotificationCreateDto(
+                userId,
+                StrategyNotificationType.PARTICIPANT_UNREGISTERED,
+                payload,
+                event.getId());
+    }
+
     @Override
     public StrategyNotificationType getType() {
         return StrategyNotificationType.PARTICIPANT_UNREGISTERED;
     }
-    
+
     @Override
     public boolean isValid(Event event, String payload) {
         if (event == null) {
             return false;
         }
-        
+
         try {
             JsonNode root = objectMapper.readTree(payload);
             String userIdStr = root.path("userId").asText();

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.User;
@@ -35,18 +36,18 @@ public class EventCancelledStrategy implements NotificationStrategy {
     private final MessageFormatter messageFormatter;
 
     @Override
-    public Map<String, Object> createParams(Event event, String payload) {
+    public Map<String, Object> createTelegramParams(Event event, String payload) {
         try {
             JsonNode root = objectMapper.readTree(payload);
             boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
-            
+
             Map<String, Object> params = new HashMap<>();
-            
+
             if (notifyParticipants) {
                 String participantList = buildParticipantList(event.getId());
                 params.put("participantList", participantList);
             }
-            
+
             params.put("notifyParticipants", notifyParticipants);
             return params;
         } catch (JsonProcessingException e) {
@@ -64,10 +65,10 @@ public class EventCancelledStrategy implements NotificationStrategy {
             boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
 
             Set<UUID> recipients = new HashSet<>();
-            
+
             // Always include the organizer
             recipients.add(event.getAuthorId());
-            
+
             // Include participants if they should be notified
             if (notifyParticipants) {
                 eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
@@ -83,16 +84,15 @@ public class EventCancelledStrategy implements NotificationStrategy {
     }
 
     @Override
-    public String formatMessage(Event event, User author, Map<String, Object> params) {
+    public String formatTelegramMessage(Event event, User author, Map<String, Object> params) {
         try {
-            boolean hasParticipants = params.containsKey("participantList") && 
-                params.get("participantList") != null && 
-                !((String) params.get("participantList")).isEmpty();
-            
-            String templateId = hasParticipants ?
-                "event.cancelled.organizer.notify-participants" :
-                "event.cancelled.organizer.not-notify-participants";
-                
+            boolean hasParticipants = params.containsKey("participantList") &&
+                    params.get("participantList") != null &&
+                    !((String) params.get("participantList")).isEmpty();
+
+            String templateId = hasParticipants ? "event.cancelled.organizer.notify-participants"
+                    : "event.cancelled.organizer.not-notify-participants";
+
             return messageFormatter.formatMessageFromTemplate(templateId,
                     TemplateType.TELEGRAM, event, author, params);
         } catch (Exception e) {
@@ -100,6 +100,16 @@ public class EventCancelledStrategy implements NotificationStrategy {
             return messageFormatter.formatMessageFromTemplate("event.cancelled",
                     TemplateType.TELEGRAM, event, author, params);
         }
+    }
+
+    @Override
+    public NotificationCreateDto createInAppNotification(UUID userId, Event event,
+            String payload) {
+        return new NotificationCreateDto(
+                userId,
+                StrategyNotificationType.EVENT_CANCELLED,
+                payload,
+                event.getId());
     }
 
     @Override
