@@ -35,7 +35,7 @@ jobs:
           context: .
           file: ./.github/Dockerfile
           load: false
-          tags: geohod-backend:latest
+          tags: geohod-backend:dev-latest
           labels: stage=dev
           outputs: type=oci,dest=/tmp/geohod-backend-image.tar
 
