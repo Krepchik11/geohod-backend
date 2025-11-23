@@ -3,7 +3,7 @@ set -euo pipefail
 
 STAGING_DIR="${HOME}/geohod-backend-dev"
 SERVICE_NAME="geohod-backend-dev"
-IMAGE_TARBALL="${STAGING_DIR}/geohod-backend-image.tar.gz"
+IMAGE_TARBALL="${STAGING_DIR}/geohod-backend-image.tar"
 SERVICE_DIR="${HOME}/.config/systemd/user"
 NETWORK_NAME="geohod-net-dev"
 

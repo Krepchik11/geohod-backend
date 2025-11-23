@@ -83,5 +83,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
-            chmod +x ~/geohod-backend-dev/install.sh
-            ~/geohod-backend-dev/install.sh
+            cd ~/geohod-backend-dev
+            gunzip -f geohod-backend-image.tar.gz
+            chmod +x install.sh
+            ./install.sh
