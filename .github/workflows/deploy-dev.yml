@@ -20,24 +20,19 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Run Tests and Build Artifact
-        run: ./gradlew clean build
+      - name: Gradle test
+        run: ./gradlew clean test
+
+      - name: Build JAR Artifact with test
+        run: ./gradlew bootJar
 
       - name: Build container image
         uses: docker/build-push-action@v6.0.0
         with:
           context: .
           file: ./.github/Dockerfile
-          tags: geohod-backend:dev-latest
-          labels: stage=dev
-          load: true
-
-      - name: Save image to tar file
-        run: |
-          docker save geohod-backend:dev-latest > /tmp/geohod-backend-image.tar
-
-      - name: Move image to workspace
-        run: mv /tmp/geohod-backend-image.tar ./geohod-backend-image.tar
+          load: false
+          outputs: type=tar,dest=/tmp/geohod-backend-image.tar
 
       - name: Create .env file
         run: |
@@ -58,7 +53,7 @@ jobs:
           EOF
 
       - name: Compress image for transfer
-        run: gzip -k geohod-backend-image.tar
+        run: gzip -k /tmp/geohod-backend-image.tar
 
       - name: Transfer env & artifacts to VPS
         uses: appleboy/scp-action@v1.0.0
@@ -66,7 +61,7 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: ".env,geohod-backend-image.tar.gz"
+          source: ".env,/tmp/geohod-backend-image.tar.gz"
           target: "~/geohod-backend-dev"
 
       - name: Transfer configuration to VPS
