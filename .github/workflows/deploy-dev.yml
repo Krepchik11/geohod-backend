@@ -35,6 +35,8 @@ jobs:
           context: .
           file: ./.github/Dockerfile
           load: false
+          tags: geohod-backend:latest
+          labels: stage=dev
           outputs: type=oci,dest=/tmp/geohod-backend-image.tar
 
       - name: Create .env file
