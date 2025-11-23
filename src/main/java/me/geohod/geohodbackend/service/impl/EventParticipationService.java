@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.request.UpdateParticipantStateRequest;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
@@ -67,6 +68,22 @@ public class EventParticipationService implements IEventParticipationService {
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found for this event"));
 
         performUnregister(userId, eventId);
+    }
+
+    @Override
+    @Transactional
+    public void updateParticipantState(UUID userId, UUID eventId,
+            UpdateParticipantStateRequest request) {
+        int updatedCount = eventParticipantRepository.updateStateByEventIdAndUserId(
+                eventId,
+                userId,
+                request.pollLinkSent(),
+                request.cashDonated(),
+                request.transferDonated());
+
+        if (updatedCount == 0) {
+            throw new IllegalArgumentException("User is not a participant of this event");
+        }
     }
 
     private void performUnregister(UUID userId, UUID eventId) {

@@ -28,6 +28,9 @@ public class Event implements Persistable<UUID> {
     private int maxParticipants;
     private int currentParticipants;
     private Status status;
+    private boolean sendPollLink;
+    private boolean donationCash;
+    private boolean donationTransfer;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -77,8 +80,11 @@ public class Event implements Persistable<UUID> {
         this.updatedAt = Instant.now();
     }
 
-    public void finish() {
+    public void finish(boolean sendPollLink, boolean donationCash, boolean donationTransfer) {
         this.status = Status.FINISHED;
+        this.sendPollLink = sendPollLink;
+        this.donationCash = donationCash;
+        this.donationTransfer = donationTransfer;
         this.updatedAt = Instant.now();
     }
 

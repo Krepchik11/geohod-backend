@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventRegisterRequest;
+import me.geohod.geohodbackend.api.dto.request.UpdateParticipantStateRequest;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
@@ -52,7 +54,7 @@ public class EventParticipationController {
 
     @DeleteMapping("/{eventId}/unregister")
     public ApiResponse<EventUnregisterResponse> unregisterFromEvent(@PathVariable UUID eventId,
-                                                                       @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         participationService.unregisterFromEvent(loggedUserId, eventId);
         return ApiResponse.success(new EventUnregisterResponse("success"));
@@ -60,8 +62,8 @@ public class EventParticipationController {
 
     @DeleteMapping("/{eventId}/participants/{participantId}")
     public ApiResponse<EventRemoveParticipant> removeParticipant(@PathVariable UUID eventId,
-                                                                    @PathVariable UUID participantId,
-                                                                    @AuthenticationPrincipal TelegramPrincipal principal) {
+            @PathVariable UUID participantId,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {
@@ -78,9 +80,16 @@ public class EventParticipationController {
         EventParticipantsResponse response = new EventParticipantsResponse(
                 participants.stream()
                         .map(userApiMapper::map)
-                        .toList()
-        );
+                        .toList());
 
         return ApiResponse.success(response);
     }
-} 
+
+    @PatchMapping("/{eventId}/participation/state")
+    public ApiResponse<Void> updateParticipantState(@PathVariable UUID eventId,
+            @RequestBody UpdateParticipantStateRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        participationService.updateParticipantState(principal.userId(), eventId, request);
+        return ApiResponse.success(null);
+    }
+}

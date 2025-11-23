@@ -49,29 +49,30 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     public ResponseEntity<EventDetailsResponse> getEventById(@PathVariable UUID eventId) {
-        EventDetailedProjection event = eventProjectionService.event(eventId);
+        EventDetailedProjection event = eventProjectionService.event(eventId, null);
         return ResponseEntity.ok(mapper.response(event));
     }
 
     @GetMapping
-    public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
-                                                                   @RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
-                                                                   @RequestParam(required = false) List<Event.Status> statuses,
-                                                                   @PageableDefault(size = 30) Pageable pageable,
-                                                                   @AuthenticationPrincipal TelegramPrincipal principal) {
+    public ResponseEntity<Page<EventDetailsResponse>> getAllEvents(
+            @RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
+            @RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
+            @RequestParam(required = false) List<Event.Status> statuses,
+            @PageableDefault(size = 30) Pageable pageable,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
         UUID filterByParticipantUserId = iamParticipant ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(
-                new IEventProjectionService.EventsDetailedProjectionFilter(filterByAuthorUserId, filterByParticipantUserId, statuses),
-                pageable
-        );
+                new IEventProjectionService.EventsDetailedProjectionFilter(filterByAuthorUserId,
+                        filterByParticipantUserId, statuses),
+                pageable);
         Page<EventDetailsResponse> result = events.map(mapper::response);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping
     public ResponseEntity<EventCreateResponse> createEvent(@RequestBody EventCreateRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         CreateEventDto createDto = mapper.map(request, principal.userId());
         EventDto createdEvent = eventService.createEvent(createDto);
 
@@ -82,8 +83,8 @@ public class EventController {
 
     @PutMapping("/{eventId}")
     public ResponseEntity<EventUpdateResponse> updateEvent(@PathVariable UUID eventId,
-                                                           @RequestBody EventUpdateRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @RequestBody EventUpdateRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {
@@ -97,7 +98,7 @@ public class EventController {
 
     @PatchMapping("/{eventId}/cancel")
     public ResponseEntity<EventCancelResponse> cancelEvent(@PathVariable UUID eventId,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {
@@ -110,8 +111,8 @@ public class EventController {
 
     @PatchMapping("/{eventId}/finish")
     public ResponseEntity<EventFinishResponse> finishEvent(@PathVariable UUID eventId,
-                                                           @RequestBody EventFinishRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @RequestBody EventFinishRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {

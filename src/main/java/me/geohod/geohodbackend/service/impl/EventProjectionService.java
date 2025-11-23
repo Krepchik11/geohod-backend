@@ -16,8 +16,8 @@ public class EventProjectionService implements IEventProjectionService {
     private final EventProjectionRepository eventProjectionRepository;
 
     @Override
-    public EventDetailedProjection event(UUID eventId) {
-        return eventProjectionRepository.event(eventId);
+    public EventDetailedProjection event(UUID eventId, UUID userId) {
+        return eventProjectionRepository.event(eventId, userId);
     }
 
     @Override
@@ -26,7 +26,6 @@ public class EventProjectionService implements IEventProjectionService {
                 filter.authorUserId(),
                 filter.participantUserId(),
                 filter.statuses(),
-                pageable
-        );
+                pageable);
     }
 }
