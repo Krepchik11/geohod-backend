@@ -20,7 +20,7 @@ jobs:
           file: ./.github/Dockerfile
           tags: geohod-backend:dev-latest
           labels: stage=dev
-          outputs: type=docker,dest=/tmp/geohod-backend-image.tar
+          outputs: type=oci,dest=/tmp/geohod-backend-image.tar
 
       - name: Move image to workspace
         run: mv /tmp/geohod-backend-image.tar ./geohod-backend-image.tar
