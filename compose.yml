@@ -25,7 +25,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: .github/Dockerfile
+      dockerfile: ./Dockerfile
     image: geohod-backend:dev-local
     container_name: geohod-app
     restart: unless-stopped
