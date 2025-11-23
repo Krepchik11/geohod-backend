@@ -1,38 +1,131 @@
 # Project Progress: Geohod Backend
 
-## What Works
+## What Works (November 2025)
 
-Based on the initial analysis of the codebase and `README.md`, the following core features are implemented and appear to be functional:
+Based on current analysis, the following core features are implemented and functional:
 
-*   **Event Management API**: Full CRUD operations for events.
-*   **Event Participation API**: Endpoints for registering, unregistering, and managing event participants.
-*   **Reviews & Ratings API (v2)**: Functionality for submitting and managing user reviews and ratings.
-*   **Notification System (v2)**: A notification system with API endpoints for fetching and dismissing notifications.
-*   **Telegram Authentication**: A custom security filter is in place to handle authentication via Telegram.
-*   **Database Migrations**: Liquibase is set up to manage the database schema.
-*   **API Documentation**: Swagger UI and OpenAPI documentation are generated for the `dev` profile.
-*   **CI/CD**: A GitHub Actions workflow is in place for automated deployment.
+### Core Features ✅
+*   **Event Management API**: Full CRUD operations for events with lifecycle management.
+*   **Event Participation API**: Register, unregister, and manage participants. **Enhanced**: Multi-participant registration (1-10 participants).
+*   **Reviews & Ratings API**: One-to-one user-to-event reviews with database enforcement and user statistics.
+*   **Notification System (Major Enhancement)**: **Complete refactor** to strategy-based system with sophisticated templating and formatting.
+*   **Telegram Integration**: Custom authentication flow and Bot API integration with advanced MarkdownV2 formatting.
+*   **Database Management**: 15+ Liquibase migrations with performance optimizations.
+*   **API Documentation**: Enhanced OpenAPI with dev profile configuration.
+*   **CI/CD**: Optimized GitHub Actions with Podman migration.
+*   **User Settings**: Granular preferences including payment gateway URL and organizer advertisement control.
+*   **Monitoring**: Micrometer with Prometheus integration for comprehensive metrics.
 
-## What's Left to Build
+### Technical Infrastructure ✅
+*   **Testing**: Enhanced Testcontainers integration with PostgreSQL 17 support
+*   **Performance**: Database indexing and query optimization
+*   **Security**: Stateless Telegram authentication with CORS configuration
+*   **Health Monitoring**: Multi-level health checks (database, application, liveness/readiness)
 
-*   **Feature Gaps**: A detailed feature review against product requirements is needed to identify any gaps.
-*   **Testing**: While testing infrastructure (`spring-boot-starter-test`, `testcontainers`) is present, the extent and coverage of existing tests are unknown. A thorough code review is needed to assess test quality and identify areas that need more coverage.
-*   **Admin/Moderation Tools**: There may be a need for more advanced administrative tools, such as user management or content moderation, which are not immediately apparent from the API.
+## What's Been Enhanced (November 2025)
 
-## Current Status
+### Major System Refactors Completed 🎯
+*   **Notification System**: Complete rewrite from simple enum to sophisticated strategy-based architecture
+*   **Template Engine**: Custom-built template processing with variables, conditionals, and fallbacks
+*   **Message Formatting**: Advanced Telegram MarkdownV2 formatter with proper character escaping
+*   **User Settings**: Full granular API with dedicated endpoints for individual settings
+*   **API Evolution**: Enhanced v2 endpoints and emerging v3 APIs
 
-*   **Memory Bank Updated:** Successfully updated the Memory Bank to reflect the completion of the keyset pagination fix for the notification processors and the review system enhancements.
-*   **Bug Fix Completed:** Successfully resolved the critical bug where in-app and Telegram-bot notifications were not being delivered due to flawed `UUID` ordering in event log processing.
-*   **Keyset Pagination Implemented:** Replaced the non-sequential `UUID` cursor with a composite `(createdAt, id)` cursor for reliable event log processing.
-*   **Database Migration:** Added Liquibase migration `db.changelog-1.7-keyset-pagination-fix.xml` to support the new cursor structure.
-*   **Code Changes:** Updated `EventLogServiceImpl`, `NotificationProcessorProgressServiceImpl`, `InAppNotificationProcessor`, `TelegramNotificationProcessor`, and corresponding tests to use the new cursor logic.
-*   **Build Status:** All compilation errors have been resolved.
-*   **Review System Enhancements**: Implemented one-to-one user-to-event reviews and provided an API endpoint to retrieve a user's existing review for an event.
+### Developer Experience Improvements 📈
+*   **Code Quality**: Record-based DTOs with comprehensive validation
+*   **Documentation**: Enhanced OpenAPI documentation with dev profile support
+*   **Testing**: Comprehensive test coverage with real database integration
+*   **Deployment**: Improved CI/CD pipeline with environment tracking
 
-*   **UserSettings API Updates (2025-10-03)**: Completed API contract updates for UserSettings. Added `paymentGatewayUrl` and `showBecomeOrganizer` fields to DTOs, deprecated and ignored `defaultDonationAmount`, updated the mapper, removed the PATCH endpoint, and added three specific PUT endpoints (`/max-participants`, `/payment-gateway-url`, `/show-become-organizer`) with dedicated request DTOs (`MaxParticipantsRequest`, `PaymentGatewayUrlRequest`, `ShowBecomeOrganizerRequest`). This establishes the API contract for granular user settings updates. Task completed. Future implications: Service layer and database model need to support the new fields.
+## Current Status (November 2025)
 
-*   **v2 User API Enhancements (2025-10-03)**: Added placeholder endpoints for user details (GET /api/v2/users/{id}) and stats (GET /api/v2/users/{id}/stats) in UserController, with new response DTOs UserDetailsResponse and UserStatsResponse using sample data to define the API contract. No service logic implemented yet.
+### Recently Completed ✅
+*   **Template System Implementation**: Fully implemented template engine supporting:
+  - Variable interpolation: `{{variable}}`, `{{variable|fallback}}`, `{{variable:50}}`
+  - Conditional blocks: `{#if condition}content{/if}`
+  - Automatic fallback values and length limiting
+*   **Telegram Formatting**: Sophisticated `TelegramMarkdownV2Formatter` with:
+  - Special character escaping for markdown
+  - URL preservation while escaping formatting
+  - Safe handling of links and plain text
+*   **Strategy Architecture**: Complete strategy pattern implementation:
+  - `StrategyRegistry` for dependency injection
+  - Dedicated strategy classes for each notification type
+  - Type-safe strategy selection and validation
+*   **Template Registry**: Centralized template management with:
+  - Default Russian-language templates
+  - Type-based template selection (TELEGRAM, IN_APP)
+  - Automatic initialization with @PostConstruct
+*   **User Settings System**: Full implementation with:
+  - Database model support for new fields
+  - Service layer with transactional updates
+  - Granular API endpoints with specific request DTOs
+
+### User Settings Implementation ✅
+*   **Model Updates**: `UserSettings` enhanced with `paymentGatewayUrl` and `showBecomeOrganizer` fields
+*   **Service Layer**: Complete `UserSettingsServiceImpl` with all update methods
+*   **API Endpoints**: Four dedicated PUT endpoints:
+  - `PUT /api/v2/user/settings/max-participants`
+  - `PUT /api/v2/user/settings/payment-gateway-url`
+  - `PUT /api/v2/user/settings/show-become-organizer`
+  - `PUT /api/v2/user/settings` (comprehensive update)
+*   **Migration**: Liquibase changelog for existing user data
+
+### Multi-Participant Registration ✅
+*   **API Enhancement**: `EventRegisterRequest` with `amountOfParticipants` field (1-10)
+*   **Service Logic**: Batch participant creation with capacity validation
+*   **Backward Compatibility**: Optional request body with service-level defaults
+
+### Enhanced Monitoring & Observability 📊
+*   **Micrometer Integration**: Prometheus metrics collection
+*   **Health Endpoints**: Enhanced actuator configuration
+*   **Processing Tracking**: Notification progress tracking for reliability
+
+## What's Active (Current Focus)
+
+### Issue-84-optional-notifications 🎯
+*   **Status**: Currently working on implementing optional notification preferences
+*   **Architecture**: Leveraging the new strategy-based notification system
+*   **Integration**: Using the enhanced UserSettings system for preference management
+
+### Emerging Features 🔄
+*   **API v3**: Development of enhanced API endpoints
+*   **Payment Integration**: UserSettings payment gateway URL field ready for implementation
+*   **Organizer Promotion**: Show/hide organizer advertisement system
 
 ## Known Issues & Blockers
 
-*   **No Known Issues:** The keyset pagination fix and review system enhancements have been successfully implemented and tested. No known issues or blockers remain.
+*   **No Critical Issues**: The notification system refactor has been successfully implemented
+*   **Template Testing**: Some edge cases in template engine may need additional test coverage
+*   **Performance Monitoring**: Production metrics collection setup may need verification
+
+## Development Environment
+
+### Local Setup
+```bash
+# Start infrastructure
+docker compose up -d
+
+# Run application with dev profile for Swagger
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# Access documentation
+# Swagger UI: http://localhost:8080/swagger-ui.html
+# OpenAPI JSON: http://localhost:8080/api-docs
+```
+
+### Key Technologies (Updated)
+*   **Java**: 23 (recently upgraded)
+*   **Spring Boot**: 3.3.5
+*   **Database**: PostgreSQL 17
+*   **Testing**: Testcontainers with real PostgreSQL
+*   **Monitoring**: Micrometer + Prometheus
+*   **Deployment**: Podman-optimized CI/CD
+
+## Next Steps
+
+1. **Complete Issue-84**: Implement optional notification preferences using the new system
+2. **Payment Integration**: Implement payment gateway integration for organizers
+3. **API v3**: Continue development of enhanced API endpoints
+4. **Production Monitoring**: Set up comprehensive production metrics collection
+5. **Performance Optimization**: Continue database and query optimization efforts

@@ -1,8 +1,8 @@
 # System Patterns: Geohod Backend
 
-## Core Architecture: Layered Monolith
+## Core Architecture: Layered Monolith with Strategic Enhancement
 
-The application follows a classic layered (or n-tier) architecture, which is typical for Spring Boot applications. This separates concerns into distinct layers, promoting modularity and maintainability.
+The application follows a classic layered (n-tier) architecture with **significant enhancements in the notification system** that implement advanced strategy and template patterns.
 
 ```mermaid
 graph TD
@@ -10,16 +10,31 @@ graph TD
     B --> C{Service Layer};
     C --> D{Data Access Layer};
     D --> E[Database];
+    
+    C --> F{Notification System};
+    F --> G[Strategy Pattern];
+    F --> H[Template Engine];
+    F --> I[Message Formatting];
 
     subgraph API Layer
         B1[Controllers]
-        B2[DTOs]
+        B2[DTOs/Records]
         B3[Mappers]
     end
 
     subgraph Service Layer
         C1[Service Interfaces]
         C2[Service Implementations]
+        C3[Notification Strategies]
+    end
+
+    subgraph Notification System
+        G1[StrategyRegistry]
+        G2[NotificationStrategy Impl]
+        H1[TemplateEngine]
+        H2[MessageTemplateRegistry]
+        I1[TelegramMarkdownV2Formatter]
+        I2[InAppFormatter]
     end
 
     subgraph Data Access Layer
@@ -29,39 +44,153 @@ graph TD
     end
 
     B --> B1 & B2 & B3;
-    C --> C1 & C2;
+    C --> C1 & C2 & C3;
+    C3 --> F;
     D --> D1 & D2 & D3;
 ```
 
-### Layer Breakdown
+## Layer Breakdown (Updated November 2025)
 
-1.  **API Layer (`me.geohod.geohodbackend.api`)**:
-    *   **Controllers (`...api.controller`)**: Responsible for handling incoming HTTP requests, validating input, and returning responses. They orchestrate calls to the service layer.
-    *   **DTOs (`...api.dto`)**: Data Transfer Objects are used to define the public-facing contract of the API. They are used for both request payloads and response bodies. This decouples the API from the internal data model.
-    *   **Mappers (`...api.mapper`)**: MapStruct mappers are used to convert between API DTOs and internal DTOs or domain models used by the service layer.
+### 1. API Layer (`me.geohod.geohodbackend.api`)
+*   **Controllers**: REST controllers with `ResponseEntity<ApiResponse<T>>` wrapping. Enhanced with v3 endpoints.
+*   **DTOs**: **Records-based design** with comprehensive validation (`@NotNull`, `@Min`, `@Max`). Split into request/response packages.
+*   **Mappers**: MapStruct-generated mappers with global configuration for consistent mapping.
+*   **Response Wrapper**: `ApiResponse<T>` ensures consistent API responses across all v2 endpoints.
 
-2.  **Service Layer (`me.geohod.geohodbackend.service`)**:
-    *   **Service Interfaces (`...service.I...Service`)**: Define the business logic contracts.
-    *   **Service Implementations (`...service.impl`)**: Contain the core business logic of the application. They coordinate operations, enforce business rules, and interact with the data access layer. This layer is transactional.
+### 2. Service Layer (`me.geohod.geohodbackend.service`)
+*   **Service Interfaces**: Business logic contracts with clear separation of concerns.
+*   **Service Implementations**: Transactional business logic with constructor injection.
+*   **Notification Strategies**: **NEW**: Dedicated strategy implementations following the Strategy pattern.
+*   **User Settings**: Granular service methods for individual settings updates.
 
-3.  **Data Access Layer (`me.geohod.geohodbackend.data`)**:
-    *   **Repositories (`...data.model.repository`)**: Interfaces that extend Spring Data JDBC repositories. They define the methods for database operations (CRUD, queries).
-    *   **Models/Entities (`...data.model`)**: Represent the database tables. These are simple Java objects, likely annotated for use with Spring Data JDBC.
-    *   **Data Mappers (`...data.mapper`)**: MapStruct mappers responsible for converting between database entities and internal DTOs used by the service layer.
+### 3. Data Access Layer (`me.geohod.geohodbackend.data`)
+*   **Repositories**: Spring Data JDBC repositories with custom queries and projections.
+*   **Models/Entities**: All implement `Persistable<T>` with version control and optimistic locking.
+*   **Data Mappers**: Internal mapping between entities and service DTOs.
+
+### 4. **Enhanced Notification System** (`me.geohod.geohodbackend.service.notification`)
+*   **Strategy Pattern**: Complete implementation with `StrategyRegistry` and type-safe strategy selection
+*   **Template Engine**: Custom-built template processing with variables, conditionals, and fallbacks
+*   **Message Formatting**: Channel-specific formatters (Telegram MarkdownV2, In-App plain text)
+*   **Template Registry**: Centralized template management with initialization and fallback logic
 
 ## Key Design Patterns & Concepts
 
-*   **Dependency Injection (DI)**: Spring's Inversion of Control (IoC) container manages the lifecycle of beans. Constructor injection is preferred for creating loosely coupled components.
-*   **Repository Pattern**: The data access layer uses repositories to abstract database interactions, making the code cleaner and easier to test.
-*   **Data Transfer Object (DTO) Pattern**: DTOs are used extensively to transfer data between layers, preventing the exposure of internal database models to the client.
-*   **Outbox Pattern**: The presence of `TelegramOutboxMessage` and `IOutboxProcessor` suggests the use of the outbox pattern for reliable messaging, likely for sending notifications to Telegram. This ensures that notifications are sent even if the external service is temporarily unavailable.
-*   **Strategy Pattern**: The notification system (`InAppNotificationProcessor`, `TelegramNotificationProcessor`) likely uses the Strategy pattern to handle different types of notifications (e.g., in-app vs. Telegram) in a pluggable way.
-*   **Global Exception Handling**: `GlobalExceptionHandler` provides a centralized place to handle exceptions thrown from any layer, ensuring consistent error responses in the API.
-*   **Security via Filters**: `TelegramInitDataAuthenticationFilter` indicates that security is handled by a custom filter in the Spring Security chain, which intercepts requests to perform authentication.
-*   **API Design Patterns - Optional Request Bodies with Defaults** (2025-10-03): For backward compatibility in v2 endpoints, optional request bodies are supported with default values in service logic. Example: The event registration endpoint accepts an optional `EventRegisterRequest` with `amountOfParticipants` defaulting to 1, allowing seamless evolution of the API contract without breaking existing clients.
+### Core Patterns
+*   **Dependency Injection (DI)**: Constructor injection throughout, promoting testability and loose coupling.
+*   **Repository Pattern**: Spring Data JDBC repositories abstract database operations.
+*   **DTO Pattern**: Extensive use of records and DTOs for API contracts and internal data transfer.
+*   **Persistable Pattern**: All entities implement `Persistable<T>` with `@Version` for optimistic locking.
 
-## API Layer Details (Updated: 2025-10-03)
+### Advanced Patterns (November 2025)
 
-*   **v2 Controllers**: EventController, EventParticipationController, NotificationController, ReviewController, UserController (now includes endpoints for retrieving user details and statistics: GET /api/v2/users/{id} and GET /api/v2/users/{id}/stats).
+#### 1. **Strategy Pattern for Notifications**
+```java
+@Component
+public class StrategyRegistry {
+    private final Map<StrategyNotificationType, NotificationStrategy> strategies;
+    
+    public void registerStrategy(StrategyNotificationType type, NotificationStrategy strategy);
+    public Optional<NotificationStrategy> getStrategy(StrategyNotificationType type);
+}
+```
 
-*   **DTOs**: New response DTOs: UserDetailsResponse (name: String, username: String, imageUrl: String), UserStatsResponse (overallRating: Double, reviewsCount: Integer, eventsCount: Integer, eventsParticipantsCount: Integer, reviewsByRating: Map<Integer, Integer>).
+**Strategy Implementations**:
+- `EventCreatedStrategy`: Handles new event notifications
+- `EventCancelledStrategy`: Manages event cancellation notifications  
+- `EventFinishedStrategy`: Processes event completion notifications
+- `ParticipantRegisteredStrategy`: Handles participant registration
+- `ParticipantUnregisteredStrategy`: Manages participant deregistration
+
+#### 2. **Template Engine Pattern**
+```java
+@Component
+public class TemplateEngine {
+    // Variable interpolation: {{variable}}, {{variable|fallback}}, {{variable:50}}
+    // Conditional blocks: {#if condition}content{/if}
+    // Automatic fallback values for missing variables
+}
+```
+
+**Features**:
+- Regex-based variable processing with complex expressions
+- Conditional content rendering with boolean evaluation
+- Length limiting and fallback value support
+- Safe escaping of special characters
+
+#### 3. **Message Formatting Strategy**
+```java
+@Component  
+public class TelegramMarkdownV2Formatter {
+    // Sophisticated escaping for special characters
+    // URL preservation for plain links
+    // Markdown-specific formatting rules
+}
+```
+
+**Formatters**:
+- `TelegramMarkdownV2Formatter`: Complex escaping for Telegram's MarkdownV2
+- `InAppFormatter`: Strips all formatting for plain text display
+
+#### 4. **Template Registry Pattern**
+```java
+@Component
+public class MessageTemplateRegistry {
+    @PostConstruct
+    public void initializeDefaultTemplates() {
+        // Register default Russian-language templates
+        // Support for multiple template types (TELEGRAM, IN_APP)
+    }
+}
+```
+
+#### 5. **Outbox Pattern**
+*   **TelegramOutboxMessage**: Persistent queue for reliable notification delivery
+*   **NotificationProcessorProgress**: Tracks processing state and enables retry mechanisms
+*   **Asynchronous Processing**: Separate processor components for reliable delivery
+
+### Legacy Patterns (Still in Use)
+*   **Global Exception Handling**: `GlobalExceptionHandler` provides consistent error responses
+*   **Security via Filters**: `TelegramInitDataAuthenticationFilter` handles custom authentication
+*   **API Design with Defaults**: Optional request bodies with service-level default handling
+
+## Module Structure (November 2025)
+
+### Core Modules
+- `api/`: REST controllers, DTOs, mappers, and response wrappers
+- `service/`: Business logic, strategies, and external integrations  
+- `data/`: Entities, repositories, projections, and data mappers
+- `configuration/`: Spring configuration classes and properties
+- `security/`: Custom authentication filters and principal classes
+- `exception/`: Global exception handling
+
+### Specialized Modules
+- `user_settings/`: **NEW**: Complete user preferences management module
+- `notification/`: **ENHANCED**: Sophisticated notification system with strategies and templates
+- `mapper/`: Global MapStruct configuration and mappings
+
+## API Layer Evolution
+
+### v2 API Enhancements
+*   **Multi-participant Registration**: `EventRegisterRequest` with `amountOfParticipants` (1-10)
+*   **User Settings API**: Granular PUT endpoints for individual settings fields
+*   **Enhanced User Endpoints**: User details and comprehensive statistics
+*   **Response Consistency**: All endpoints use `ApiResponse<T>` wrapper
+
+### API Design Principles
+*   **Record-based DTOs**: Type-safe, immutable data transfer objects
+*   **Comprehensive Validation**: Validation annotations on all request DTOs
+*   **Backward Compatibility**: Optional request bodies with service-level defaults
+*   **Consistent Response Format**: `ApiResponse<T>` for success and error cases
+
+## Performance & Monitoring Patterns
+*   **Database Optimization**: Strategic indexing and query optimization
+*   **Metrics Collection**: Micrometer with Prometheus for observability  
+*   **Health Monitoring**: Multi-level health checks and processing progress tracking
+*   **Caching Strategy**: Projection-based queries to avoid N+1 problems
+
+## Testing Patterns
+*   **Testcontainers**: Real PostgreSQL instances for integration testing
+*   **Strategy Testing**: Dedicated test suites for notification strategies
+*   **Template Engine Testing**: Comprehensive template processing tests
+*   **Security Testing**: Spring Security Test integration for authentication flows
