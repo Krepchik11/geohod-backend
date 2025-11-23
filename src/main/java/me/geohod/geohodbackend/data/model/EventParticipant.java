@@ -23,6 +23,9 @@ public class EventParticipant implements Persistable<UUID> {
     private UUID id;
     private UUID eventId;
     private UUID userId;
+    private boolean pollLinkSent;
+    private boolean cashDonated;
+    private boolean transferDonated;
     private Instant createdAt;
 
     public EventParticipant(UUID eventId, UUID userId) {
@@ -30,6 +33,12 @@ public class EventParticipant implements Persistable<UUID> {
         this.eventId = eventId;
         this.userId = userId;
         this.createdAt = Instant.now();
+    }
+
+    public void updateState(boolean pollLinkSent, boolean cashDonated, boolean transferDonated) {
+        this.pollLinkSent = pollLinkSent;
+        this.cashDonated = cashDonated;
+        this.transferDonated = transferDonated;
     }
 
     @Override

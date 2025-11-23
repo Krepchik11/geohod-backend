@@ -18,7 +18,7 @@ import java.util.*;
 public class EventProjectionRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public EventDetailedProjection event(UUID eventId) {
+    public EventDetailedProjection event(UUID eventId, UUID userId) {
         String sql = """
                     SELECT
                         e.id AS event_id,
@@ -32,18 +32,32 @@ public class EventProjectionRepository {
                         e.date AS event_date,
                         e.max_participants AS event_max_participants,
                         e.current_participants AS event_current_participants,
-                        e.status AS event_status
+                        e.status AS event_status,
+                        e.send_poll_link,
+                        e.donation_cash,
+                        e.donation_transfer,
+                        BOOL_OR(p.poll_link_sent) as poll_link_sent,
+                        BOOL_OR(p.cash_donated) as cash_donated,
+                        BOOL_OR(p.transfer_donated) as transfer_donated
                     FROM
                         events e
                     JOIN
                         users u ON e.author_id = u.id
+                    LEFT JOIN
+                        event_participants p ON e.id = p.event_id AND p.user_id = :userId
                     WHERE
                         e.id = :eventId
+                    GROUP BY
+                        e.id, u.id
                 """;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("eventId", eventId);
+        params.put("userId", userId);
 
         return jdbcTemplate.queryForObject(
                 sql,
-                Map.of("eventId", eventId),
+                params,
                 (ResultSet rs, int _) -> new EventDetailedProjection(
                         UUID.fromString(rs.getString("event_id")),
                         new TelegramUserDetails(
@@ -57,7 +71,14 @@ public class EventProjectionRepository {
                         rs.getTimestamp("event_date").toInstant(),
                         rs.getInt("event_max_participants"),
                         rs.getInt("event_current_participants"),
-                        Event.Status.valueOf(rs.getString("event_status"))));
+                        Event.Status.valueOf(rs.getString("event_status")),
+                        rs.getBoolean("send_poll_link"),
+                        rs.getBoolean("donation_cash"),
+                        rs.getBoolean("donation_transfer"),
+                        new EventDetailedProjection.ParticipantState(
+                                rs.getBoolean("poll_link_sent"),
+                                rs.getBoolean("cash_donated"),
+                                rs.getBoolean("transfer_donated"))));
     }
 
     public Page<EventDetailedProjection> events(
@@ -68,7 +89,7 @@ public class EventProjectionRepository {
         String orderByClause = buildOrderByClause(pageable);
 
         String sql = """
-                    SELECT DISTINCT
+                    SELECT
                         e.id AS event_id,
                         e.created_at AS created_at,
                         u.tg_id AS author_tg_id,
@@ -82,13 +103,21 @@ public class EventProjectionRepository {
                         e.max_participants AS event_max_participants,
                         e.current_participants AS event_current_participants,
                         e.status AS event_status,
-                        e.updated_at AS updated_at
+                        e.updated_at AS updated_at,
+                        e.send_poll_link,
+                        e.donation_cash,
+                        e.donation_transfer,
+                        BOOL_OR(p.poll_link_sent) as poll_link_sent,
+                        BOOL_OR(p.cash_donated) as cash_donated,
+                        BOOL_OR(p.transfer_donated) as transfer_donated
                     FROM events e
                         JOIN users u ON e.author_id = u.id
                         LEFT JOIN event_participants p ON e.id = p.event_id AND p.user_id = :participantUserId
                     WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
                         OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
                         AND e.status IN (:statuses)
+                    GROUP BY
+                        e.id, u.id
                     ORDER BY %s
                     OFFSET :offset
                     LIMIT :pageSize;
@@ -130,7 +159,14 @@ public class EventProjectionRepository {
                         rs.getTimestamp("event_date").toInstant(),
                         rs.getInt("event_max_participants"),
                         rs.getInt("event_current_participants"),
-                        Event.Status.valueOf(rs.getString("event_status"))));
+                        Event.Status.valueOf(rs.getString("event_status")),
+                        rs.getBoolean("send_poll_link"),
+                        rs.getBoolean("donation_cash"),
+                        rs.getBoolean("donation_transfer"),
+                        new EventDetailedProjection.ParticipantState(
+                                rs.getBoolean("poll_link_sent"),
+                                rs.getBoolean("cash_donated"),
+                                rs.getBoolean("transfer_donated"))));
 
         return new PageImpl<>(events, pageable, totalElements == null ? 0 : totalElements);
     }

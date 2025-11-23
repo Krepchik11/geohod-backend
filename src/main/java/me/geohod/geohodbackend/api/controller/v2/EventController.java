@@ -53,52 +53,42 @@ public class EventController {
     private final IEventProjectionService eventProjectionService;
 
     @GetMapping("/{eventId}")
-    public ApiResponse<EventDetailsResponse> getEventById(@PathVariable UUID eventId) {
-        EventDetailedProjection event = eventProjectionService.event(eventId);
+    public ApiResponse<EventDetailsResponse> getEventById(@PathVariable UUID eventId,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        UUID userId = principal != null ? principal.userId() : null;
+        EventDetailedProjection event = eventProjectionService.event(eventId, userId);
         return ApiResponse.success(mapper.response(event));
     }
 
     @GetMapping
     public ApiResponse<PageResponse<EventDetailsResponse>> getAllEvents(
-            @RequestParam(required = false, defaultValue = "true") 
-            boolean iamAuthor,
-            
-            @RequestParam(required = false, defaultValue = "true") 
-            boolean iamParticipant,
-            
-            @RequestParam(required = false) 
-            List<Event.Status> statuses,
-            
-            @PageableDefault(size = 30) 
-            @Parameter(
-                description = """
-                Pagination and sorting parameters. Use 'sort' query parameter for custom sorting.
-                             Format: ?sort=field,direction
-                             Available fields: name, date, status, createdAt, updatedAt
-                             Directions: asc, desc
-                             Default: createdAt,desc (newest first)""",
-                in = ParameterIn.QUERY,
-                schema = @Schema(
-                    type = "string",
-                    example = "sort=createdAt,desc"
-                )
-            ) 
-            Pageable pageable,
-            
+            @RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
+
+            @RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
+
+            @RequestParam(required = false) List<Event.Status> statuses,
+
+            @PageableDefault(size = 30) @Parameter(description = """
+                    Pagination and sorting parameters. Use 'sort' query parameter for custom sorting.
+                                 Format: ?sort=field,direction
+                                 Available fields: name, date, status, createdAt, updatedAt
+                                 Directions: asc, desc
+                                 Default: createdAt,desc (newest first)""", in = ParameterIn.QUERY, schema = @Schema(type = "string", example = "sort=createdAt,desc")) Pageable pageable,
+
             @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
         UUID filterByParticipantUserId = iamParticipant ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(
-                new IEventProjectionService.EventsDetailedProjectionFilter(filterByAuthorUserId, filterByParticipantUserId, statuses),
-                pageable
-        );
+                new IEventProjectionService.EventsDetailedProjectionFilter(filterByAuthorUserId,
+                        filterByParticipantUserId, statuses),
+                pageable);
         Page<EventDetailsResponse> result = events.map(mapper::response);
         return ApiResponse.success(new PageResponse<>(result));
     }
 
     @PostMapping
     public ApiResponse<EventCreateResponse> createEvent(@RequestBody EventCreateRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         CreateEventDto createDto = mapper.map(request, principal.userId());
         EventDto createdEvent = eventService.createEvent(createDto);
 
@@ -109,8 +99,8 @@ public class EventController {
 
     @PutMapping("/{eventId}")
     public ApiResponse<EventUpdateResponse> updateEvent(@PathVariable UUID eventId,
-                                                           @RequestBody EventUpdateRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @RequestBody EventUpdateRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {
@@ -124,8 +114,8 @@ public class EventController {
 
     @PatchMapping("/{eventId}/cancel")
     public ApiResponse<EventCancelResponse> cancelEvent(@PathVariable UUID eventId,
-                                                           @RequestBody EventCancelRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @RequestBody EventCancelRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {
@@ -138,8 +128,8 @@ public class EventController {
 
     @PatchMapping("/{eventId}/finish")
     public ApiResponse<EventFinishResponse> finishEvent(@PathVariable UUID eventId,
-                                                           @RequestBody EventFinishRequest request,
-                                                           @AuthenticationPrincipal TelegramPrincipal principal) {
+            @RequestBody EventFinishRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
         if (!event.authorId().equals(loggedUserId)) {
@@ -149,4 +139,4 @@ public class EventController {
         eventService.finishEvent(mapper.map(request, eventId));
         return ApiResponse.success(new EventFinishResponse("success"));
     }
-} 
+}

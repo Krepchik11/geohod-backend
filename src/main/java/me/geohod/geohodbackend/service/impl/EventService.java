@@ -45,8 +45,7 @@ public class EventService implements IEventService {
                 createDto.description(),
                 createDto.date(),
                 createDto.maxParticipants(),
-                createDto.authorId()
-        );
+                createDto.authorId());
 
         eventRepository.save(event);
 
@@ -66,8 +65,7 @@ public class EventService implements IEventService {
                 updateDto.name(),
                 updateDto.description(),
                 updateDto.date(),
-                updateDto.maxParticipants()
-        );
+                updateDto.maxParticipants());
 
         eventRepository.save(event);
     }
@@ -86,7 +84,6 @@ public class EventService implements IEventService {
 
         eventRepository.save(event);
 
-        
         String payload = String.format("{\"notifyParticipants\": %b}",
                 cancelDto.notifyParticipants());
         eventLogService.createLogEntry(cancelDto.eventId(), EventType.EVENT_CANCELED, payload);
@@ -95,7 +92,11 @@ public class EventService implements IEventService {
     @Override
     @Transactional
     public void finishEvent(FinishEventDto finishDto) {
-        int updated = eventRepository.finishEvent(finishDto.eventId());
+        int updated = eventRepository.finishEvent(
+                finishDto.eventId(),
+                finishDto.sendPollLink(),
+                finishDto.donationCash(),
+                finishDto.donationTransfer());
         if (updated == 0) {
             throw new IllegalStateException("Event not found or already finished");
         }
