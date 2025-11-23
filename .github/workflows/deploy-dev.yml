@@ -23,7 +23,7 @@ jobs:
       - name: Gradle test
         run: ./gradlew clean test
 
-      - name: Build JAR Artifact with test
+      - name: Build JAR Artifact
         run: ./gradlew bootJar
 
       - name: Build container image
