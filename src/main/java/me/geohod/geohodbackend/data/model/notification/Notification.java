@@ -1,18 +1,19 @@
 package me.geohod.geohodbackend.data.model.notification;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import me.geohod.geohodbackend.service.notification.NotificationType;
-import me.geohod.geohodbackend.data.model.eventlog.JsonbString;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.Instant;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import me.geohod.geohodbackend.data.model.eventlog.JsonbString;
+import me.geohod.geohodbackend.service.notification.processor.strategy.StrategyNotificationType;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
@@ -26,12 +27,12 @@ public class Notification implements Persistable<Long> {
 
     private UUID eventId;
     private UUID userId;
-    private NotificationType type;
+    private StrategyNotificationType type;
     private JsonbString payload;
     private boolean isRead;
     private Instant createdAt;
 
-    public Notification(UUID userId, NotificationType type, String payload) {
+    public Notification(UUID userId, StrategyNotificationType type, String payload) {
         this.userId = userId;
         this.type = type;
         this.payload = new JsonbString(payload);
@@ -39,7 +40,7 @@ public class Notification implements Persistable<Long> {
         this.createdAt = Instant.now();
     }
 
-    public Notification(UUID userId, NotificationType type, JsonbString payload) {
+    public Notification(UUID userId, StrategyNotificationType type, JsonbString payload) {
         this.userId = userId;
         this.type = type;
         this.payload = payload;
@@ -47,7 +48,7 @@ public class Notification implements Persistable<Long> {
         this.createdAt = Instant.now();
     }
 
-    public Notification(UUID eventId, UUID userId, NotificationType type, JsonbString payload) {
+    public Notification(UUID eventId, UUID userId, StrategyNotificationType type, JsonbString payload) {
         this.eventId = eventId;
         this.userId = userId;
         this.type = type;
@@ -64,4 +65,4 @@ public class Notification implements Persistable<Long> {
     public boolean isNew() {
         return this.id == null;
     }
-} 
+}

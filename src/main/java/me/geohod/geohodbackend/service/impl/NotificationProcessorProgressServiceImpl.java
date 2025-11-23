@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.model.notification.NotificationProcessorProgress;
 import me.geohod.geohodbackend.data.model.repository.NotificationProcessorProgressRepository;
-import me.geohod.geohodbackend.service.INotificationProcessorProgressService;
+import me.geohod.geohodbackend.service.notification.INotificationProcessorProgressService;
 
 @Service
 @RequiredArgsConstructor

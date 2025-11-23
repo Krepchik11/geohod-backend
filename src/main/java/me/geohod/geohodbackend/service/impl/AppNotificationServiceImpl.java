@@ -12,7 +12,7 @@ import me.geohod.geohodbackend.data.dto.NotificationDto;
 import me.geohod.geohodbackend.data.mapper.NotificationMapper;
 import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
-import me.geohod.geohodbackend.service.IAppNotificationService;
+import me.geohod.geohodbackend.service.notification.IAppNotificationService;
 
 @Service
 @RequiredArgsConstructor

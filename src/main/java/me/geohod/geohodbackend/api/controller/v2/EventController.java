@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.request.EventCancelRequest;
 import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
 import me.geohod.geohodbackend.api.dto.request.EventFinishRequest;
 import me.geohod.geohodbackend.api.dto.request.EventUpdateRequest;
@@ -30,13 +31,13 @@ import me.geohod.geohodbackend.api.dto.response.EventUpdateResponse;
 import me.geohod.geohodbackend.api.mapper.EventApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.api.response.PageResponse;
+import me.geohod.geohodbackend.data.dto.CancelEventDto;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
-import me.geohod.geohodbackend.service.IEventManager;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
 
@@ -45,7 +46,6 @@ import me.geohod.geohodbackend.service.IEventService;
 @RequiredArgsConstructor
 public class EventController {
     private final EventApiMapper mapper;
-    private final IEventManager eventManager;
     private final IEventService eventService;
     private final IEventProjectionService eventProjectionService;
 
@@ -99,6 +99,7 @@ public class EventController {
 
     @PatchMapping("/{eventId}/cancel")
     public ApiResponse<EventCancelResponse> cancelEvent(@PathVariable UUID eventId,
+                                                           @RequestBody EventCancelRequest request,
                                                            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID loggedUserId = principal.userId();
         EventDto event = eventService.event(eventId);
@@ -106,7 +107,7 @@ public class EventController {
             throw new AccessDeniedException("You do not have permission to cancel this event");
         }
 
-        eventManager.cancelEvent(eventId);
+        eventService.cancelEvent(new CancelEventDto(eventId, request.notifyParticipants()));
         return ApiResponse.success(new EventCancelResponse("success"));
     }
 

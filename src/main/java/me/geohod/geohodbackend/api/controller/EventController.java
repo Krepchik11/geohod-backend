@@ -29,13 +29,13 @@ import me.geohod.geohodbackend.api.dto.response.EventDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventFinishResponse;
 import me.geohod.geohodbackend.api.dto.response.EventUpdateResponse;
 import me.geohod.geohodbackend.api.mapper.EventApiMapper;
+import me.geohod.geohodbackend.data.dto.CancelEventDto;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
-import me.geohod.geohodbackend.service.IEventManager;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
 
@@ -44,7 +44,6 @@ import me.geohod.geohodbackend.service.IEventService;
 @RequiredArgsConstructor
 public class EventController {
     private final EventApiMapper mapper;
-    private final IEventManager eventManager;
     private final IEventService eventService;
     private final IEventProjectionService eventProjectionService;
 
@@ -105,7 +104,7 @@ public class EventController {
             throw new AccessDeniedException("You do not have permission to cancel this event");
         }
 
-        eventManager.cancelEvent(eventId);
+        eventService.cancelEvent(new CancelEventDto(eventId, true));
         return ResponseEntity.ok(new EventCancelResponse("success"));
     }
 

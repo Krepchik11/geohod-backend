@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.dto.CancelEventDto;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.dto.FinishEventDto;
@@ -73,8 +74,8 @@ public class EventService implements IEventService {
 
     @Override
     @Transactional
-    public void cancelEvent(UUID eventId) {
-        Event event = eventRepository.findById(eventId)
+    public void cancelEvent(CancelEventDto cancelDto) {
+        Event event = eventRepository.findById(cancelDto.eventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
 
         if (event.isCanceled()) {
@@ -85,7 +86,10 @@ public class EventService implements IEventService {
 
         eventRepository.save(event);
 
-        eventLogService.createLogEntry(eventId, EventType.EVENT_CANCELED, "{}");
+        
+        String payload = String.format("{\"notifyParticipants\": %b}",
+                cancelDto.notifyParticipants());
+        eventLogService.createLogEntry(cancelDto.eventId(), EventType.EVENT_CANCELED, payload);
     }
 
     @Override
@@ -96,8 +100,7 @@ public class EventService implements IEventService {
             throw new IllegalStateException("Event not found or already finished");
         }
 
-        String payload = String.format("{\"sendDonationRequest\": %b, \"donationInfo\": \"%s\", \"sendPollLink\": %b}",
-                finishDto.sendDonationRequest(), finishDto.donationInfo(), finishDto.sendPollLink());
+        String payload = String.format("{\"sendPollLink\": %b}", finishDto.sendPollLink());
         eventLogService.createLogEntryAsync(finishDto.eventId(), EventType.EVENT_FINISHED_FOR_REVIEW_LINK, payload);
     }
 }

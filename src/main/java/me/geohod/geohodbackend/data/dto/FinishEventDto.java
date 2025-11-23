@@ -5,7 +5,7 @@ import java.util.UUID;
 public record FinishEventDto(
         UUID eventId,
         boolean sendPollLink,
-        boolean sendDonationRequest,
-        String donationInfo
+        boolean donationCash,
+        boolean donationTransfer
 ) {
 }
