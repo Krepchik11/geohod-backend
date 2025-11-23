@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventCancelRequest;
 import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
@@ -56,11 +59,33 @@ public class EventController {
     }
 
     @GetMapping
-    public ApiResponse<PageResponse<EventDetailsResponse>> getAllEvents(@RequestParam(required = false, defaultValue = "true") boolean iamAuthor,
-                                                                   @RequestParam(required = false, defaultValue = "true") boolean iamParticipant,
-                                                                   @RequestParam(required = false) List<Event.Status> statuses,
-                                                                   @PageableDefault(size = 30) Pageable pageable,
-                                                                   @AuthenticationPrincipal TelegramPrincipal principal) {
+    public ApiResponse<PageResponse<EventDetailsResponse>> getAllEvents(
+            @RequestParam(required = false, defaultValue = "true") 
+            boolean iamAuthor,
+            
+            @RequestParam(required = false, defaultValue = "true") 
+            boolean iamParticipant,
+            
+            @RequestParam(required = false) 
+            List<Event.Status> statuses,
+            
+            @PageableDefault(size = 30) 
+            @Parameter(
+                description = """
+                Pagination and sorting parameters. Use 'sort' query parameter for custom sorting.
+                             Format: ?sort=field,direction
+                             Available fields: name, date, status, createdAt, updatedAt
+                             Directions: asc, desc
+                             Default: createdAt,desc (newest first)""",
+                in = ParameterIn.QUERY,
+                schema = @Schema(
+                    type = "string",
+                    example = "sort=createdAt,desc"
+                )
+            ) 
+            Pageable pageable,
+            
+            @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
         UUID filterByParticipantUserId = iamParticipant ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(

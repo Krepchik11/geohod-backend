@@ -51,24 +51,22 @@ public class EventProjectionRepository {
                                 rs.getString("author_username"),
                                 rs.getString("author_first_name"),
                                 rs.getString("author_last_name"),
-                                rs.getString("author_image_url")
-                        ),
+                                rs.getString("author_image_url")),
                         rs.getString("event_name"),
                         rs.getString("event_description"),
                         rs.getTimestamp("event_date").toInstant(),
                         rs.getInt("event_max_participants"),
                         rs.getInt("event_current_participants"),
-                        Event.Status.valueOf(rs.getString("event_status"))
-                )
-        );
+                        Event.Status.valueOf(rs.getString("event_status"))));
     }
 
     public Page<EventDetailedProjection> events(
             UUID authorUserId,
             UUID participantUserId,
             List<Event.Status> statuses,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
+        String orderByClause = buildOrderByClause(pageable);
+
         String sql = """
                     SELECT DISTINCT
                         e.id AS event_id,
@@ -83,17 +81,18 @@ public class EventProjectionRepository {
                         e.date AS event_date,
                         e.max_participants AS event_max_participants,
                         e.current_participants AS event_current_participants,
-                        e.status AS event_status
+                        e.status AS event_status,
+                        e.updated_at AS updated_at
                     FROM events e
                         JOIN users u ON e.author_id = u.id
                         LEFT JOIN event_participants p ON e.id = p.event_id AND p.user_id = :participantUserId
                     WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
                         OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
                         AND e.status IN (:statuses)
-                    ORDER BY e.created_at DESC
+                    ORDER BY %s
                     OFFSET :offset
                     LIMIT :pageSize;
-                """;
+                """.formatted(orderByClause);
 
         String countSql = """
                     SELECT COUNT(DISTINCT e.id)
@@ -125,18 +124,38 @@ public class EventProjectionRepository {
                                 rs.getString("author_username"),
                                 rs.getString("author_first_name"),
                                 rs.getString("author_last_name"),
-                                rs.getString("author_image_url")
-                        ),
+                                rs.getString("author_image_url")),
                         rs.getString("event_name"),
                         rs.getString("event_description"),
                         rs.getTimestamp("event_date").toInstant(),
                         rs.getInt("event_max_participants"),
                         rs.getInt("event_current_participants"),
-                        Event.Status.valueOf(rs.getString("event_status"))
-                )
-        );
+                        Event.Status.valueOf(rs.getString("event_status"))));
 
         return new PageImpl<>(events, pageable, totalElements == null ? 0 : totalElements);
+    }
+
+    private String buildOrderByClause(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return "e.created_at DESC";
+        }
+
+        List<String> orders = new ArrayList<>();
+        pageable.getSort().forEach(order -> {
+            String property = order.getProperty();
+            String direction = order.getDirection().name();
+            String column = switch (property) {
+                case "name" -> "e.name";
+                case "date" -> "e.date";
+                case "status" -> "e.status";
+                case "createdAt" -> "e.created_at";
+                case "updatedAt" -> "e.updated_at";
+                default -> "e.created_at"; // Fallback to safe default
+            };
+            orders.add(column + " " + direction);
+        });
+
+        return String.join(", ", orders);
     }
 
     private List<String> prepareStatusesFilter(List<Event.Status> statuses) {

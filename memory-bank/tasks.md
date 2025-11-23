@@ -2,6 +2,38 @@
 
 This document captures repetitive workflows to execute similar changes quickly and consistently. Follow these steps when performing the associated tasks.
 
+## Event Sorting Implementation
+
+**Last verified**: 2025-11-23 - **COMPLETED**
+
+Files involved:
+- Repository: `src/main/java/me/geohod/geohodbackend/data/model/repository/EventProjectionRepository.java`
+- Test: `src/test/java/me/geohod/geohodbackend/data/model/repository/EventProjectionRepositoryTest.java`
+
+**Implementation Details**:
+1. **Repository Enhancement**: Modified the `events()` method to dynamically build ORDER BY clause based on `Pageable` sort parameters
+2. **Sorting Logic**: Implemented `buildOrderByClause()` private method with switch statement mapping:
+   - `name` → `e.name`
+   - `date` → `e.date` 
+   - `status` → `e.status`
+   - `createdAt` → `e.created_at`
+   - `updatedAt` → `e.updated_at`
+   - Default fallback to `e.created_at DESC`
+3. **Test Coverage**: Created comprehensive integration tests using Testcontainers with real PostgreSQL:
+   - `shouldSortEventsByNameAsc()` - Ascending name sorting
+   - `shouldSortEventsByDateDesc()` - Descending date sorting
+   - `shouldSortEventsByStatus()` - Status-based sorting
+   - `shouldSortEventsByCreatedAtDefault()` - Default created_at DESC behavior
+4. **OpenAPI Documentation**: Added comprehensive sorting documentation to EventController with:
+   - Detailed field descriptions and examples
+   - Sorting format specifications (?sort=field,direction)
+   - Available sort fields and directions
+   - Practical examples for frontend developers
+   - Parameter documentation for Swagger UI
+5. **Backward Compatibility**: Works with and without sort parameters
+
+**Verification Results**: All 4 tests passed successfully with Testcontainers integration
+
 ## Add or Update v2 API Endpoint
 
 Last verified: 2025-11-23
