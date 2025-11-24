@@ -86,10 +86,41 @@ public class EventProjectionRepository {
             UUID participantUserId,
             List<Event.Status> statuses,
             Pageable pageable) {
+        StringBuilder whereClause = new StringBuilder(" WHERE 1=1 ");
+        Map<String, Object> params = new HashMap<>();
+
+        if (authorUserId != null) {
+            whereClause.append(" AND e.author_id = :authorUserId ");
+            params.put("authorUserId", authorUserId);
+        }
+
+        if (participantUserId != null) {
+            if (authorUserId != null) {
+                whereClause = new StringBuilder(
+                        " WHERE (e.author_id = :authorUserId OR p.user_id = :participantUserId) ");
+                params.put("participantUserId", participantUserId);
+            } else {
+                whereClause.append(" AND p.user_id = :participantUserId ");
+                params.put("participantUserId", participantUserId);
+            }
+        }
+
+        List<String> statusesFilter = prepareStatusesFilter(statuses);
+        whereClause.append(" AND e.status IN (:statuses) ");
+        params.put("statuses", statusesFilter);
+
+        String baseSql = """
+                    FROM events e
+                        JOIN users u ON e.author_id = u.id
+                        LEFT JOIN event_participants p ON e.id = p.event_id
+                """;
+
+        String countSql = "SELECT COUNT(DISTINCT e.id) " + baseSql + whereClause;
+
         String orderByClause = buildOrderByClause(pageable);
 
-        String sql = """
-                    SELECT
+        String selectSql = """
+                    SELECT DISTINCT
                         e.id AS event_id,
                         e.created_at AS created_at,
                         u.tg_id AS author_tg_id,
@@ -103,48 +134,21 @@ public class EventProjectionRepository {
                         e.max_participants AS event_max_participants,
                         e.current_participants AS event_current_participants,
                         e.status AS event_status,
-                        e.updated_at AS updated_at,
                         e.send_poll_link,
                         e.donation_cash,
                         e.donation_transfer,
                         BOOL_OR(p.poll_link_sent) as poll_link_sent,
                         BOOL_OR(p.cash_donated) as cash_donated,
                         BOOL_OR(p.transfer_donated) as transfer_donated
-                    FROM events e
-                        JOIN users u ON e.author_id = u.id
-                        LEFT JOIN event_participants p ON e.id = p.event_id AND p.user_id = :participantUserId
-                    WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
-                        OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
-                        AND e.status IN (:statuses)
-                    GROUP BY
-                        e.id, u.id
-                    ORDER BY %s
-                    OFFSET :offset
-                    LIMIT :pageSize;
-                """.formatted(orderByClause);
+                """ + baseSql + whereClause + " GROUP BY e.id, u.id ORDER BY " + orderByClause
+                + " OFFSET :offset LIMIT :pageSize";
 
-        String countSql = """
-                    SELECT COUNT(DISTINCT e.id)
-                    FROM events e
-                        JOIN users u ON e.author_id = u.id
-                        LEFT JOIN event_participants p ON e.id = p.event_id AND p.user_id = :participantUserId
-                    WHERE (COALESCE(:authorUserId) IS NOT NULL AND e.author_id = :authorUserId)
-                        OR (COALESCE(:participantUserId) IS NOT NULL AND p.user_id = :participantUserId)
-                        AND e.status IN (:statuses);
-                """;
-
-        List<String> statusesFilter = prepareStatusesFilter(statuses);
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("authorUserId", authorUserId);
-        params.put("participantUserId", participantUserId);
-        params.put("statuses", statusesFilter);
         params.put("offset", pageable.getOffset());
         params.put("pageSize", pageable.getPageSize());
 
         Integer totalElements = jdbcTemplate.queryForObject(countSql, params, Integer.class);
         List<EventDetailedProjection> events = jdbcTemplate.query(
-                sql,
+                selectSql,
                 params,
                 (ResultSet rs, int _) -> new EventDetailedProjection(
                         UUID.fromString(rs.getString("event_id")),

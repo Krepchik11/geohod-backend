@@ -5,6 +5,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.dto.CancelEventDto;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
@@ -26,6 +29,7 @@ public class EventService implements IEventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final IEventLogService eventLogService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public EventDto event(UUID eventId) {
@@ -51,7 +55,7 @@ public class EventService implements IEventService {
 
         EventDto result = mapper.map(event);
 
-        String payload = String.format("{\"authorId\": \"%s\"}", result.authorId());
+        String payload = toJson(java.util.Map.of("authorId", result.authorId()));
         eventLogService.createLogEntry(result.id(), EventType.EVENT_CREATED, payload);
         return result;
     }
@@ -84,8 +88,7 @@ public class EventService implements IEventService {
 
         eventRepository.save(event);
 
-        String payload = String.format("{\"notifyParticipants\": %b}",
-                cancelDto.notifyParticipants());
+        String payload = toJson(java.util.Map.of("notifyParticipants", cancelDto.notifyParticipants()));
         eventLogService.createLogEntry(cancelDto.eventId(), EventType.EVENT_CANCELED, payload);
     }
 
@@ -101,7 +104,15 @@ public class EventService implements IEventService {
             throw new IllegalStateException("Event not found or already finished");
         }
 
-        String payload = String.format("{\"sendPollLink\": %b}", finishDto.sendPollLink());
+        String payload = toJson(java.util.Map.of("sendPollLink", finishDto.sendPollLink()));
         eventLogService.createLogEntryAsync(finishDto.eventId(), EventType.EVENT_FINISHED_FOR_REVIEW_LINK, payload);
+    }
+
+    private String toJson(Object data) {
+        try {
+            return objectMapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize event log payload", e);
+        }
     }
 }
