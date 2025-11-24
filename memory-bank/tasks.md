@@ -2,6 +2,35 @@
 
 This document captures repetitive workflows to execute similar changes quickly and consistently. Follow these steps when performing the associated tasks.
 
+## SQL Optimization and Raw JSON Properties
+
+**Last verified**: 2025-11-24 - **COMPLETED**
+
+Files involved:
+- Repository: `src/main/java/me/geohod/geohodbackend/data/model/repository/EventProjectionRepository.java`
+- Service: `src/main/java/me/geohod/geohodbackend/service/impl/EventService.java`
+
+**Implementation Details**:
+1. **SQL Query Optimization**: 
+   - Refactored `EventProjectionRepository.events()` method with dynamic WHERE clause construction using StringBuilder
+   - Implemented Map-based parameter binding instead of individual parameter binding
+   - Separated base SQL, WHERE clause, and ORDER BY for better readability and performance
+   - Enhanced query structure with cleaner parameter handling
+
+2. **JSON Serialization Enhancement**:
+   - Added Jackson ObjectMapper dependency to EventService
+   - Created `toJson()` method for proper event log payload serialization
+   - Replaced string-based JSON formatting with structured ObjectMapper usage
+   - Ensured proper JSON format for event logs: `{"authorId": "..."}`, `{"notifyParticipants": true/false}`, `{"sendPollLink": true/false}`
+
+**Benefits Achieved**:
+- **Performance**: Improved query execution through optimized parameter binding
+- **Code Quality**: Better maintainability with cleaner SQL construction and proper JSON serialization
+- **Data Integrity**: Proper JSON formatting prevents formatting errors in event log payloads
+- **Readability**: Separated SQL components make queries easier to understand and maintain
+
+**Verification Results**: All tests passed successfully with enhanced query performance
+
 ## Event State and Participant State Management
 
 **Last verified**: 2025-11-24 - **COMPLETED**

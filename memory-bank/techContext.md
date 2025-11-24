@@ -116,6 +116,9 @@ BUILD SUCCESSFUL
 *   **Participant State Management**: **NEW**: Added `poll_link_sent`, `cash_donated`, `transfer_donated` boolean fields to event_participants table
 *   **State Management API**: **NEW**: `UpdateParticipantStateRequest` DTO for managing participant state transitions
 *   **Database Migration**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` for state tracking schema
+*   **SQL Optimization**: **NEW**: Enhanced query construction with StringBuilder and Map-based parameter binding
+*   **JSON Serialization**: **NEW**: Jackson ObjectMapper integration for proper event log payload serialization
+*   **Performance Improvements**: Optimized SQL queries and parameter handling for better database performance
 
 ### Testing & Quality Assurance
 *   **Testcontainers Integration**: Real PostgreSQL instances for integration testing

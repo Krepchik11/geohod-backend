@@ -2,19 +2,26 @@
 
 ## Current Focus (November 2025)
 
-**Primary Focus: Event State and Participant State Management (November 2025)**
+**Primary Focus: SQL Optimization and Raw JSON Properties (November 2025)**
 
-The Event State and Participant State functionality has been successfully implemented, adding the ability to track poll link sending and donation states for both events and individual participants with comprehensive database support and API integration.
+Recent optimizations have been implemented including enhanced SQL query construction for better performance and proper JSON serialization for event log payloads using Jackson ObjectMapper.
 
 **Key Implementation Details**:
-- **Database Schema**: Added `send_poll_link`, `donation_cash`, `donation_transfer` fields to events table
-- **Participant States**: Added `poll_link_sent`, `cash_donated`, `transfer_donated` fields to event_participants table
-- **API Endpoint**: New `UpdateParticipantStateRequest` for updating participant states
-- **Service Layer**: Enhanced `EventParticipationService` with state management methods
-- **Data Access**: Updated repositories to support state-based queries and updates
-- **Migration**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` for schema changes
-- **Testing**: Updated test coverage with comprehensive state management validation
-- **Event Details**: Enhanced `EventDetailsResponse` and `EventDetailedProjection` to include state information
+- **SQL Query Optimization**: Enhanced `EventProjectionRepository` with dynamic WHERE clause building using StringBuilder and Map-based parameter handling
+- **JSON Serialization**: Added Jackson ObjectMapper dependency and `toJson()` method for proper event log payload serialization
+- **Query Performance**: Improved query structure with separated base SQL, WHERE clause, and ORDER BY for better readability and performance
+- **Parameter Handling**: Optimized parameter binding using HashMap for named parameters instead of individual parameter binding
+- **Code Quality**: Refactored string-based JSON creation to proper ObjectMapper serialization for better data integrity
+
+### SQL Optimization and Raw JSON Properties (November 2025)
+
+**Performance and Code Quality Enhancements**:
+- **SQL Query Optimization**: Refactored `EventProjectionRepository.events()` method with dynamic WHERE clause construction
+- **Parameter Handling**: Implemented Map-based parameter binding for better performance and maintainability
+- **JSON Serialization**: Added Jackson ObjectMapper for proper event log payload serialization
+- **Code Refactoring**: Replaced string-based JSON formatting with structured ObjectMapper usage
+- **Query Structure**: Separated base SQL, WHERE clause, and ORDER BY for improved readability
+- **Performance Benefits**: Enhanced query execution through optimized parameter binding and cleaner SQL structure
 
 ### Event State and Participant State Implementation (November 2025)
 
@@ -37,6 +44,16 @@ The notification system refactoring has been successfully completed, introducing
 4. **Enhanced Architecture**: Cleaner separation of concerns with strategy implementations handling business logic
 
 ## Recent Major Changes
+
+### SQL Optimization and Raw JSON Properties (November 2025)
+
+**Performance and Code Quality Enhancements**:
+- **SQL Query Optimization**: Refactored `EventProjectionRepository.events()` method with dynamic WHERE clause construction
+- **Parameter Handling**: Implemented Map-based parameter binding for better performance and maintainability
+- **JSON Serialization**: Added Jackson ObjectMapper for proper event log payload serialization
+- **Code Refactoring**: Replaced string-based JSON formatting with structured ObjectMapper usage
+- **Query Structure**: Separated base SQL, WHERE clause, and ORDER BY for improved readability
+- **Performance Benefits**: Enhanced query execution through optimized parameter binding and cleaner SQL structure
 
 ### Event State and Participant State Implementation (November 2025)
 

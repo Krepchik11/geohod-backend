@@ -82,6 +82,8 @@ graph TD
 *   **DTO Pattern**: Extensive use of records and DTOs for API contracts and internal data transfer.
 *   **Persistable Pattern**: All entities implement `Persistable<T>` with `@Version` for optimistic locking.
 *   **State Management Pattern**: **NEW**: Boolean-based state tracking for events and participants with comprehensive API support
+*   **SQL Optimization Pattern**: **NEW**: Dynamic query construction with StringBuilder and Map-based parameter binding
+*   **JSON Serialization Pattern**: **NEW**: Jackson ObjectMapper for proper JSON formatting and data integrity
 
 ### Advanced Patterns (November 2025)
 
@@ -227,7 +229,53 @@ public record UpdateParticipantStateRequest(
 - **Atomic Updates**: Transactional state updates via dedicated API endpoint
 - **Database Integration**: Boolean fields with proper defaults and constraints via Liquibase migrations
 
-#### 6. **Template Registry Pattern**
+#### 6. **SQL Optimization Pattern (November 2025)**
+```java
+@Component
+public class EventProjectionRepository {
+    public Page<EventDetailedProjection> events(...) {
+        StringBuilder whereClause = new StringBuilder(" WHERE 1=1 ");
+        Map<String, Object> params = new HashMap<>();
+        
+        if (authorUserId != null) {
+            whereClause.append(" AND e.author_id = :authorUserId ");
+            params.put("authorUserId", authorUserId);
+        }
+        
+        // Dynamic WHERE clause construction
+        // Map-based parameter binding
+    }
+}
+```
+
+**Features**:
+- **Dynamic SQL Construction**: StringBuilder for building WHERE clauses dynamically
+- **Parameter Binding**: HashMap-based named parameters for better performance
+- **Query Separation**: Base SQL, WHERE clause, and ORDER BY separated for clarity
+
+#### 7. **JSON Serialization Pattern (November 2025)**
+```java
+@Service
+public class EventService {
+    private final ObjectMapper objectMapper;
+    
+    private String toJson(Object data) {
+        try {
+            return objectMapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize event log payload", e);
+        }
+    }
+}
+```
+
+**Features**:
+- **Jackson Integration**: ObjectMapper for proper JSON serialization
+- **Error Handling**: RuntimeException for serialization failures
+- **Consistent Format**: Structured JSON for event log payloads
+- **Data Integrity**: Prevents formatting errors in log entries
+
+#### 8. **Template Registry Pattern**
 ```java
 @Component
 public class MessageTemplateRegistry {

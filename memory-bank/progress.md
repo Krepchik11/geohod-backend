@@ -42,6 +42,14 @@ Based on current analysis, the following core features are implemented and funct
 
 ### Recently Completed ✅
 
+### SQL Optimization and Raw JSON Properties ✅
+*   **SQL Query Performance**: Refactored `EventProjectionRepository` with dynamic WHERE clause building using StringBuilder
+*   **Parameter Optimization**: Implemented Map-based parameter binding for better performance and maintainability
+*   **JSON Serialization**: Added Jackson ObjectMapper dependency for proper event log payload serialization
+*   **Code Quality**: Replaced string-based JSON formatting with structured ObjectMapper usage for better data integrity
+*   **Query Structure**: Separated base SQL, WHERE clause, and ORDER BY for improved readability and performance
+*   **Service Enhancement**: Updated `EventService` with `toJson()` method for consistent JSON serialization
+
 ### Event State and Participant State Management ✅
 *   **Database Schema**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` with 6 new boolean fields
 *   **Event States**: Added `send_poll_link`, `donation_cash`, `donation_transfer` fields to events table

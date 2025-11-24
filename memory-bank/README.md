@@ -1,6 +1,6 @@
 # Memory Bank: Geohod Backend
 
-**Last Updated**: November 24, 2025
+**Last Updated**: November 24, 2025 (Latest commit: SQL optimization & raw JSON properties)
 
 This Memory Bank provides comprehensive documentation of the Geohod Backend project - a sophisticated event management platform with advanced Telegram integration.
 
@@ -36,6 +36,8 @@ This Memory Bank provides comprehensive documentation of the Geohod Backend proj
 - **Multi-Participant Registration**: Support for 1-10 participants in single request
 - **Event State Management**: **NEW**: Poll link sending and donation tracking (cash/transfer) for events
 - **Participant State Management**: **NEW**: Individual participant state tracking for poll links and donations
+- **SQL Optimization**: **NEW**: Enhanced query construction and parameter handling for better performance
+- **Raw JSON Properties**: **NEW**: Proper JSON serialization for event log payloads using Jackson ObjectMapper
 - **Monitoring**: Micrometer + Prometheus integration
 - **Testing**: Enhanced Testcontainers integration
 
