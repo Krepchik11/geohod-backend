@@ -1,14 +1,16 @@
 # Memory Bank: Geohod Backend
 
-**Last Updated**: November 23, 2025
+**Last Updated**: November 24, 2025
 
 This Memory Bank provides comprehensive documentation of the Geohod Backend project - a sophisticated event management platform with advanced Telegram integration.
 
 ## Quick Overview
 
-**Current Focus**: Issue-84-optional-notifications - implementing optional notification preferences using the new strategy-based notification system.
+**Current Focus**: Event State and Participant State Management - implementing action states for poll links and donation tracking.
 
-**Major Achievement**: Complete notification system refactor with sophisticated templating engine, Telegram MarkdownV2 formatting, and strategy-based architecture.
+**Major Achievements**: 
+- Complete notification system refactor with sophisticated templating engine, Telegram MarkdownV2 formatting, and strategy-based architecture
+- **NEW**: Event State and Participant State Management with poll link and donation tracking capabilities
 
 ## Core Files
 
@@ -32,6 +34,8 @@ This Memory Bank provides comprehensive documentation of the Geohod Backend proj
 - **Template Engine**: Custom-built template processing with variables and conditionals
 - **User Settings**: Granular preferences with payment gateway URL support
 - **Multi-Participant Registration**: Support for 1-10 participants in single request
+- **Event State Management**: **NEW**: Poll link sending and donation tracking (cash/transfer) for events
+- **Participant State Management**: **NEW**: Individual participant state tracking for poll links and donations
 - **Monitoring**: Micrometer + Prometheus integration
 - **Testing**: Enhanced Testcontainers integration
 

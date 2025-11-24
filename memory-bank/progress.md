@@ -6,7 +6,8 @@ Based on current analysis, the following core features are implemented and funct
 
 ### Core Features ✅
 *   **Event Management API**: Full CRUD operations for events with lifecycle management. **Enhanced**: Sorting by name, date, status, createdAt, updatedAt with dynamic ORDER BY.
-*   **Event Participation API**: Register, unregister, and manage participants. **Enhanced**: Multi-participant registration (1-10 participants).
+*   **Event State Management**: **NEW**: Poll link sending and donation tracking (cash/transfer) at event level.
+*   **Event Participation API**: Register, unregister, and manage participants. **Enhanced**: Multi-participant registration (1-10 participants) and **NEW**: Individual participant state tracking for poll links and donations.
 *   **Reviews & Ratings API**: One-to-one user-to-event reviews with database enforcement and user statistics.
 *   **Notification System (Major Enhancement)**: **Complete refactor** to strategy-based system with sophisticated templating and formatting.
 *   **Telegram Integration**: Custom authentication flow and Bot API integration with advanced MarkdownV2 formatting.
@@ -40,6 +41,16 @@ Based on current analysis, the following core features are implemented and funct
 ## Current Status (November 2025)
 
 ### Recently Completed ✅
+
+### Event State and Participant State Management ✅
+*   **Database Schema**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` with 6 new boolean fields
+*   **Event States**: Added `send_poll_link`, `donation_cash`, `donation_transfer` fields to events table
+*   **Participant States**: Added `poll_link_sent`, `cash_donated`, `transfer_donated` fields to event_participants table
+*   **API Implementation**: New `UpdateParticipantStateRequest` record for state updates
+*   **Service Enhancement**: Updated `EventParticipationService` with state management methods
+*   **Repository Updates**: Enhanced data access layer to support state-based queries and updates
+*   **Data Transfer Objects**: Enhanced `EventDetailsResponse` and `EventDetailedProjection` to include state information
+*   **Integration**: Seamless integration with existing event management and participation workflows
 *   **Template System Implementation**: Fully implemented template engine supporting:
   - Variable interpolation: `{{variable}}`, `{{variable|fallback}}`, `{{variable:50}}`
   - Conditional blocks: `{#if condition}content{/if}`

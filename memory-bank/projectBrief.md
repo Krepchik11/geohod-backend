@@ -7,7 +7,7 @@ This project is the backend service for "Geohod," an application that facilitate
 ## Key Features
 
 *   **Event Management**: Create, update, cancel, and finish events.
-*   **Event Participation**: Register for, unregister from, and manage participants in events. **NEW: Support for registering multiple participants in a single request** (amountOfParticipants: 1-10).
+*   **Event Participation**: Register for, unregister from, and manage participants in events. **NEW: Support for registering multiple participants in a single request** (amountOfParticipants: 1-10). **ENHANCED: Event state and participant state tracking** for poll links and donation management.
 *   **Reviews and Ratings**: Users can submit reviews for others, and the system calculates user ratings with one-to-one user-to-event constraint.
 *   **Notifications**: **Major Enhancement: New strategy-based notification system** with sophisticated templating engine supporting variables, conditionals, and channel-specific formatting (Telegram MarkdownV2, in-app text).
 *   **Telegram Integration**: User authentication is handled via Telegram, and the system can send notifications through a Telegram bot with **advanced message formatting**.

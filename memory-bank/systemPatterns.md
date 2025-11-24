@@ -81,6 +81,7 @@ graph TD
 *   **Repository Pattern**: Spring Data JDBC repositories abstract database operations.
 *   **DTO Pattern**: Extensive use of records and DTOs for API contracts and internal data transfer.
 *   **Persistable Pattern**: All entities implement `Persistable<T>` with `@Version` for optimistic locking.
+*   **State Management Pattern**: **NEW**: Boolean-based state tracking for events and participants with comprehensive API support
 
 ### Advanced Patterns (November 2025)
 
@@ -197,7 +198,36 @@ public class TelegramNotificationProcessor {
 - **Consistent Interface**: Unified strategy selection across both processors
 - **Single Responsibility**: Processors handle orchestration, strategies handle business logic
 
-#### 5. **Template Registry Pattern**
+#### 5. **State Management Pattern (November 2025)**
+```java
+@Entity
+public class Event {
+    private boolean sendPollLink;
+    private boolean donationCash;
+    private boolean donationTransfer;
+}
+
+@Entity
+public class EventParticipant {
+    private boolean pollLinkSent;
+    private boolean cashDonated;
+    private boolean transferDonated;
+}
+
+public record UpdateParticipantStateRequest(
+    boolean pollLinkSent,
+    boolean cashDonated,
+    boolean transferDonated
+)
+```
+
+**Features**:
+- **Event-Level States**: Track poll link sending preferences and donation acceptance at event level
+- **Participant-Level States**: Track individual participant progress for poll delivery and donation completion
+- **Atomic Updates**: Transactional state updates via dedicated API endpoint
+- **Database Integration**: Boolean fields with proper defaults and constraints via Liquibase migrations
+
+#### 6. **Template Registry Pattern**
 ```java
 @Component
 public class MessageTemplateRegistry {
@@ -238,9 +268,11 @@ public class MessageTemplateRegistry {
 
 ### v2 API Enhancements
 *   **Multi-participant Registration**: `EventRegisterRequest` with `amountOfParticipants` (1-10)
+*   **State Management API**: **NEW**: `UpdateParticipantStateRequest` for managing participant state transitions
 *   **User Settings API**: Granular PUT endpoints for individual settings fields
 *   **Enhanced User Endpoints**: User details and comprehensive statistics
 *   **Response Consistency**: All endpoints use `ApiResponse<T>` wrapper
+*   **Event State Display**: Enhanced `EventDetailsResponse` and `EventDetailedProjection` with state information
 
 ### API Design Principles
 *   **Record-based DTOs**: Type-safe, immutable data transfer objects

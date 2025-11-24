@@ -2,20 +2,32 @@
 
 ## Current Focus (November 2025)
 
-**Primary Focus: Event Sorting API Implementation (November 2025)**
+**Primary Focus: Event State and Participant State Management (November 2025)**
 
-The event sorting functionality has been successfully implemented, adding the ability to sort events by name, date, status, createdAt, and updatedAt fields with comprehensive test coverage and backward compatibility.
+The Event State and Participant State functionality has been successfully implemented, adding the ability to track poll link sending and donation states for both events and individual participants with comprehensive database support and API integration.
 
 **Key Implementation Details**:
-- **Repository Layer**: Enhanced `EventProjectionRepository` with dynamic ORDER BY clause building
-- **Test Coverage**: Created `EventProjectionRepositoryTest` with Testcontainers integration
-- **Sorting Support**: name→e.name, date→e.date, status→e.status, createdAt→e.created_at, updatedAt→e.updated_at
-- **Default Behavior**: Falls back to created_at DESC when no sort specified
-- **Backward Compatibility**: API works with and without sort parameters
-- **Test Results**: All 4 sorting tests passed successfully
-- **OpenAPI Documentation**: Added comprehensive sorting documentation for frontend developers with examples and field descriptions
+- **Database Schema**: Added `send_poll_link`, `donation_cash`, `donation_transfer` fields to events table
+- **Participant States**: Added `poll_link_sent`, `cash_donated`, `transfer_donated` fields to event_participants table
+- **API Endpoint**: New `UpdateParticipantStateRequest` for updating participant states
+- **Service Layer**: Enhanced `EventParticipationService` with state management methods
+- **Data Access**: Updated repositories to support state-based queries and updates
+- **Migration**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` for schema changes
+- **Testing**: Updated test coverage with comprehensive state management validation
+- **Event Details**: Enhanced `EventDetailsResponse` and `EventDetailedProjection` to include state information
 
-**Previous Focus: Notification System Refactoring Completion (Completed November 2025)**
+### Event State and Participant State Implementation (November 2025)
+
+**Enhanced Event Management Capabilities**:
+- **Event States**: Added support for tracking poll link sending and donation preferences (cash/transfer) at the event level
+- **Participant States**: Implemented individual participant state tracking for poll link delivery and donation completion
+- **State Management API**: New `UpdateParticipantStateRequest` with fields for `pollLinkSent`, `cashDonated`, `transferDonated`
+- **Database Migration**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` with boolean fields for all state tracking
+- **Repository Updates**: Enhanced data access layer to support state-based operations
+- **Service Integration**: Updated `EventParticipationService` with state management functionality
+- **API Response Enhancement**: Extended `EventDetailsResponse` and `EventDetailedProjection` to include state information
+
+### Previous Focus: Notification System Refactoring Completion (Completed November 2025)
 
 The notification system refactoring has been successfully completed, introducing a **unified NotificationStrategy pattern** that significantly improves maintainability and reduces code duplication:
 
@@ -25,6 +37,18 @@ The notification system refactoring has been successfully completed, introducing
 4. **Enhanced Architecture**: Cleaner separation of concerns with strategy implementations handling business logic
 
 ## Recent Major Changes
+
+### Event State and Participant State Implementation (November 2025)
+
+**State Management System Implementation**:
+- **Database Schema Enhancement**: Added 6 new boolean fields across events and event_participants tables for comprehensive state tracking
+- **Event-Level States**: `send_poll_link`, `donation_cash`, `donation_transfer` for managing event-level preferences
+- **Participant-Level States**: `poll_link_sent`, `cash_donated`, `transfer_donated` for tracking individual participant progress
+- **API Implementation**: New request DTO `UpdateParticipantStateRequest` for state updates
+- **Service Layer Updates**: Enhanced `EventParticipationService` with state management capabilities
+- **Repository Enhancements**: Updated data access layer to support state-based operations
+- **Data Transfer Objects**: Enhanced `EventDetailsResponse` and `EventDetailedProjection` to include state information
+- **Database Migration**: Liquibase changelog 2.4 with proper default values (false) for all new fields
 
 ### Event Sorting Implementation Completed (November 2025)
 

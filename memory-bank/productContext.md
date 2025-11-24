@@ -24,7 +24,7 @@ The primary users are communities and individuals who use Telegram for communica
 ## Core Capabilities (Updated November 2025)
 
 *   **Event Management**: Create, update, cancel, and finish events with detailed projections and lifecycle tracking.
-*   **Event Participation**: Register for or unregister from events; list and manage participants. **Enhanced**: Support for registering multiple participants (1-10) in a single request via `amountOfParticipants` field with full capacity validation.
+*   **Event Participation**: Register for or unregister from events; list and manage participants. **Enhanced**: Support for registering multiple participants (1-10) in a single request via `amountOfParticipants` field with full capacity validation. **NEW**: Event state and participant state tracking for poll link delivery and donation progress monitoring.
 *   **Reviews and Ratings**: Submit and update reviews (one per user per event with database enforcement); aggregate user ratings based on review scores.
 *   **Users**: Automatic user creation and updates via Telegram authentication; retrieve user details, comprehensive statistics (ratings, event involvement, review distribution), and **personalized settings**.
 *   **Notifications**: **Major Enhancement**: Sophisticated template-driven notifications with:

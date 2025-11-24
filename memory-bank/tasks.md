@@ -2,6 +2,58 @@
 
 This document captures repetitive workflows to execute similar changes quickly and consistently. Follow these steps when performing the associated tasks.
 
+## Event State and Participant State Management
+
+**Last verified**: 2025-11-24 - **COMPLETED**
+
+Files involved:
+- Migration: `src/main/resources/db/changelog/db.changelog-2.4-add-event-action-states.xml`
+- API Request: `src/main/java/me/geohod/geohodbackend/api/dto/request/UpdateParticipantStateRequest.java`
+- Service: `src/main/java/me/geohod/geohodbackend/service/impl/EventParticipationService.java`
+- Model: `src/main/java/me/geohod/geohodbackend/data/model/Event.java`, `src/main/java/me/geohod/geohodbackend/data/model/EventParticipant.java`
+- Repository: `src/main/java/me/geohod/geohodbackend/data/model/repository/EventParticipantRepository.java`, `src/main/java/me/geohod/geohodbackend/data/model/repository/EventProjectionRepository.java`
+- DTOs: `src/main/java/me/geohod/geohodbackend/api/dto/response/EventDetailsResponse.java`, `src/main/java/me/geohod/geohodbackend/data/dto/EventDetailedProjection.java`
+- Controller: `src/main/java/me/geohod/geohodbackend/api/controller/v2/EventParticipationController.java`
+
+**Implementation Details**:
+1. **Database Schema Enhancement**: Added 6 boolean fields across events and event_participants tables:
+   - Events: `send_poll_link`, `donation_cash`, `donation_transfer`
+   - Participants: `poll_link_sent`, `cash_donated`, `transfer_donated`
+2. **API Implementation**: Created `UpdateParticipantStateRequest` record with state fields
+3. **Service Layer**: Enhanced `EventParticipationService` with state management methods
+4. **Repository Updates**: Updated repositories to support state-based operations and queries
+5. **Data Transfer Objects**: Enhanced response DTOs to include state information
+6. **Controller Integration**: Updated controllers to handle state management requests
+
+**Database Migration Pattern**:
+```xml
+<addColumn tableName="events">
+    <column name="send_poll_link" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+    <column name="donation_cash" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+    <column name="donation_transfer" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+</addColumn>
+
+<addColumn tableName="event_participants">
+    <column name="poll_link_sent" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+    <column name="cash_donated" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+    <column name="transfer_donated" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+</addColumn>
+```
+
+**Verification Results**: All database migrations applied successfully with proper default values
+
 ## Event Sorting Implementation
 
 **Last verified**: 2025-11-23 - **COMPLETED**

@@ -112,6 +112,10 @@ BUILD SUCCESSFUL
 *   **Event Logging**: Enhanced event tracking with `EventLog` entity and `EventType` enum
 *   **Persistable Pattern**: All entities implement `Persistable<T>` with version control
 *   **Event Sorting Support**: Repository layer enhanced with dynamic ORDER BY clause building based on Pageable sort parameters
+*   **Event State Management**: **NEW**: Added `send_poll_link`, `donation_cash`, `donation_transfer` boolean fields to events table
+*   **Participant State Management**: **NEW**: Added `poll_link_sent`, `cash_donated`, `transfer_donated` boolean fields to event_participants table
+*   **State Management API**: **NEW**: `UpdateParticipantStateRequest` DTO for managing participant state transitions
+*   **Database Migration**: Liquibase changelog `db.changelog-2.4-add-event-action-states.xml` for state tracking schema
 
 ### Testing & Quality Assurance
 *   **Testcontainers Integration**: Real PostgreSQL instances for integration testing
