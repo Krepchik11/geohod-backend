@@ -12,7 +12,7 @@
 
 ### Core Dependencies
 *   **Data Access**: `spring-boot-starter-data-jdbc`. Direct JDBC-based approach for database interactions.
-*   **Security**: `spring-boot-starter-security` with custom Telegram authentication flow.
+*   **Security**: `spring-boot-starter-security` with custom Telegram authentication flow and **method-level security support**.
 *   **Web**: `spring-boot-starter-web` for building RESTful APIs.
 *   **Database Migrations**: `liquibase-core` for automated schema management (15+ changelog files).
 *   **Telegram Integration**: `telegrambots-spring-boot-starter:6.9.7.1` for Telegram Bot API integration.
@@ -105,6 +105,9 @@ BUILD SUCCESSFUL
 *   **User Settings API**: Granular PUT endpoints for individual settings fields
 *   **Response Consistency**: All v2 endpoints use `ApiResponse<T>` wrapper pattern
 *   **Validation**: Comprehensive validation with `@Min`, `@Max`, `@NotNull` annotations
+*   **Security Modernization**: **NEW**: Complete removal of v1 API endpoints and implementation of method-level security
+*   **Authorization Service**: **NEW**: EventSecurity service with isEventAuthor() method for centralized authorization
+*   **Declarative Security**: **NEW**: @PreAuthorize annotations replacing manual AccessDeniedException checks
 
 ### Data Model Enhancements
 *   **UserSettings Model**: Extended with `paymentGatewayUrl` and `showBecomeOrganizer` fields
@@ -137,3 +140,7 @@ BUILD SUCCESSFUL
 *   **Stateless Sessions**: No session management, all authentication via Telegram init data
 *   **CORS Configuration**: Specific origins and methods whitelisted
 *   **API Security**: All `/api/v2/**` endpoints require authentication
+*   **Method-Level Security**: **ENHANCED**: @PreAuthorize annotations with EventSecurity service for authorization
+*   **Authorization Service**: Dedicated EventSecurity service for event-specific authorization logic
+*   **Security Configuration**: Enhanced with @EnableMethodSecurity for method-level security support
+*   **Legacy API Removal**: **NEW**: Complete removal of v1 API endpoints for cleaner security model

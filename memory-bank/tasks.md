@@ -2,6 +2,50 @@
 
 This document captures repetitive workflows to execute similar changes quickly and consistently. Follow these steps when performing the associated tasks.
 
+## Security Modernization and API Cleanup
+
+**Last verified**: 2025-11-25 - **COMPLETED**
+
+**Overview**: Complete removal of legacy v1 API endpoints and modernization of security with method-level @PreAuthorize annotations.
+
+**Files involved**:
+- **Removed**: `src/main/java/me/geohod/geohodbackend/api/controller/EventController.java` (v1 legacy controller)
+- **Enhanced**: `src/main/java/me/geohod/geohodbackend/api/controller/v2/EventController.java` (v2 with @PreAuthorize)
+- **Enhanced**: `src/main/java/me/geohod/geohodbackend/configuration/SecurityConfiguration.java` (@EnableMethodSecurity)
+- **Added**: `src/main/java/me/geohod/geohodbackend/security/EventSecurity.java` (new authorization service)
+
+**Implementation Details**:
+1. **v1 API Removal**: 
+   - Deleted legacy EventController.java that handled /api/v1/events endpoints
+   - Removed all v1-specific imports and dependencies
+   - Cleaned up any v1 references in configuration files
+
+2. **Method-Level Security Implementation**:
+   - Added @EnableMethodSecurity annotation to SecurityConfiguration.java
+   - Replaced manual AccessDeniedException checks with @PreAuthorize annotations
+   - Updated method signatures to remove redundant principal.userId() extractions
+
+3. **EventSecurity Service Creation**:
+   - Created new EventSecurity.java service with isEventAuthor() method
+   - Implemented SecurityContextHolder integration for authentication access
+   - Added TelegramPrincipal type checking for security validation
+   - Integrated EventRepository for database-driven authorization checks
+
+4. **Controller Modernization**:
+   - Updated EventController v2 methods: updateEvent(), cancelEvent(), finishEvent()
+   - Replaced imperative authorization logic with declarative @PreAuthorize annotations
+   - Removed duplicate AccessDeniedException throwing code
+   - Enhanced code readability and maintainability
+
+**Benefits Achieved**:
+- **Architecture Cleanup**: Removed legacy v1 API completely for cleaner codebase
+- **Security Modernization**: Declarative security with method-level annotations
+- **Code Reduction**: Eliminated duplicate authorization logic across multiple methods
+- **Maintainability**: Centralized authorization logic in dedicated EventSecurity service
+- **Future-Ready**: Modern security approach preparing for API v3 evolution
+
+**Verification Results**: All v2 EventController methods work correctly with new @PreAuthorize security, legacy v1 endpoints removed successfully.
+
 ## SQL Optimization and Raw JSON Properties
 
 **Last verified**: 2025-11-24 - **COMPLETED**

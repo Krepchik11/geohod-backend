@@ -1,16 +1,17 @@
 # Memory Bank: Geohod Backend
 
-**Last Updated**: November 24, 2025 (Latest commit: SQL optimization & raw JSON properties)
+**Last Updated**: November 25, 2025 (Latest commit: Remove v1 API & security updates)
 
 This Memory Bank provides comprehensive documentation of the Geohod Backend project - a sophisticated event management platform with advanced Telegram integration.
 
 ## Quick Overview
 
-**Current Focus**: Event State and Participant State Management - implementing action states for poll links and donation tracking.
+**Current Focus**: Security Modernization and API Cleanup - removing legacy v1 API and implementing method-level security with @PreAuthorize annotations.
 
 **Major Achievements**: 
 - Complete notification system refactor with sophisticated templating engine, Telegram MarkdownV2 formatting, and strategy-based architecture
-- **NEW**: Event State and Participant State Management with poll link and donation tracking capabilities
+- **COMPLETED**: Event State and Participant State Management with poll link and donation tracking capabilities
+- **NEW**: Complete v1 API removal and security modernization with declarative authorization
 
 ## Core Files
 
@@ -34,10 +35,12 @@ This Memory Bank provides comprehensive documentation of the Geohod Backend proj
 - **Template Engine**: Custom-built template processing with variables and conditionals
 - **User Settings**: Granular preferences with payment gateway URL support
 - **Multi-Participant Registration**: Support for 1-10 participants in single request
-- **Event State Management**: **NEW**: Poll link sending and donation tracking (cash/transfer) for events
-- **Participant State Management**: **NEW**: Individual participant state tracking for poll links and donations
-- **SQL Optimization**: **NEW**: Enhanced query construction and parameter handling for better performance
-- **Raw JSON Properties**: **NEW**: Proper JSON serialization for event log payloads using Jackson ObjectMapper
+- **Event State Management**: Poll link sending and donation tracking (cash/transfer) for events
+- **Participant State Management**: Individual participant state tracking for poll links and donations
+- **SQL Optimization**: Enhanced query construction and parameter handling for better performance
+- **Raw JSON Properties**: Proper JSON serialization for event log payloads using Jackson ObjectMapper
+- **API Cleanup**: **NEW**: Complete removal of legacy v1 API endpoints and modernization of v2 security
+- **Security Modernization**: **NEW**: Method-level security with @PreAuthorize annotations and EventSecurity service
 - **Monitoring**: Micrometer + Prometheus integration
 - **Testing**: Enhanced Testcontainers integration
 

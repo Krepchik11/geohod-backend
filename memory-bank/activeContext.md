@@ -2,16 +2,33 @@
 
 ## Current Focus (November 2025)
 
-**Primary Focus: SQL Optimization and Raw JSON Properties (November 2025)**
+**Primary Focus: Security Modernization and API Cleanup (November 2025)**
 
-Recent optimizations have been implemented including enhanced SQL query construction for better performance and proper JSON serialization for event log payloads using Jackson ObjectMapper.
+The latest commit has completed a major architectural cleanup by completely removing the legacy v1 API and modernizing security with method-level authorization annotations. This represents a significant step toward API v3 and cleaner architecture.
 
 **Key Implementation Details**:
-- **SQL Query Optimization**: Enhanced `EventProjectionRepository` with dynamic WHERE clause building using StringBuilder and Map-based parameter handling
-- **JSON Serialization**: Added Jackson ObjectMapper dependency and `toJson()` method for proper event log payload serialization
-- **Query Performance**: Improved query structure with separated base SQL, WHERE clause, and ORDER BY for better readability and performance
-- **Parameter Handling**: Optimized parameter binding using HashMap for named parameters instead of individual parameter binding
-- **Code Quality**: Refactored string-based JSON creation to proper ObjectMapper serialization for better data integrity
+- **v1 API Removal**: Completely deleted legacy EventController.java that handled /api/v1/events endpoints
+- **Security Modernization**: Updated v2 EventController to use @PreAuthorize annotations instead of manual AccessDeniedException checks
+- **Method-Level Security**: Enhanced SecurityConfiguration with @EnableMethodSecurity annotation
+- **EventSecurity Service**: New dedicated EventSecurity service with isEventAuthor() method for centralized authorization
+- **Code Cleanup**: Eliminated duplicate authorization logic and improved maintainability through declarative security
+
+### Security Modernization and API Cleanup (November 2025)
+
+**Architecture and Security Improvements**:
+- **v1 API Removal**: Completely removed legacy EventController.java (/api/v1/events endpoints)
+- **Method-Level Security**: Implemented @PreAuthorize annotations in v2 EventController
+- **Security Configuration**: Added @EnableMethodSecurity annotation for method-level security support
+- **EventSecurity Service**: Created new EventSecurity.java service with isEventAuthor() method
+- **Authorization Logic**: Centralized event-specific authorization checks in dedicated service
+- **Code Deduplication**: Eliminated duplicate AccessDeniedException checks across controller methods
+- **Declarative Security**: Moved from imperative authorization checks to declarative @PreAuthorize annotations
+
+**Files Modified**:
+- **Removed**: `src/main/java/me/geohod/geohodbackend/api/controller/EventController.java` (v1 controller)
+- **Enhanced**: `src/main/java/me/geohod/geohodbackend/api/controller/v2/EventController.java` (v2 with @PreAuthorize)
+- **Enhanced**: `src/main/java/me/geohod/geohodbackend/configuration/SecurityConfiguration.java` (@EnableMethodSecurity)
+- **Added**: `src/main/java/me/geohod/geohodbackend/security/EventSecurity.java` (new authorization service)
 
 ### SQL Optimization and Raw JSON Properties (November 2025)
 

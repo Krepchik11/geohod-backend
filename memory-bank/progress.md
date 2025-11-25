@@ -42,6 +42,15 @@ Based on current analysis, the following core features are implemented and funct
 
 ### Recently Completed ✅
 
+### Security Modernization and API Cleanup ✅
+*   **v1 API Removal**: Completely removed legacy EventController.java (/api/v1/events endpoints) for cleaner architecture
+*   **Method-Level Security**: Implemented @PreAuthorize annotations in v2 EventController replacing manual checks
+*   **Security Configuration**: Enhanced SecurityConfiguration.java with @EnableMethodSecurity annotation
+*   **EventSecurity Service**: Created dedicated EventSecurity service with isEventAuthor() method for centralized authorization
+*   **Code Deduplication**: Eliminated duplicate AccessDeniedException checks across controller methods
+*   **Declarative Security**: Moved from imperative authorization checks to declarative @PreAuthorize annotations
+*   **Architecture Improvement**: Modernized security approach preparing for API v3 evolution
+
 ### SQL Optimization and Raw JSON Properties ✅
 *   **SQL Query Performance**: Refactored `EventProjectionRepository` with dynamic WHERE clause building using StringBuilder
 *   **Parameter Optimization**: Implemented Map-based parameter binding for better performance and maintainability

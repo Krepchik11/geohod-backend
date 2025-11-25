@@ -81,9 +81,10 @@ graph TD
 *   **Repository Pattern**: Spring Data JDBC repositories abstract database operations.
 *   **DTO Pattern**: Extensive use of records and DTOs for API contracts and internal data transfer.
 *   **Persistable Pattern**: All entities implement `Persistable<T>` with `@Version` for optimistic locking.
-*   **State Management Pattern**: **NEW**: Boolean-based state tracking for events and participants with comprehensive API support
-*   **SQL Optimization Pattern**: **NEW**: Dynamic query construction with StringBuilder and Map-based parameter binding
-*   **JSON Serialization Pattern**: **NEW**: Jackson ObjectMapper for proper JSON formatting and data integrity
+*   **State Management Pattern**: Boolean-based state tracking for events and participants with comprehensive API support
+*   **SQL Optimization Pattern**: Dynamic query construction with StringBuilder and Map-based parameter binding
+*   **JSON Serialization Pattern**: Jackson ObjectMapper for proper JSON formatting and data integrity
+*   **Method-Level Security Pattern**: **NEW**: Declarative security using @PreAuthorize annotations and EventSecurity service
 
 ### Advanced Patterns (November 2025)
 
@@ -275,7 +276,53 @@ public class EventService {
 - **Consistent Format**: Structured JSON for event log payloads
 - **Data Integrity**: Prevents formatting errors in log entries
 
-#### 8. **Template Registry Pattern**
+#### 8. **Method-Level Security Pattern (November 2025)**
+
+**Security Modernization and API Cleanup**:
+```java
+@Service
+public class EventSecurity {
+    public boolean isEventAuthor(UUID eventId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (eventId == null || authentication == null
+                || !(authentication.getPrincipal() instanceof TelegramPrincipal principal)) {
+            return false;
+        }
+        return eventRepository.findById(eventId)
+                .map(Event::getAuthorId)
+                .map(authorId -> authorId.equals(principal.userId()))
+                .orElse(false);
+    }
+}
+
+@RestController
+@RequestMapping("/api/v2/events")
+public class EventController {
+    @PutMapping("/{eventId}")
+    @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
+    public ApiResponse<EventUpdateResponse> updateEvent(@PathVariable UUID eventId,
+            @RequestBody EventUpdateRequest request,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        // Implementation without manual authorization checks
+    }
+}
+```
+
+**Key Features**:
+- **Declarative Security**: @PreAuthorize annotations replace manual AccessDeniedException checks
+- **Centralized Authorization**: EventSecurity service handles all event-specific authorization logic
+- **Method-Level Security**: @EnableMethodSecurity annotation enables method-level security configuration
+- **Security Context Integration**: Direct access to authentication and principal for authorization decisions
+- **Repository Integration**: Direct database queries for authorization validation
+- **Code Cleanup**: Eliminated duplicate authorization logic across controller methods
+
+**Benefits Achieved**:
+- **Maintainability**: Single source of truth for event authorization logic
+- **Security**: Centralized and tested authorization logic
+- **Clean Code**: Removed boilerplate AccessDeniedException checks
+- **Modern Architecture**: Declarative security preparing for API v3 evolution
+
+#### 9. **Template Registry Pattern**
 ```java
 @Component
 public class MessageTemplateRegistry {
