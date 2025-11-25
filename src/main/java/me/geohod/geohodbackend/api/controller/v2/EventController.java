@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -98,44 +98,29 @@ public class EventController {
     }
 
     @PutMapping("/{eventId}")
+    @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventUpdateResponse> updateEvent(@PathVariable UUID eventId,
             @RequestBody EventUpdateRequest request,
             @AuthenticationPrincipal TelegramPrincipal principal) {
-        UUID loggedUserId = principal.userId();
-        EventDto event = eventService.event(eventId);
-        if (!event.authorId().equals(loggedUserId)) {
-            throw new AccessDeniedException("You do not have permission to update this event");
-        }
-
         UpdateEventDto updateDto = mapper.map(request, eventId);
         eventService.updateEventDetails(updateDto);
         return ApiResponse.success(new EventUpdateResponse("success"));
     }
 
     @PatchMapping("/{eventId}/cancel")
+    @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventCancelResponse> cancelEvent(@PathVariable UUID eventId,
             @RequestBody EventCancelRequest request,
             @AuthenticationPrincipal TelegramPrincipal principal) {
-        UUID loggedUserId = principal.userId();
-        EventDto event = eventService.event(eventId);
-        if (!event.authorId().equals(loggedUserId)) {
-            throw new AccessDeniedException("You do not have permission to cancel this event");
-        }
-
         eventService.cancelEvent(new CancelEventDto(eventId, request.notifyParticipants()));
         return ApiResponse.success(new EventCancelResponse("success"));
     }
 
     @PatchMapping("/{eventId}/finish")
+    @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventFinishResponse> finishEvent(@PathVariable UUID eventId,
             @RequestBody EventFinishRequest request,
             @AuthenticationPrincipal TelegramPrincipal principal) {
-        UUID loggedUserId = principal.userId();
-        EventDto event = eventService.event(eventId);
-        if (!event.authorId().equals(loggedUserId)) {
-            throw new AccessDeniedException("You do not have permission to finish this event");
-        }
-
         eventService.finishEvent(mapper.map(request, eventId));
         return ApiResponse.success(new EventFinishResponse("success"));
     }

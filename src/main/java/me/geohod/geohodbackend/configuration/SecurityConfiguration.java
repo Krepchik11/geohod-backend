@@ -19,14 +19,18 @@ import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
 import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfiguration {
     private final ProviderManager providerManager;
     private final TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider;
     private final GeohodProperties properties;
 
-    public SecurityConfiguration(TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider, GeohodProperties properties) {
+    public SecurityConfiguration(TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider,
+            GeohodProperties properties) {
         this.telegramTokenAuthenticationProvider = telegramTokenAuthenticationProvider;
         this.properties = properties;
         this.providerManager = new ProviderManager(
@@ -59,9 +63,10 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers("/actuator/**").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
-                    .anyRequest().fullyAuthenticated())
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml")
+                        .permitAll()
+                        .anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
                 .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tgInitDataAuthFilter(), UsernamePasswordAuthenticationFilter.class)
