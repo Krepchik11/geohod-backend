@@ -44,12 +44,7 @@ public class EventService implements IEventService {
             throw new IllegalArgumentException("User does not exist");
         }
 
-        Event event = new Event(
-                createDto.name(),
-                createDto.description(),
-                createDto.date(),
-                createDto.maxParticipants(),
-                createDto.authorId());
+        Event event = mapper.map(createDto);
 
         eventRepository.save(event);
 

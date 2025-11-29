@@ -58,6 +58,9 @@ class EventServiceTest {
 
                 // When
                 CreateEventDto createDto = new CreateEventDto(authorId, "Test Event", "Description", Instant.now(), 10);
+                Event mockEvent = new Event("Test Event", "Description", Instant.now(), 10, authorId);
+                when(modelMapper.map(any(CreateEventDto.class))).thenReturn(mockEvent);
+
                 eventService.createEvent(createDto);
 
                 // Then
