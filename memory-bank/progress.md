@@ -29,6 +29,14 @@ Based on current analysis, the following core features are implemented and funct
 *   **User Details**: Enhanced user profile retrieval with avatar images and contact information support
 *   **API Documentation**: Complete API_CONTRACT_V3.md with JSON examples and response formats
 
+### Complete v1 API Removal and Exception Handling ✅
+*   **v1 API Complete Elimination**: EventParticipationController completely removed from `/api/v1/events` endpoints
+*   **Exception Handling Modernization**: New ResourceNotFoundException with proper HTTP 404 NOT_FOUND responses
+*   **GlobalExceptionHandler Enhancement**: Comprehensive exception mapping with proper HTTP status codes
+*   **ReviewController Updates**: Migrated from manual error responses to exception-based error handling
+*   **DTO Reorganization**: TelegramUserDetails moved from API layer to data layer for proper architectural layering
+*   **Code Quality**: Clean separation of concerns with centralized error management and architectural consistency
+
 ## What's Been Enhanced (November 2025)
 
 ### Major System Refactors Completed 🎯
@@ -55,6 +63,12 @@ Based on current analysis, the following core features are implemented and funct
 ## Current Status (November 2025)
 
 ### Recently Completed ✅
+
+### Complete v1 API Removal and Exception Handling Modernization ✅
+*   **Status**: Successfully completed final cleanup of legacy API endpoints and modernized exception handling
+*   **Achievement**: Complete v1 API elimination with no remaining legacy endpoints in codebase
+*   **Benefits**: Clean architectural structure with proper HTTP status codes and centralized error handling
+*   **Quality**: Enhanced API consistency with exception-based error management
 
 ### API v3 Development and Documentation ✅
 *   **User Settings Granularity**: Four dedicated PUT endpoints implemented with comprehensive DTO validation

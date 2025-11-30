@@ -7,6 +7,7 @@
 *   **Build Tool**: Gradle 8.x (with wrapper and comprehensive dependency management)
 *   **Database**: PostgreSQL 17 (with 16+ migrations and performance optimizations)
 *   **Web Server**: Embedded Tomcat (default for `spring-boot-starter-web`)
+*   **Exception Handling**: **ENHANCED**: ResourceNotFoundException with proper HTTP 404 responses and centralized GlobalExceptionHandler
 
 ## Key Dependencies & Libraries (Updated November 2025)
 
@@ -52,7 +53,29 @@
 *   **Structured Formatting**: Replaced string-based JSON with ObjectMapper for data integrity
 *   **Error Handling**: Comprehensive exception handling for JSON processing failures
 
-## API v3 Features and Development (November 2025)
+## Exception Handling and API Cleanup (November 2025)
+
+### Complete v1 API Removal and Exception Handling Modernization
+
+**Exception Handling Enhancement**:
+*   **ResourceNotFoundException**: New custom exception for proper HTTP 404 NOT_FOUND responses
+*   **GlobalExceptionHandler Enhancement**: Comprehensive exception mapping with proper HTTP status codes
+*   **Centralized Error Management**: Single exception handler for all API exceptions with consistent error responses
+*   **Exception-Based Controller Flow**: Controllers throw exceptions instead of manually constructing error responses
+
+**API Structure Modernization**:
+*   **Complete v1 API Elimination**: Final removal of EventParticipationController from `/api/v1/events` endpoints
+*   **Clean v2/v3 Architecture**: No remaining legacy v1 controllers or endpoints in codebase
+*   **DTO Reorganization**: TelegramUserDetails moved from API layer to data layer for proper architectural layering
+*   **Jackson Integration**: Added `@JsonProperty("name")` annotation for proper JSON serialization
+
+**Code Quality Improvements**:
+*   **Proper HTTP Status Codes**: Standardized error responses with correct HTTP codes (404 NOT_FOUND vs custom messages)
+*   **Code Deduplication**: Eliminated manual error response construction across controllers
+*   **Architectural Clarity**: Clear separation between API responses and internal data transfer objects
+*   **Maintainability**: Centralized exception handling logic reduces code duplication
+
+### API v3 Features and Development (November 2025)
 
 ### Enhanced User Settings API
 *   **Granular Endpoints**: Four dedicated PUT endpoints for individual settings updates:
@@ -175,7 +198,7 @@ The notification system has been completely refactored with a sophisticated unif
 *   **Method-Level Security**: **ENHANCED**: @PreAuthorize annotations with EventSecurity service for centralized authorization
 *   **Authorization Service**: Dedicated EventSecurity service for event-specific authorization logic with database validation
 *   **Security Configuration**: Enhanced with @EnableMethodSecurity for method-level security support
-*   **Legacy API Removal**: **NEW**: Complete removal of v1 API endpoints for cleaner security model
+*   **Legacy API Removal**: **COMPLETED**: Complete removal of v1 API endpoints with EventParticipationController elimination
 *   **Security Testing**: Comprehensive testing of security implementations and edge cases
 
 ## Database Evolution (16 Migrations Summary)

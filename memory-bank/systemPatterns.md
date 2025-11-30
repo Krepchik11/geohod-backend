@@ -91,7 +91,9 @@ graph TD
 *   **SQL Optimization Pattern**: Dynamic query construction with StringBuilder and Map-based parameter binding
 *   **JSON Serialization Pattern**: Jackson ObjectMapper for proper JSON formatting and data integrity
 *   **Method-Level Security Pattern**: **NEW**: Declarative security using @PreAuthorize annotations and EventSecurity service
-*   **API Versioning Pattern**: v1 (removed), v2 (primary), v3 (enhanced features) with backward compatibility
+*   **API Versioning Pattern**: v1 (completely removed), v2 (primary), v3 (enhanced features) with backward compatibility
+*   **Exception Handling Pattern**: **NEW**: Centralized exception handling with ResourceNotFoundException and proper HTTP status codes
+*   **DTO Organization Pattern**: **ENHANCED**: Clear separation between API responses and data transfer objects
 
 ### Advanced Patterns (November 2025)
 
@@ -320,7 +322,56 @@ public class EventService {
 - **Consistent Format**: Structured JSON for event log payloads
 - **Data Integrity**: Prevents formatting errors in log entries
 
-#### 9. **Method-Level Security Pattern (November 2025)**
+#### 9. **Exception Handling Pattern (November 2025)**
+
+**Centralized Exception Management**:
+```java
+// New ResourceNotFoundException for proper HTTP 404
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
+
+// GlobalExceptionHandler with comprehensive exception mapping
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleResourceNotFoundException(
+            ResourceNotFoundException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(e.getMessage()));
+    }
+}
+```
+
+**Enhanced ReviewController Pattern**:
+```java
+@GetMapping("/{eventId}")
+public ApiResponse<ReviewResponse> getUserReviewForEvent(
+        @PathVariable UUID eventId,
+        @AuthenticationPrincipal TelegramPrincipal principal) {
+    var reviewOptional = reviewService.getUserReviewForEvent(principal.userId(), eventId);
+    return reviewOptional
+            .map(review -> ApiResponse.success(reviewApiMapper.map(review)))
+            .orElseThrow(() -> new ResourceNotFoundException("Review not found for this event"));
+}
+```
+
+**Key Features**:
+- **Proper HTTP Status Codes**: HTTP 404 NOT_FOUND instead of custom error responses
+- **Centralized Error Management**: Single GlobalExceptionHandler for all exceptions
+- **Exception-Based Flow**: Controllers throw exceptions instead of manually handling error responses
+- **API Consistency**: Uniform error handling across all endpoints
+- **Better Client Experience**: Standard HTTP status codes for proper client-side error handling
+
+**Benefits Achieved**:
+- **Consistency**: Uniform error handling approach across all controllers
+- **Maintainability**: Centralized exception handling logic reduces code duplication
+- **Client Experience**: Proper HTTP status codes enable better error handling on client side
+- **Clean Controllers**: Controllers focus on business logic, not error response construction
+
+#### 10. **Method-Level Security Pattern (November 2025)**
 
 **Security Modernization and API Cleanup**:
 ```java
@@ -366,7 +417,43 @@ public class EventController {
 - **Clean Code**: Removed boilerplate AccessDeniedException checks
 - **Modern Architecture**: Declarative security preparing for API v3 evolution
 
-#### 10. **Template Registry Pattern**
+#### 10. **DTO Organization Pattern (November 2025)**
+
+**Architectural Layer Separation**:
+```java
+// Moved from API layer to data layer for proper architecture
+// Before: src/main/java/me/geohod/geohodbackend/api/dto/response/TelegramUserDetails.java
+// After: src/main/java/me/geohod/geohodbackend/data/dto/TelegramUserDetails.java
+
+public record TelegramUserDetails(
+        String id,
+        String username,
+        String firstName,
+        String lastName,
+        String imageUrl
+) {
+    @JsonProperty("name")
+    public String getName() {
+        return Stream.of(firstName, lastName)
+                .filter(name -> name != null && !name.isBlank())
+                .collect(Collectors.joining(" "));
+    }
+}
+```
+
+**Key Features**:
+- **Layer Separation**: Clear separation between API responses and internal data transfer
+- **Jackson Integration**: Proper JSON serialization annotations for API compatibility
+- **Architectural Clarity**: DTOs belong in data layer, not API response layer
+- **Reusability**: Data DTOs can be used across different API layers and services
+
+**Benefits Achieved**:
+- **Clean Architecture**: Proper separation of concerns between API and data layers
+- **Maintainability**: Clear organization of DTOs by their intended use
+- **Consistency**: Uniform approach to data transfer object organization
+- **Reusability**: Data DTOs can be used across multiple API endpoints
+
+#### 11. **Template Registry Pattern**
 ```java
 @Component
 public class MessageTemplateRegistry {
@@ -403,9 +490,10 @@ public class MessageTemplateRegistry {
 
 ## API Layer Evolution
 
-### v1 API (Completely Removed)
-*   **Removal**: All legacy v1 endpoints eliminated for cleaner architecture
+### v1 API (Completely Removed - November 2025)
+*   **Complete Elimination**: All legacy v1 endpoints fully removed including EventParticipationController
 *   **Benefits**: Reduced complexity, improved maintainability, clearer API surface
+*   **Final Cleanup**: No remaining v1 controllers or endpoints in codebase
 
 ### v2 API Enhancements
 *   **Multi-participant Registration**: `EventRegisterRequest` with `amountOfParticipants` (1-10)
@@ -429,6 +517,8 @@ public class MessageTemplateRegistry {
 *   **Backward Compatibility**: Optional request bodies with service-level defaults for existing clients
 *   **Consistent Response Format**: `ApiResponse<T>` for success and error cases with proper error handling
 *   **Security Integration**: Method-level security with @PreAuthorize annotations and EventSecurity service
+*   **Exception-Based Error Handling**: **ENHANCED**: Proper HTTP status codes with centralized exception handling via ResourceNotFoundException
+*   **Architectural DTO Organization**: **ENHANCED**: Clear separation between API responses and data transfer objects
 
 ## Performance & Monitoring Patterns
 *   **Database Optimization**: 16+ Liquibase changelogs with performance indexes and state management

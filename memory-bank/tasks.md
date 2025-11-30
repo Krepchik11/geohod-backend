@@ -2,6 +2,51 @@
 
 This document captures repetitive workflows to execute similar changes quickly and consistently. Follow these steps when performing the associated tasks.
 
+## Complete v1 API Removal and Exception Handling Modernization (November 2025)
+
+**Last verified**: November 30, 2025 - **COMPLETED**
+
+**Overview**: Final cleanup of legacy v1 API endpoints with complete EventParticipationController removal and modernization of exception handling with proper HTTP status codes.
+
+**Files involved**:
+- **Removed**: `src/main/java/me/geohod/geohodbackend/api/controller/EventParticipationController.java` (legacy v1 endpoint)
+- **Enhanced**: `src/main/java/me/geohod/geohodbackend/api/controller/v2/ReviewController.java` (exception-based error handling)
+- **Enhanced**: `src/main/java/me/geohod/geohodbackend/exception/GlobalExceptionHandler.java` (comprehensive exception mapping)
+- **Added**: `src/main/java/me/geohod/geohodbackend/exception/ResourceNotFoundException.java` (new exception type)
+- **Reorganized**: `src/main/java/me/geohod/geohodbackend/data/dto/TelegramUserDetails.java` (moved from API layer)
+- **Removed**: `src/main/java/me/geohod/geohodbackend/api/dto/response/TelegramUserDetails.java` (deleted duplicate)
+
+**Implementation Details**:
+1. **Complete v1 API Elimination**:
+   - Deleted legacy EventParticipationController that handled `/api/v1/events` endpoints
+   - No remaining v1 controllers or endpoints in entire codebase
+   - Complete architectural cleanup with clean v2/v3-only structure
+
+2. **Exception Handling Modernization**:
+   - Created new ResourceNotFoundException for proper HTTP 404 responses
+   - Updated GlobalExceptionHandler with comprehensive exception mapping
+   - Modified ReviewController to use exception-based error handling instead of manual responses
+   - Implemented proper HTTP status codes (NOT_FOUND vs custom error messages)
+
+3. **DTO Organization Enhancement**:
+   - Moved TelegramUserDetails from API response layer to data layer
+   - Added Jackson @JsonProperty("name") annotation for proper JSON serialization
+   - Clear separation between API responses and internal data transfer objects
+   - Eliminated duplicate DTOs across different layers
+
+4. **Code Quality Improvements**:
+   - Centralized exception handling reduces code duplication
+   - Consistent error responses across all endpoints
+   - Better client experience with standard HTTP status codes
+   - Clean architectural layering with proper DTO organization
+
+**Benefits Achieved**:
+- **Complete Legacy Cleanup**: No remaining v1 API endpoints or controllers
+- **Proper HTTP Status Codes**: Standardized error responses with correct HTTP codes
+- **Centralized Error Management**: Single GlobalExceptionHandler for all exceptions
+- **Architectural Clarity**: Clear separation between API responses and data transfer objects
+- **Maintainability**: Reduced code duplication and improved consistency
+
 ## Memory Bank Update (November 2025)
 
 **Last verified**: November 30, 2025 - **COMPLETED**

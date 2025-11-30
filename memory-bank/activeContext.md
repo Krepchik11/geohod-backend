@@ -2,16 +2,17 @@
 
 ## Current Focus (November 2025)
 
-**Primary Focus: API v3 Development and Memory Bank Modernization (November 30, 2025)**
+**Primary Focus: Complete v1 API Removal and Exception Handling Modernization (November 30, 2025)**
 
-The latest development cycle has focused on API v3 enhancements with comprehensive user settings and user statistics endpoints, alongside a complete memory bank update to reflect the current architectural state. This represents a significant step forward in providing granular user control and detailed user profile management.
+The latest development cycle has focused on finalizing the API modernization with complete removal of legacy v1 endpoints, implementation of proper HTTP status codes through centralized exception handling, and architectural cleanup. This represents the completion of a major architectural modernization effort.
 
 **Key Implementation Details**:
-- **API v3 Features**: Enhanced User Settings API with four dedicated PUT endpoints for granular updates
-- **User Statistics**: Comprehensive user stats with ratings distribution, event counts, and review breakdown
-- **User Details**: Enhanced user profile retrieval with avatar images and contact information
-- **Memory Bank Update**: Complete documentation refresh covering all recent architectural changes
-- **Database Evolution**: 16 Liquibase migrations with latest state management features
+- **Complete v1 API Removal**: Final elimination of EventParticipationController from `/api/v1/events` endpoints
+- **Exception Handling Modernization**: New ResourceNotFoundException with proper HTTP 404 responses
+- **API Structure Cleanup**: Complete migration of TelegramUserDetails from API layer to data layer
+- **Centralized Error Handling**: Enhanced GlobalExceptionHandler with comprehensive exception mapping
+- **Controller Modernization**: ReviewController updated to use exception-based error handling
+- **Database Evolution**: 16+ Liquibase migrations with latest state management features
 
 ### API v3 Development and Documentation (November 30, 2025)
 
@@ -66,6 +67,29 @@ The latest development cycle has focused on API v3 enhancements with comprehensi
 - **Service Integration**: Updated `EventParticipationService` with state management functionality
 - **API Response Enhancement**: Extended `EventDetailsResponse` and `EventDetailedProjection` to include state information
 
+### Complete v1 API Removal and Exception Handling Modernization (November 2025)
+
+**Final Architectural Cleanup and Error Handling Enhancement**:
+
+**Complete v1 API Elimination**:
+- **Removed EventParticipationController**: Completely deleted legacy `/api/v1/events` endpoint controller
+- **Remaining v1 Controllers**: All legacy v1 controllers now eliminated from codebase
+- **API Structure**: Clean v2/v3-only API structure with no legacy endpoints remaining
+- **Code Cleanup**: Removed all v1-specific imports and dependencies from remaining controllers
+
+**Exception Handling Modernization**:
+- **New ResourceNotFoundException**: Created dedicated exception for proper HTTP 404 responses
+- **GlobalExceptionHandler Enhancement**: Added proper exception handling for ResourceNotFoundException
+- **ReviewController Updates**: Migrated from manual error responses to exception-based error handling
+- **HTTP Status Codes**: Implemented proper HTTP 404 NOT_FOUND instead of custom error messages
+- **Centralized Error Management**: All exceptions now properly mapped to appropriate HTTP status codes
+
+**DTO and Data Layer Reorganization**:
+- **TelegramUserDetails Migration**: Moved from `api.dto.response` to `data.dto` for proper architectural layering
+- **API Layer Cleanup**: Removed unnecessary response DTOs that belong in data layer
+- **Jackson Integration**: Added `@JsonProperty("name")` annotation for proper JSON serialization
+- **Architectural Consistency**: Clear separation between API responses and internal data transfer objects
+
 ### Event Sorting Implementation Completed (November 2025)
 
 **Dynamic Sorting Support Implementation**:
@@ -113,14 +137,15 @@ The notification system refactoring has been successfully completed, introducing
 
 ## Current Development Status
 
-The system shows active development across multiple fronts with strong focus on API v3 and comprehensive documentation:
+The system shows mature development across all fronts with completion of major architectural modernization:
 
+- **Complete v1 API Removal**: All legacy endpoints eliminated, clean v2/v3-only architecture achieved
+- **Exception Handling Modernization**: Proper HTTP status codes with centralized exception management
 - **API v3 Features**: Enhanced user settings and user statistics endpoints fully implemented
 - **Core notification functionality**: Template system and formatting completed with unified strategy pattern
 - **User interface evolution**: Settings and preferences fully implemented with granular API control
-- **API modernization**: Completed v2 security modernization and v3 feature development
-- **Operational excellence**: Enhanced monitoring, testing, and deployment capabilities with comprehensive documentation
-- **Memory Bank**: Complete documentation refresh reflecting current architectural state
+- **Architectural Consistency**: Clean separation of concerns with proper DTO organization
+- **Memory Bank**: Complete documentation reflecting final architectural state
 
 ## Key Learnings & Insights
 
@@ -132,6 +157,8 @@ The system shows active development across multiple fronts with strong focus on 
 * **State management enhances transparency**: Comprehensive event and participant state tracking provides better user experience
 * **Database optimization matters**: SQL query improvements and proper indexing significantly impact performance
 * **Multi-participant registration improves UX**: Group registration reduces friction for family and friend events
+* **Exception handling should be centralized**: Using proper HTTP status codes with centralized exception handlers improves API consistency and maintainability
+* **DTO organization is critical**: Clear separation between API responses and internal data transfer objects enhances architectural clarity
 
 ## Next Development Priorities
 
