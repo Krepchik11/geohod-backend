@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.user_settings.service;
+package me.geohod.geohodbackend.service.impl;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -6,20 +6,22 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import me.geohod.geohodbackend.user_settings.data.model.UserSettings;
-import me.geohod.geohodbackend.user_settings.data.repository.UserSettingsRepository;
-import me.geohod.geohodbackend.user_settings.mapper.UserSettingsMapper;
-import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
+import me.geohod.geohodbackend.data.model.UserSettings;
+import me.geohod.geohodbackend.data.model.repository.UserSettingsRepository;
+import me.geohod.geohodbackend.data.mapper.UserSettingsModelMapper;
+import me.geohod.geohodbackend.data.dto.UserSettingsDto;
+import me.geohod.geohodbackend.service.IUserSettingsService;
 
 @Service
 @Transactional
 public class UserSettingsServiceImpl implements IUserSettingsService {
     private final UserSettingsRepository userSettingsRepository;
-    private final UserSettingsMapper userSettingsMapper;
+    private final UserSettingsModelMapper userSettingsModelMapper;
 
-    public UserSettingsServiceImpl(UserSettingsRepository userSettingsRepository, UserSettingsMapper userSettingsMapper) {
+    public UserSettingsServiceImpl(UserSettingsRepository userSettingsRepository,
+            UserSettingsModelMapper userSettingsModelMapper) {
         this.userSettingsRepository = userSettingsRepository;
-        this.userSettingsMapper = userSettingsMapper;
+        this.userSettingsModelMapper = userSettingsModelMapper;
     }
 
     @Override
@@ -27,7 +29,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
     public UserSettingsDto getUserSettings(UUID userId) {
         Optional<UserSettings> settingsOpt = userSettingsRepository.findByUserId(userId);
         return settingsOpt
-                .map(userSettingsMapper::toDto)
+                .map(userSettingsModelMapper::toDto)
                 .orElse(new UserSettingsDto(null, null, null, null));
     }
 
@@ -35,13 +37,12 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
     public UserSettingsDto updateUserSettings(UUID userId, UserSettingsDto userSettingsDto) {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updateSettings(
-            userSettingsDto.defaultDonationAmount(),
-            userSettingsDto.defaultMaxParticipants(),
-            userSettingsDto.paymentGatewayUrl(),
-            userSettingsDto.showBecomeOrganizer()
-        );
+                userSettingsDto.defaultDonationAmount(),
+                userSettingsDto.defaultMaxParticipants(),
+                userSettingsDto.paymentGatewayUrl(),
+                userSettingsDto.showBecomeOrganizer());
         UserSettings saved = userSettingsRepository.save(settings);
-        return userSettingsMapper.toDto(saved);
+        return userSettingsModelMapper.toDto(saved);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updateDefaultDonationAmount(amount);
         UserSettings saved = userSettingsRepository.save(settings);
-        return userSettingsMapper.toDto(saved);
+        return userSettingsModelMapper.toDto(saved);
     }
 
     @Override
@@ -57,7 +58,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updateDefaultMaxParticipants(maxParticipants);
         UserSettings saved = userSettingsRepository.save(settings);
-        return userSettingsMapper.toDto(saved);
+        return userSettingsModelMapper.toDto(saved);
     }
 
     @Override
@@ -65,7 +66,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updatePaymentGatewayUrl(paymentGatewayUrl);
         UserSettings saved = userSettingsRepository.save(settings);
-        return userSettingsMapper.toDto(saved);
+        return userSettingsModelMapper.toDto(saved);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updateShowBecomeOrganizer(showBecomeOrganizer);
         UserSettings saved = userSettingsRepository.save(settings);
-        return userSettingsMapper.toDto(saved);
+        return userSettingsModelMapper.toDto(saved);
     }
 
     private UserSettings getOrCreateSettings(UUID userId) {

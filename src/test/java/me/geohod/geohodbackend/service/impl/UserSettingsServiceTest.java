@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.user_settings.service;
+package me.geohod.geohodbackend.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,17 +15,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import me.geohod.geohodbackend.user_settings.data.model.UserSettings;
-import me.geohod.geohodbackend.user_settings.data.repository.UserSettingsRepository;
-import me.geohod.geohodbackend.user_settings.mapper.UserSettingsMapper;
-import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
+import me.geohod.geohodbackend.data.model.UserSettings;
+import me.geohod.geohodbackend.data.model.repository.UserSettingsRepository;
+import me.geohod.geohodbackend.data.mapper.UserSettingsModelMapper;
+import me.geohod.geohodbackend.data.dto.UserSettingsDto;
 
 @ExtendWith(MockitoExtension.class)
 class UserSettingsServiceTest {
     @Mock
     private UserSettingsRepository repository;
     @Mock
-    private UserSettingsMapper mapper;
+    private UserSettingsModelMapper mapper;
     @InjectMocks
     private UserSettingsServiceImpl service;
 

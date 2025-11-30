@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.user_settings.data.model;
+package me.geohod.geohodbackend.data.model;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class UserSettings implements Persistable<UUID> {
     }
 
     public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants,
-                       String paymentGatewayUrl, Boolean showBecomeOrganizer) {
+            String paymentGatewayUrl, Boolean showBecomeOrganizer) {
         this.userId = userId;
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
@@ -47,7 +47,7 @@ public class UserSettings implements Persistable<UUID> {
     }
 
     public void updateSettings(String defaultDonationAmount, Integer defaultMaxParticipants,
-                              String paymentGatewayUrl, Boolean showBecomeOrganizer) {
+            String paymentGatewayUrl, Boolean showBecomeOrganizer) {
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
         this.paymentGatewayUrl = paymentGatewayUrl;
@@ -90,4 +90,4 @@ public class UserSettings implements Persistable<UUID> {
     public boolean isNew() {
         return this.version == null;
     }
-} 
+}

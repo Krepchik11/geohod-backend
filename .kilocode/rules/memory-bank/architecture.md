@@ -11,7 +11,7 @@ Geohod Backend is a layered Spring Boot application organized into API, Service,
 - API Layer
   - Controllers
     - .../api/controller/ (v1 legacy controllers)
-    - .../api/controller/v2/ (v2 controllers: EventController, EventParticipationController, NotificationController, ReviewController, UserController)
+    - .../api/controller/v2/ (v2 controllers: EventController, EventParticipationController, NotificationController, ReviewController, UserController, UserSettingsController)
   - DTOs
     - .../api/dto/ (TelegramInitDataDto, review and notification DTOs, request/response DTOs)
   - Mappers
@@ -37,7 +37,7 @@ Geohod Backend is a layered Spring Boot application organized into API, Service,
 - Exceptions
   - .../exception/** (GeohodException, TelegramNotificationException)
 - Tests
-  - src/test/java/me/geohod/geohodbackend/** (services, notifications, user_settings)
+  - src/test/java/me/geohod/geohodbackend/** (services, notifications)
 
 ## Layered Architecture
 

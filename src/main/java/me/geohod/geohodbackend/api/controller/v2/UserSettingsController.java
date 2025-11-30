@@ -1,4 +1,4 @@
-package me.geohod.geohodbackend.user_settings.api;
+package me.geohod.geohodbackend.api.controller.v2;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,30 +10,31 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
-import me.geohod.geohodbackend.user_settings.api.dto.DefaultMaxParticipantsRequest;
-import me.geohod.geohodbackend.user_settings.api.dto.PaymentGatewayUrlRequest;
-import me.geohod.geohodbackend.user_settings.api.dto.ShowBecomeOrganizerRequest;
-import me.geohod.geohodbackend.user_settings.api.dto.UserSettingsRequest;
-import me.geohod.geohodbackend.user_settings.api.dto.UserSettingsResponse;
-import me.geohod.geohodbackend.user_settings.mapper.UserSettingsMapper;
-import me.geohod.geohodbackend.user_settings.service.IUserSettingsService;
-import me.geohod.geohodbackend.user_settings.service.dto.UserSettingsDto;
+import me.geohod.geohodbackend.api.dto.request.DefaultMaxParticipantsRequest;
+import me.geohod.geohodbackend.api.dto.request.PaymentGatewayUrlRequest;
+import me.geohod.geohodbackend.api.dto.request.ShowBecomeOrganizerRequest;
+import me.geohod.geohodbackend.api.dto.request.UserSettingsRequest;
+import me.geohod.geohodbackend.api.dto.response.UserSettingsResponse;
+import me.geohod.geohodbackend.api.mapper.UserSettingsApiMapper;
+import me.geohod.geohodbackend.service.IUserSettingsService;
+import me.geohod.geohodbackend.data.dto.UserSettingsDto;
 
 @RestController
 @RequestMapping("/api/v2/user/settings")
 public class UserSettingsController {
     private final IUserSettingsService userSettingsService;
-    private final UserSettingsMapper userSettingsMapper;
+    private final UserSettingsApiMapper userSettingsApiMapper;
 
-    public UserSettingsController(IUserSettingsService userSettingsService, UserSettingsMapper userSettingsMapper) {
+    public UserSettingsController(IUserSettingsService userSettingsService,
+            UserSettingsApiMapper userSettingsApiMapper) {
         this.userSettingsService = userSettingsService;
-        this.userSettingsMapper = userSettingsMapper;
+        this.userSettingsApiMapper = userSettingsApiMapper;
     }
 
     @GetMapping
     public ApiResponse<UserSettingsResponse> getUserSettings(@AuthenticationPrincipal TelegramPrincipal principal) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        UserSettingsResponse response = userSettingsMapper.toResponse(dto);
+        UserSettingsResponse response = userSettingsApiMapper.toResponse(dto);
         return ApiResponse.success(response);
     }
 
@@ -41,10 +42,10 @@ public class UserSettingsController {
     public ApiResponse<UserSettingsResponse> updateUserSettings(
             @AuthenticationPrincipal TelegramPrincipal principal,
             @RequestBody UserSettingsRequest request) {
-                UserSettingsDto dto = userSettingsMapper.fromRequest(request);
-                UserSettingsDto updated = userSettingsService.updateUserSettings(principal.userId(), dto);
-                UserSettingsResponse response = userSettingsMapper.toResponse(updated);
-                return ApiResponse.success(response);
+        UserSettingsDto dto = userSettingsApiMapper.fromRequest(request);
+        UserSettingsDto updated = userSettingsService.updateUserSettings(principal.userId(), dto);
+        UserSettingsResponse response = userSettingsApiMapper.toResponse(updated);
+        return ApiResponse.success(response);
     }
 
     @PutMapping("/default-max-participants")
@@ -52,9 +53,10 @@ public class UserSettingsController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @Valid @RequestBody DefaultMaxParticipantsRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), request.defaultMaxParticipants(), dto.paymentGatewayUrl(), dto.showBecomeOrganizer());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), request.defaultMaxParticipants(),
+                dto.paymentGatewayUrl(), dto.showBecomeOrganizer());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
-        UserSettingsResponse response = userSettingsMapper.toResponse(saved);
+        UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
         return ApiResponse.success(response);
     }
 
@@ -63,9 +65,10 @@ public class UserSettingsController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @Valid @RequestBody PaymentGatewayUrlRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(), request.paymentGatewayUrl(), dto.showBecomeOrganizer());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(),
+                request.paymentGatewayUrl(), dto.showBecomeOrganizer());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
-        UserSettingsResponse response = userSettingsMapper.toResponse(saved);
+        UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
         return ApiResponse.success(response);
     }
 
@@ -74,9 +77,10 @@ public class UserSettingsController {
             @AuthenticationPrincipal TelegramPrincipal principal,
             @Valid @RequestBody ShowBecomeOrganizerRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
-        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(), dto.paymentGatewayUrl(), request.showBecomeOrganizer());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(),
+                dto.paymentGatewayUrl(), request.showBecomeOrganizer());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
-        UserSettingsResponse response = userSettingsMapper.toResponse(saved);
+        UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
         return ApiResponse.success(response);
     }
 

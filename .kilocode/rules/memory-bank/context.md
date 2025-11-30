@@ -8,7 +8,7 @@ The Geohod backend is in active development focusing on solidifying the v2 API, 
 
 1. API and Docs
    - OpenAPI configuration present with security scheme for Telegram header and a local server entry.
-   - v2 controllers exist for events, participation, notifications, reviews, and users.
+   - v2 controllers exist for events, participation, notifications, reviews, users, and user settings.
    - ApiResponse<T> wrapper implemented for consistent responses.
 
 2. Security
