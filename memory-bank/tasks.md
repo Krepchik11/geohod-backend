@@ -2,9 +2,96 @@
 
 This document captures repetitive workflows to execute similar changes quickly and consistently. Follow these steps when performing the associated tasks.
 
+## Memory Bank Update (November 2025)
+
+**Last verified**: November 30, 2025 - **COMPLETED**
+
+**Overview**: Complete Memory Bank refresh to document API v3 development, security modernization, database evolution, and all recent architectural changes.
+
+**Files involved**:
+- **All Memory Bank Files**: README.md, projectBrief.md, productContext.md, activeContext.md, progress.md, systemPatterns.md, tasks.md, techContext.md
+
+**Implementation Details**:
+1. **Analysis Phase**: 
+   - Comprehensive project structure analysis with focus on recent changes
+   - Review of API_CONTRACT_V3.md for new features and endpoints
+   - Examination of 16 Liquibase migrations for database evolution
+   - Security implementation review including v1 removal and method-level security
+   - Notification system analysis with unified strategy pattern
+
+2. **Documentation Updates**:
+   - **README.md**: Updated with API v3 features, 16 migrations, memory bank modernization
+   - **projectBrief.md**: Enhanced with API v3 development, security modernization, database evolution
+   - **productContext.md**: Added user statistics, state management, enhanced user profiles
+   - **activeContext.md**: Documented API v3 development and memory bank update process
+   - **progress.md**: Updated with comprehensive completion status and current development state
+   - **systemPatterns.md**: Enhanced with API v3 patterns, unified strategy pattern, security modernization
+   - **tasks.md**: Added memory bank update task and API v3 development tasks
+   - **techContext.md**: Updated with latest dependencies, API v3 features, comprehensive architecture
+
+3. **Consistency Verification**:
+   - Ensured all files reflect current implementation state
+   - Verified consistency across documentation with proper cross-references
+   - Updated dates and status information throughout all files
+
+**Benefits Achieved**:
+- **Complete Documentation**: Memory Bank now accurately reflects current implementation state
+- **API v3 Coverage**: Comprehensive documentation of enhanced user settings and user statistics
+- **Security Modernization**: Complete coverage of v1 removal and method-level security implementation
+- **Database Evolution**: Full documentation of 16 migrations including state management features
+- **Developer Onboarding**: Memory Bank serves as authoritative reference for new developers
+
+## API v3 Development and User Settings Enhancement
+
+**Last verified**: November 30, 2025 - **COMPLETED**
+
+**Overview**: Implementation of API v3 features including enhanced user settings with granular endpoints and comprehensive user statistics.
+
+**Files involved**:
+- **Documentation**: `API_CONTRACT_V3.md` - Complete API contract with examples
+- **Controller**: `src/main/java/me/geohod/geohodbackend/api/controller/v2/UserSettingsController.java`
+- **DTOs**: 
+  - `src/main/java/me/geohod/geohodbackend/api/dto/request/DefaultMaxParticipantsRequest.java`
+  - `src/main/java/me/geohod/geohodbackend/api/dto/request/PaymentGatewayUrlRequest.java`
+  - `src/main/java/me/geohod/geohodbackend/api/dto/request/ShowBecomeOrganizerRequest.java`
+  - `src/main/java/me/geohod/geohodbackend/api/dto/request/UserSettingsRequest.java` (updated)
+- **Responses**: 
+  - `src/main/java/me/geohod/geohodbackend/api/dto/response/UserSettingsResponse.java` (updated)
+  - `src/main/java/me/geohod/geohodbackend/api/dto/response/UserStatsResponse.java` (new)
+  - `src/main/java/me/geohod/geohodbackend/api/dto/response/UserDetailsResponse.java` (new)
+
+**Implementation Details**:
+1. **Enhanced User Settings API**:
+   - Four dedicated PUT endpoints for granular settings updates
+   - Comprehensive DTO validation with @Min, @Max, @NotNull annotations
+   - Backward compatibility with existing broader update endpoint
+   - Payment gateway URL and organizer advertisement support
+
+2. **User Statistics Implementation**:
+   - `GET /api/v2/users/{id}/stats` endpoint with comprehensive statistics
+   - Overall rating calculation with decimal precision
+   - Review distribution by rating (1-5 scale) with guaranteed key presence
+   - Event participation counts (organized events, participated events)
+
+3. **User Details Enhancement**:
+   - `GET /api/v2/users/{id}` endpoint with enhanced profile information
+   - Avatar image URL support and contact information display
+   - Comprehensive user profile data retrieval
+
+4. **API Documentation**:
+   - Complete API_CONTRACT_V3.md with JSON examples
+   - Response format specifications with proper validation examples
+   - DTO documentation with field descriptions and constraints
+
+**Benefits Achieved**:
+- **Granular Control**: Users can update individual settings without affecting others
+- **Comprehensive Statistics**: Detailed user profiles improve community trust and engagement
+- **API Documentation**: Complete contract with examples facilitates client development
+- **Validation**: Comprehensive DTO validation ensures data integrity and proper error handling
+
 ## Security Modernization and API Cleanup
 
-**Last verified**: 2025-11-25 - **COMPLETED**
+**Last verified**: November 25, 2025 - **COMPLETED**
 
 **Overview**: Complete removal of legacy v1 API endpoints and modernization of security with method-level @PreAuthorize annotations.
 
@@ -48,7 +135,7 @@ This document captures repetitive workflows to execute similar changes quickly a
 
 ## SQL Optimization and Raw JSON Properties
 
-**Last verified**: 2025-11-24 - **COMPLETED**
+**Last verified**: November 24, 2025 - **COMPLETED**
 
 Files involved:
 - Repository: `src/main/java/me/geohod/geohodbackend/data/model/repository/EventProjectionRepository.java`
@@ -77,7 +164,7 @@ Files involved:
 
 ## Event State and Participant State Management
 
-**Last verified**: 2025-11-24 - **COMPLETED**
+**Last verified**: November 24, 2025 - **COMPLETED**
 
 Files involved:
 - Migration: `src/main/resources/db/changelog/db.changelog-2.4-add-event-action-states.xml`
@@ -129,7 +216,7 @@ Files involved:
 
 ## Event Sorting Implementation
 
-**Last verified**: 2025-11-23 - **COMPLETED**
+**Last verified**: November 23, 2025 - **COMPLETED**
 
 Files involved:
 - Repository: `src/main/java/me/geohod/geohodbackend/data/model/repository/EventProjectionRepository.java`
@@ -161,7 +248,7 @@ Files involved:
 
 ## Add or Update v2 API Endpoint
 
-Last verified: 2025-11-23
+Last verified: November 23, 2025
 
 Files typically involved:
 - Controller: src/main/java/me/geohod/geohodbackend/api/controller/v2/...
@@ -203,7 +290,7 @@ Gotchas:
 
 ## Unified Notification Strategy Implementation (Refactored November 2025)
 
-**Last verified**: 2025-11-23 - **COMPLETED**: Issue-84-optional-notifications
+**Last verified**: November 23, 2025 - **COMPLETED**: Unified Strategy Pattern
 
 **Architecture Overview**: The notification system now uses a unified `NotificationStrategy` interface that supports both In-App and Telegram channels through shared and channel-specific methods.
 
@@ -223,15 +310,15 @@ Files involved:
    public interface NotificationStrategy {
        // Shared methods
        StrategyNotificationType getType();
-       boolean isValid();
-       List<User> getRecipients(EventLog eventLog);
+       boolean isValid(Event event, String payload);
+       Collection<UUID> getRecipients(Event event, String payload);
        
        // Telegram-specific
-       TelegramSendMessageParams createTelegramParams();
-       String formatTelegramMessage();
+       Map<String, Object> createTelegramParams(Event event, String payload);
+       String formatTelegramMessage(Event event, User author, Map<String, Object> params);
        
        // In-App-specific  
-       Notification createInAppNotification();
+       NotificationCreateDto createInAppNotification(UUID userId, Event event, String payload);
    }
    ```
 
@@ -241,10 +328,11 @@ Files involved:
    public class InAppNotificationProcessor {
        private final StrategyRegistry strategyRegistry;
        
-       public void process(EventLog eventLog) {
-           NotificationStrategy strategy = strategyRegistry.getStrategy(eventLog.getType())
-               .orElseThrow(() -> new GeohodException("No strategy found"));
-           // Delegate to strategy...
+       @Scheduled(fixedDelayString = "${geohod.processor.in-app.delay:5000}")
+       @Transactional
+       public void process() {
+           List<EventLog> unprocessedLogs = eventLogService.findUnprocessed(100, PROCESSOR_NAME);
+           // Process logs with strategy delegation...
        }
    }
    ```
@@ -301,15 +389,19 @@ BUILD SUCCESSFUL
 
 ## Add or Update User Settings
 
-**Last verified**: 2025-11-23
+**Last verified**: November 23, 2025 - **Enhanced November 2025**
 
 Files typically involved:
-- Controller: src/main/java/me/geohod/geohodbackend/user_settings/api/UserSettingsController.java
-- Service: src/main/java/me/geohod/geohodbackend/user_settings/service/UserSettingsServiceImpl.java
-- Model: src/main/java/me/geohod/geohodbackend/user_settings/data/model/UserSettings.java
-- DTOs: src/main/java/me/geohod/geohodbackend/user_settings/api/dto/...
-- Repository: src/main/java/me/geohod/geohodbackend/user_settings/data/repository/UserSettingsRepository.java
-- Mapper: src/main/java/me/geohod/geohodbackend/user_settings/mapper/UserSettingsMapper.java
+- Controller: src/main/java/me/geohod/geohodbackend/api/controller/v2/UserSettingsController.java
+- Service: src/main/java/me/geohod/geohodbackend/service/impl/UserSettingsServiceImpl.java
+- Model: src/main/java/me/geohod/geohodbackend/data/model/UserSettings.java
+- DTOs: 
+  - Request: src/main/java/me/geohod/geohodbackend/api/dto/request/DefaultMaxParticipantsRequest.java (new)
+  - Request: src/main/java/me/geohod/geohodbackend/api/dto/request/PaymentGatewayUrlRequest.java (new)
+  - Request: src/main/java/me/geohod/geohodbackend/api/dto/request/ShowBecomeOrganizerRequest.java (new)
+  - Request: src/main/java/me/geohod/geohodbackend/api/dto/request/UserSettingsRequest.java (enhanced)
+- Repository: src/main/java/me/geohod/geohodbackend/data/model/repository/UserSettingsRepository.java
+- Mapper: src/main/java/me/geohod/geohodbackend/api/mapper/UserSettingsApiMapper.java
 
 Steps:
 1. **Update Model** (UserSettings.java):
@@ -323,12 +415,12 @@ Steps:
    - Use getOrCreateSettings() pattern for atomic updates
 
 3. **Update API Layer**:
-   - Add specific request DTO for the field
+   - Add specific request DTO for the field (API v3 pattern)
    - Add dedicated PUT endpoint in UserSettingsController
-   - Map request through UserSettingsMapper
+   - Map request through UserSettingsApiMapper
 
 4. **Update Mapper**:
-   - Extend UserSettingsMapper for new request/response DTOs
+   - Extend UserSettingsApiMapper for new request/response DTOs
    - Ensure bidirectional mapping between DTOs and model
 
 5. **Test**:
@@ -339,18 +431,18 @@ Steps:
 **Fields Available** (November 2025):
 - `defaultDonationAmount` (String) - **Deprecated, ignored**
 - `defaultMaxParticipants` (Integer) - Default participants count
-- `paymentGatewayUrl` (String) - **NEW**: Payment gateway integration URL
-- `showBecomeOrganizer` (Boolean) - **NEW**: Show/hide organizer advertisement
+- `paymentGatewayUrl` (String) - **API v3**: Payment gateway integration URL
+- `showBecomeOrganizer` (Boolean) - **API v3**: Show/hide organizer advertisement
 
-**API Endpoints**:
-- `PUT /api/v2/user/settings` - Update all settings
-- `PUT /api/v2/user/settings/max-participants` - Update max participants
+**API v3 Endpoints**:
+- `PUT /api/v2/user/settings` - Update all settings (enhanced)
+- `PUT /api/v2/user/settings/default-max-participants` - **NEW**: Update max participants
 - `PUT /api/v2/user/settings/payment-gateway-url` - **NEW**: Update payment gateway URL
 - `PUT /api/v2/user/settings/show-become-organizer` - **NEW**: Update organizer ad preference
 
 ## Multi-Participant Event Registration
 
-**Last verified**: 2025-11-23
+**Last verified**: November 23, 2025
 
 Files involved:
 - Controller: src/main/java/me/geohod/geohodbackend/api/controller/v2/EventParticipationController.java
@@ -375,15 +467,15 @@ Steps:
    - Ensure no duplicate registrations
    - Handle edge cases (amount=0, amount>capacity)
 
-**Current Status**: Fully implemented and tested
+**Current Status**: Fully implemented and tested with comprehensive validation
 
 ## Database Migration (Liquibase)
 
-**Last verified**: 2025-11-23
+**Last verified**: November 23, 2025 - **Enhanced with 16 migrations**
 
 Files involved:
 - Master changelog: src/main/resources/db/changelog/db.changelog-master.xml
-- New changelog: src/main/resources/db/changelog/db.changelog-*.xml
+- New changelog: src/main/resources/db/changelog/db.changelog-*.xml (16 total)
 
 Steps:
 1. Create new changelog file with sequential version number
@@ -391,8 +483,18 @@ Steps:
 3. Include in master changelog if needed
 4. Test migration on development database
 
-**Recent Migrations** (November 2025):
+**Recent Migrations (November 2025)**:
+- `db.changelog-2.0-performance-indexes.xml` - Performance optimization indexes
+- `db.changelog-2.1-user_settings_enhancement.xml` - Payment gateway URL and organizer advertisement
+- `db.changelog-2.2-remove-unique-constraint.xml` - Constraint adjustments
 - `db.changelog-2.3-user-show-organizer-ad.xml` - Set show_become_organizer for existing users
+- `db.changelog-2.4-add-event-action-states.xml` - Event and participant state management
+
+**Migration Patterns**:
+- **Idempotent**: All changes safe to re-run
+- **Default Values**: Proper defaults for new fields (false for boolean, null for optional)
+- **Data Migration**: Existing data handling with backward compatibility
+- **Index Strategy**: Performance-oriented indexing
 
 ## Testing Patterns (Enhanced November 2025)
 
@@ -411,15 +513,29 @@ public abstract class AbstractIntegrationTest {
 - Verify Telegram MarkdownV2 formatting
 - Test fallback behavior for missing variables
 - Validate conditional template expressions
+- Test unified strategy interface implementations
 
 **User Settings Testing**:
-- Test granular API endpoints
+- Test granular API v3 endpoints
 - Verify default settings creation
 - Test field-specific updates
+- Validate DTO validation and error handling
+
+**State Management Testing**:
+- Test event and participant state transitions
+- Verify atomic state updates
+- Validate state display in API responses
+- Test state management with different user scenarios
+
+**Security Testing**:
+- Test method-level security with @PreAuthorize
+- Verify EventSecurity service functionality
+- Test v1 API removal (endpoints should not exist)
+- Validate authorization edge cases
 
 ## Enable Swagger/OpenAPI locally
 
-**Last verified**: 2025-11-23
+**Last verified**: November 23, 2025
 
 Steps:
 1. Start local infrastructure: `docker compose up -d`
@@ -430,8 +546,30 @@ Steps:
 3. Access:
    - Swagger UI: http://localhost:8080/swagger-ui.html
    - OpenAPI JSON: http://localhost:8080/api-docs
+   - API v3 Contract: API_CONTRACT_V3.md (in project root)
 
 **Profile Configuration**: Dev profile enables:
 - springdoc.swagger-ui.enabled=true
 - springdoc.api-docs.enabled=true
 - Detailed actuator health information
+- Enhanced logging and debugging features
+
+## Performance Optimization Workflows
+
+### SQL Query Optimization
+1. **Dynamic Query Construction**: Use StringBuilder for WHERE clauses
+2. **Parameter Binding**: Implement Map-based named parameters
+3. **Query Separation**: Separate base SQL, WHERE, and ORDER BY clauses
+4. **Performance Testing**: Use Testcontainers for realistic performance testing
+
+### JSON Processing Enhancement
+1. **Jackson Integration**: Add ObjectMapper for proper serialization
+2. **Error Handling**: Implement proper exception handling for JSON failures
+3. **Consistency**: Use uniform JSON formatting across the application
+4. **Validation**: Test JSON serialization with various data scenarios
+
+### Database Indexing Strategy
+1. **Performance Analysis**: Identify slow queries and access patterns
+2. **Strategic Indexing**: Add indexes for frequently queried fields
+3. **Migration Safety**: Ensure indexes don't impact existing functionality
+4. **Monitoring**: Track query performance improvements after indexing
