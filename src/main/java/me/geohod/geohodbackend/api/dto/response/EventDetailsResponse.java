@@ -1,5 +1,6 @@
 package me.geohod.geohodbackend.api.dto.response;
 
+import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
 import me.geohod.geohodbackend.data.model.Event;
 
 import java.time.Instant;

@@ -7,8 +7,8 @@ public record TelegramUserDetails(
         String username,
         String firstName,
         String lastName,
-        String imageUrl
-) {
+        String imageUrl) {
+    @com.fasterxml.jackson.annotation.JsonProperty("name")
     public String getName() {
         return Stream.of(firstName, lastName)
                 .filter(name -> name != null && !name.isBlank())

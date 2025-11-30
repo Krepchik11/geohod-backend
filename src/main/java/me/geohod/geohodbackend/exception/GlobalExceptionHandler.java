@@ -16,83 +16,93 @@ import me.geohod.geohodbackend.api.response.ApiResponse;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(
-            IllegalArgumentException e, HttpServletRequest request) {
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(
+                        IllegalArgumentException e, HttpServletRequest request) {
 
-        log.warn("Invalid request parameter at {}: {}", request.getRequestURI(), e.getMessage());
+                log.warn("Invalid request parameter at {}: {}", request.getRequestURI(), e.getMessage());
 
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Invalid request: " + e.getMessage()));
-    }
+                return ResponseEntity.badRequest()
+                                .body(ApiResponse.error("Invalid request: " + e.getMessage()));
+        }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalStateException(
-            IllegalStateException e, HttpServletRequest request) {
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<ApiResponse<?>> handleIllegalStateException(
+                        IllegalStateException e, HttpServletRequest request) {
 
-        log.warn("Invalid state for operation at {}: {}", request.getRequestURI(), e.getMessage());
+                log.warn("Invalid state for operation at {}: {}", request.getRequestURI(), e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error("Operation not allowed: " + e.getMessage()));
-    }
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(ApiResponse.error("Operation not allowed: " + e.getMessage()));
+        }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(
-            DataIntegrityViolationException e, HttpServletRequest request) {
+        @ExceptionHandler(DataIntegrityViolationException.class)
+        public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(
+                        DataIntegrityViolationException e, HttpServletRequest request) {
 
-        log.error("Data integrity violation at {}: {}", request.getRequestURI(), e.getMessage(), e);
+                log.error("Data integrity violation at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error("Data conflict occurred. Please try again."));
-    }
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(ApiResponse.error("Data conflict occurred. Please try again."));
+        }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(
-            AccessDeniedException e, HttpServletRequest request) {
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(
+                        AccessDeniedException e, HttpServletRequest request) {
 
-        log.warn("Access denied at {}: {}", request.getRequestURI(), e.getMessage());
+                log.warn("Access denied at {}: {}", request.getRequestURI(), e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("Access denied"));
-    }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(ApiResponse.error("Access denied"));
+        }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiResponse<?>> handleAuthenticationException(
-            AuthenticationException e, HttpServletRequest request) {
+        @ExceptionHandler(AuthenticationException.class)
+        public ResponseEntity<ApiResponse<?>> handleAuthenticationException(
+                        AuthenticationException e, HttpServletRequest request) {
 
-        log.warn("Authentication failed at {}: {}", request.getRequestURI(), e.getMessage());
+                log.warn("Authentication failed at {}: {}", request.getRequestURI(), e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Authentication required"));
-    }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ApiResponse.error("Authentication required"));
+        }
 
-    @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<ApiResponse<?>> handleSecurityException(
-            SecurityException e, HttpServletRequest request) {
+        @ExceptionHandler(SecurityException.class)
+        public ResponseEntity<ApiResponse<?>> handleSecurityException(
+                        SecurityException e, HttpServletRequest request) {
 
-        log.error("Security violation at {}: {}", request.getRequestURI(), e.getMessage(), e);
+                log.error("Security violation at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Authentication failed"));
-    }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(ApiResponse.error("Authentication failed"));
+        }
 
-    @ExceptionHandler(TelegramNotificationException.class)
-    public ResponseEntity<ApiResponse<?>> handleTelegramNotificationException(
-            TelegramNotificationException e, HttpServletRequest request) {
+        @ExceptionHandler(TelegramNotificationException.class)
+        public ResponseEntity<ApiResponse<?>> handleTelegramNotificationException(
+                        TelegramNotificationException e, HttpServletRequest request) {
 
-        log.error("Telegram notification failed at {}: {}", request.getRequestURI(), e.getMessage(), e);
+                log.error("Telegram notification failed at {}: {}", request.getRequestURI(), e.getMessage(), e);
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Notification service temporarily unavailable"));
-    }
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(ApiResponse.error("Notification service temporarily unavailable"));
+        }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleGenericException(
-            Exception e, HttpServletRequest request) {
+        @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<ApiResponse<?>> handleResourceNotFoundException(
+                        ResourceNotFoundException e, HttpServletRequest request) {
 
-        log.error("Unexpected error at {}: {}", request.getRequestURI(), e.getMessage(), e);
+                log.warn("Resource not found at {}: {}", request.getRequestURI(), e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred. Please try again later."));
-    }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(ApiResponse.error(e.getMessage()));
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ApiResponse<?>> handleGenericException(
+                        Exception e, HttpServletRequest request) {
+
+                log.error("Unexpected error at {}: {}", request.getRequestURI(), e.getMessage(), e);
+
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(ApiResponse.error("An unexpected error occurred. Please try again later."));
+        }
 }
