@@ -2,13 +2,15 @@ package me.geohod.geohodbackend.data.dto;
 
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record TelegramUserDetails(
         String id,
         String username,
         String firstName,
         String lastName,
         String imageUrl) {
-    @com.fasterxml.jackson.annotation.JsonProperty("name")
+    @JsonProperty("name")
     public String getName() {
         return Stream.of(firstName, lastName)
                 .filter(name -> name != null && !name.isBlank())
