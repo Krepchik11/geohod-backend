@@ -11,5 +11,12 @@ import me.geohod.geohodbackend.mapper.GlobalMapperConfig;
 public interface EventModelMapper {
     EventDto map(Event event);
 
-    Event map(CreateEventDto createDto);
+    default Event map(CreateEventDto createDto) {
+        return new Event(
+            createDto.name(),
+            createDto.description(),
+            createDto.date(),
+            createDto.maxParticipants(),
+            createDto.authorId());
+    }
 }
