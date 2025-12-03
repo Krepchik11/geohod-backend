@@ -1,5 +1,6 @@
 package me.geohod.geohodbackend.service.notification.processor.strategy;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -49,9 +50,15 @@ public class EventFinishedTelegramStrategy implements NotificationStrategy {
             params.put("sendPollLink", sendPollLink);
 
             if (sendPollLink) {
-                params.put("eventId", event.getId());
-                params.put("botName", properties.telegramBot().username());
-                params.put("linkTemplate", properties.linkTemplates().reviewLink());
+                var actionPayload = objectMapper.createObjectNode();
+                actionPayload.put("action", "review");
+                actionPayload.put("eventId", event.getId().toString());
+
+                String jsonString = objectMapper.writeValueAsString(actionPayload);
+                String base64Payload = Base64.getEncoder().encodeToString(jsonString.getBytes());
+
+                String startappLink = properties.linkTemplates().startappLink() + base64Payload;
+                params.put("startappLink", startappLink);
             }
 
             var author = userService.getUser(event.getAuthorId());
@@ -64,6 +71,9 @@ public class EventFinishedTelegramStrategy implements NotificationStrategy {
 
         } catch (JsonProcessingException e) {
             log.error("Failed to parse payload for EVENT_FINISHED: {}", payload, e);
+        } catch (Exception e) {
+            log.error("Failed to create finished event notification for event {}: {}", event.getId(), e.getMessage(),
+                    e);
         }
     }
 

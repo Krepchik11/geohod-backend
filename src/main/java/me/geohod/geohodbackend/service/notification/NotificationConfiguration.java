@@ -6,7 +6,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
 import me.geohod.geohodbackend.service.notification.processor.strategy.EventCancelledInAppStrategy;
-import me.geohod.geohodbackend.service.notification.processor.strategy.EventCancelledTelegramStrategy;
+import me.geohod.geohodbackend.service.notification.processor.strategy.EventCancelledOrganizerNoNotifyTelegramStrategy;
+import me.geohod.geohodbackend.service.notification.processor.strategy.EventCancelledOrganizerNotifyParticipantsTelegramStrategy;
 import me.geohod.geohodbackend.service.notification.processor.strategy.EventCreatedInAppStrategy;
 import me.geohod.geohodbackend.service.notification.processor.strategy.EventCreatedTelegramStrategy;
 import me.geohod.geohodbackend.service.notification.processor.strategy.EventFinishedInAppStrategy;
@@ -25,7 +26,8 @@ public class NotificationConfiguration {
 
     private final EventFinishedTelegramStrategy eventFinishedTelegramStrategy;
     private final EventFinishedInAppStrategy eventFinishedInAppStrategy;
-    private final EventCancelledTelegramStrategy eventCancelledTelegramStrategy;
+    private final EventCancelledOrganizerNotifyParticipantsTelegramStrategy eventCancelledOrganizerNotifyParticipantsTelegramStrategy;
+    private final EventCancelledOrganizerNoNotifyTelegramStrategy eventCancelledOrganizerNoNotifyTelegramStrategy;
     private final EventCancelledInAppStrategy eventCancelledInAppStrategy;
     private final EventCreatedTelegramStrategy eventCreatedTelegramStrategy;
     private final EventCreatedInAppStrategy eventCreatedInAppStrategy;
@@ -39,7 +41,8 @@ public class NotificationConfiguration {
         registry.register(EventType.EVENT_FINISHED_FOR_REVIEW_LINK, eventFinishedTelegramStrategy);
         registry.register(EventType.EVENT_FINISHED_FOR_REVIEW_LINK, eventFinishedInAppStrategy);
 
-        registry.register(EventType.EVENT_CANCELED, eventCancelledTelegramStrategy);
+        registry.register(EventType.EVENT_CANCELED, eventCancelledOrganizerNotifyParticipantsTelegramStrategy);
+        registry.register(EventType.EVENT_CANCELED, eventCancelledOrganizerNoNotifyTelegramStrategy);
         registry.register(EventType.EVENT_CANCELED, eventCancelledInAppStrategy);
 
         registry.register(EventType.EVENT_CREATED, eventCreatedTelegramStrategy);

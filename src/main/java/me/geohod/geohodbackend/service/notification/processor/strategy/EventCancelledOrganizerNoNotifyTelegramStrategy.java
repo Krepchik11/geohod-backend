@@ -1,17 +1,17 @@
 package me.geohod.geohodbackend.service.notification.processor.strategy;
 
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
@@ -22,9 +22,8 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class EventCreatedTelegramStrategy implements NotificationStrategy {
+public class EventCancelledOrganizerNoNotifyTelegramStrategy implements NotificationStrategy {
 
-    private final GeohodProperties properties;
     private final ObjectMapper objectMapper;
     private final MessageFormatter messageFormatter;
     private final ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher;
@@ -38,25 +37,28 @@ public class EventCreatedTelegramStrategy implements NotificationStrategy {
     @Override
     public void send(Event event, String payload) {
         try {
-            var actionPayload = objectMapper.createObjectNode();
-            actionPayload.put("action", "register");
-            actionPayload.put("eventId", event.getId().toString());
+            JsonNode root = objectMapper.readTree(payload);
+            boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
 
-            String jsonString = objectMapper.writeValueAsString(actionPayload);
-            String base64Payload = Base64.getEncoder().encodeToString(jsonString.getBytes());
-
-            String startappLink = properties.linkTemplates().startappLink() + base64Payload;
+            // Only execute if notifyParticipants is false
+            if (notifyParticipants) {
+                log.trace("Skipping {} - notifyParticipants is true", getClass().getSimpleName());
+                return;
+            }
 
             Map<String, Object> params = new HashMap<>();
-            params.put("startappLink", startappLink);
+            params.put("notifyParticipants", false);
 
             var author = userService.getUser(event.getAuthorId());
-            String message = messageFormatter.formatMessageFromTemplate("event.created",
+            String message = messageFormatter.formatMessageFromTemplate(
+                    "event.cancelled.organizer.not-notify-participants",
                     TemplateType.TELEGRAM, event, author, params);
 
+            // Send only to organizer
             publishMessage(event.getAuthorId(), message);
-        } catch (Exception e) {
-            log.error("Failed to create event notification for event {}: {}", event.getId(), e.getMessage(), e);
+
+        } catch (JsonProcessingException e) {
+            log.error("Failed to parse payload for EVENT_CANCELLED (no notify): {}", payload, e);
         }
     }
 

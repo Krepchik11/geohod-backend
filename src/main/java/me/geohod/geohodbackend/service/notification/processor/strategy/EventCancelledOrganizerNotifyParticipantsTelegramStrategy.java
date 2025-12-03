@@ -29,7 +29,7 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class EventCancelledTelegramStrategy implements NotificationStrategy {
+public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implements NotificationStrategy {
 
     private final EventParticipantRepository eventParticipantRepository;
     private final UserRepository userRepository;
@@ -49,54 +49,41 @@ public class EventCancelledTelegramStrategy implements NotificationStrategy {
             JsonNode root = objectMapper.readTree(payload);
             boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
 
-            Map<String, Object> params = new HashMap<>();
-            if (notifyParticipants) {
-                String participantList = buildParticipantList(event.getId());
-                params.put("participantList", participantList);
+            // Only execute if notifyParticipants is true
+            if (!notifyParticipants) {
+                log.trace("Skipping {} - notifyParticipants is false", getClass().getSimpleName());
+                return;
             }
-            params.put("notifyParticipants", notifyParticipants);
+
+            Map<String, Object> params = new HashMap<>();
+            String participantList = buildParticipantList(event.getId());
+            params.put("participantList", participantList);
+            params.put("notifyParticipants", true);
 
             var author = userService.getUser(event.getAuthorId());
-            String message = formatMessage(event, author, params);
-            Set<UUID> recipients = getRecipients(event, notifyParticipants);
+            String message = messageFormatter.formatMessageFromTemplate(
+                    "event.cancelled.organizer.notify-participants",
+                    TemplateType.TELEGRAM, event, author, params);
 
+            Set<UUID> recipients = getRecipients(event);
             recipients.forEach(userId -> publishMessage(userId, message));
 
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse payload for EVENT_CANCELLED: {}", payload, e);
+            log.error("Failed to parse payload for EVENT_CANCELLED (notify participants): {}", payload, e);
         }
     }
 
-    private Set<UUID> getRecipients(Event event, boolean notifyParticipants) {
+    private Set<UUID> getRecipients(Event event) {
         Set<UUID> recipients = new HashSet<>();
-        // Always include the organizer
+        // Include the organizer
         recipients.add(event.getAuthorId());
 
-        // Include participants if they should be notified
-        if (notifyParticipants) {
-            eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
-                    .map(EventParticipant::getUserId)
-                    .forEach(recipients::add);
-        }
+        // Include all participants
+        eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
+                .map(EventParticipant::getUserId)
+                .forEach(recipients::add);
+
         return recipients;
-    }
-
-    private String formatMessage(Event event, User author, Map<String, Object> params) {
-        try {
-            boolean hasParticipants = params.containsKey("participantList") &&
-                    params.get("participantList") != null &&
-                    !((String) params.get("participantList")).isEmpty();
-
-            String templateId = hasParticipants ? "event.cancelled.organizer.notify-participants"
-                    : "event.cancelled.organizer.not-notify-participants";
-
-            return messageFormatter.formatMessageFromTemplate(templateId,
-                    TemplateType.TELEGRAM, event, author, params);
-        } catch (Exception e) {
-            log.error("Failed to format event cancelled message: {}", e.getMessage());
-            return messageFormatter.formatMessageFromTemplate("event.cancelled",
-                    TemplateType.TELEGRAM, event, author, params);
-        }
     }
 
     private String buildParticipantList(UUID eventId) {
