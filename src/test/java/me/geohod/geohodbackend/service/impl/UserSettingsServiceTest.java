@@ -36,8 +36,8 @@ class UserSettingsServiceTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        entity = new UserSettings(userId, "10", 5, "https://example.com/payment", true);
-        dto = new UserSettingsDto("10", 5, "https://example.com/payment", true);
+        entity = new UserSettings(userId, "10", 5, "https://example.com/payment", true, "1234567890");
+        dto = new UserSettingsDto("10", 5, "https://example.com/payment", true, "1234567890");
     }
 
     @Test
@@ -61,7 +61,7 @@ class UserSettingsServiceTest {
         when(repository.findByUserId(userId)).thenReturn(Optional.of(entity));
         when(repository.save(entity)).thenReturn(entity);
         when(mapper.toDto(entity)).thenReturn(dto);
-        UserSettingsDto input = new UserSettingsDto("20", 10, "https://example.com/payment2", false);
+        UserSettingsDto input = new UserSettingsDto("20", 10, "https://example.com/payment2", false, "0987654321");
         UserSettingsDto result = service.updateUserSettings(userId, input);
         assertEquals(dto, result);
     }
@@ -77,8 +77,8 @@ class UserSettingsServiceTest {
 
     @Test
     void updateUserSettings_handlesNulls() {
-        UserSettingsDto input = new UserSettingsDto(null, null, null, null);
-        UserSettings entityWithNulls = new UserSettings(userId, null, null, null, null);
+        UserSettingsDto input = new UserSettingsDto(null, null, null, null, null);
+        UserSettings entityWithNulls = new UserSettings(userId, null, null, null, null, null);
         when(repository.findByUserId(userId)).thenReturn(Optional.empty());
         when(repository.save(any(UserSettings.class))).thenReturn(entityWithNulls);
         when(mapper.toDto(entityWithNulls)).thenReturn(input);
@@ -87,5 +87,6 @@ class UserSettingsServiceTest {
         assertNull(result.defaultMaxParticipants());
         assertNull(result.paymentGatewayUrl());
         assertNull(result.showBecomeOrganizer());
+        assertNull(result.phoneNumber());
     }
 }

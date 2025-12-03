@@ -30,7 +30,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         Optional<UserSettings> settingsOpt = userSettingsRepository.findByUserId(userId);
         return settingsOpt
                 .map(userSettingsModelMapper::toDto)
-                .orElse(new UserSettingsDto(null, null, null, null));
+                .orElse(new UserSettingsDto(null, null, null, null, null));
     }
 
     @Override
@@ -40,7 +40,8 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
                 userSettingsDto.defaultDonationAmount(),
                 userSettingsDto.defaultMaxParticipants(),
                 userSettingsDto.paymentGatewayUrl(),
-                userSettingsDto.showBecomeOrganizer());
+                userSettingsDto.showBecomeOrganizer(),
+                userSettingsDto.phoneNumber());
         UserSettings saved = userSettingsRepository.save(settings);
         return userSettingsModelMapper.toDto(saved);
     }
