@@ -47,18 +47,13 @@ public class EventFinishedTelegramStrategy implements NotificationStrategy {
             boolean sendPollLink = root.path("sendPollLink").asBoolean(false);
 
             Map<String, Object> params = new HashMap<>();
-            params.put("sendPollLink", sendPollLink);
+
+            String eventLink = createEventLink(event);
+            params.put("eventLink", eventLink);
 
             if (sendPollLink) {
-                var actionPayload = objectMapper.createObjectNode();
-                actionPayload.put("action", "review");
-                actionPayload.put("eventId", event.getId().toString());
-
-                String jsonString = objectMapper.writeValueAsString(actionPayload);
-                String base64Payload = Base64.getEncoder().encodeToString(jsonString.getBytes());
-
-                String startappLink = properties.linkTemplates().startappLink() + base64Payload;
-                params.put("startappLink", startappLink);
+                String reviewLink = createReviewLink(event);
+                params.put("reviewLink", reviewLink);
             }
 
             var author = userService.getUser(event.getAuthorId());
@@ -75,6 +70,30 @@ public class EventFinishedTelegramStrategy implements NotificationStrategy {
             log.error("Failed to create finished event notification for event {}: {}", event.getId(), e.getMessage(),
                     e);
         }
+    }
+
+    private String createReviewLink(Event event) throws JsonProcessingException {
+        var reviewAction = objectMapper.createObjectNode();
+        reviewAction.put("action", "review");
+        reviewAction.put("eventId", event.getId().toString());
+
+        String reviewString = objectMapper.writeValueAsString(reviewAction);
+        String reviewBase64 = Base64.getEncoder().encodeToString(reviewString.getBytes());
+
+        String reviewLink = properties.linkTemplates().startappLink() + reviewBase64;
+        return reviewLink;
+    }
+
+    private String createEventLink(Event event) throws JsonProcessingException {
+        var eventLinkAction = objectMapper.createObjectNode();
+        eventLinkAction.put("action", "open");
+        eventLinkAction.put("eventId", event.getId().toString());
+
+        String eventLinkString = objectMapper.writeValueAsString(eventLinkAction);
+        String eventLinkBase64 = Base64.getEncoder().encodeToString(eventLinkString.getBytes());
+
+        String eventLink = properties.linkTemplates().startappLink() + eventLinkBase64;
+        return eventLink;
     }
 
     private void publishMessage(UUID userId, String message) {

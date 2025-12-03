@@ -1,5 +1,6 @@
 package me.geohod.geohodbackend.service.notification.processor.strategy;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
@@ -24,6 +26,7 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 @RequiredArgsConstructor
 public class EventCancelledOrganizerNoNotifyTelegramStrategy implements NotificationStrategy {
 
+    private final GeohodProperties properties;
     private final ObjectMapper objectMapper;
     private final MessageFormatter messageFormatter;
     private final ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher;
@@ -49,6 +52,9 @@ public class EventCancelledOrganizerNoNotifyTelegramStrategy implements Notifica
             Map<String, Object> params = new HashMap<>();
             params.put("notifyParticipants", false);
 
+            String eventLink = createEventLink(event);
+            params.put("eventLink", eventLink);
+
             var author = userService.getUser(event.getAuthorId());
             String message = messageFormatter.formatMessageFromTemplate(
                     "event.cancelled.organizer.not-notify-participants",
@@ -60,6 +66,18 @@ public class EventCancelledOrganizerNoNotifyTelegramStrategy implements Notifica
         } catch (JsonProcessingException e) {
             log.error("Failed to parse payload for EVENT_CANCELLED (no notify): {}", payload, e);
         }
+    }
+
+    private String createEventLink(Event event) throws JsonProcessingException {
+        var eventLinkAction = objectMapper.createObjectNode();
+        eventLinkAction.put("action", "open");
+        eventLinkAction.put("eventId", event.getId().toString());
+
+        String eventLinkString = objectMapper.writeValueAsString(eventLinkAction);
+        String eventLinkBase64 = Base64.getEncoder().encodeToString(eventLinkString.getBytes());
+
+        String eventLink = properties.linkTemplates().startappLink() + eventLinkBase64;
+        return eventLink;
     }
 
     private void publishMessage(UUID userId, String message) {

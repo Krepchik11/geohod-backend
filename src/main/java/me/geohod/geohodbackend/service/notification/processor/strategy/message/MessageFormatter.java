@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.User;
 
@@ -19,23 +18,10 @@ public class MessageFormatter {
     private final TelegramMarkdownV2Formatter telegramMarkdownV2Formatter;
 
     public MessageFormatter(TemplateEngine templateEngine, MessageTemplateRegistry templateRegistry,
-            GeohodProperties geohodProperties, TelegramMarkdownV2Formatter telegramMarkdownV2Formatter) {
+            TelegramMarkdownV2Formatter telegramMarkdownV2Formatter) {
         this.templateEngine = templateEngine;
         this.templateRegistry = templateRegistry;
-        this.botName = geohodProperties.telegramBot().username();
-        this.eventLinkTemplate = geohodProperties.linkTemplates().eventRegistrationLink();
         this.telegramMarkdownV2Formatter = telegramMarkdownV2Formatter;
-    }
-
-    private final String botName;
-    private final String eventLinkTemplate;
-
-    public String formatMessage(String templateId, Event event, User author, Map<String, Object> variables) {
-        Map<String, Object> context = new HashMap<>(variables);
-        context.put("eventName", event.getName());
-        context.put("contactInfo", formatContactInfo(author));
-        context.put("botName", botName);
-        return templateEngine.processTemplate(templateId, context);
     }
 
     public String formatMessageFromTemplate(String templateId, TemplateType templateType,

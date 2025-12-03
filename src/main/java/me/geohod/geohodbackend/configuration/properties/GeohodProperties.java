@@ -15,8 +15,6 @@ public record GeohodProperties(
         }
 
         public record LinkTemplates(
-                        String eventRegistrationLink,
-                        String reviewLink,
                         String startappLink) {
         }
 

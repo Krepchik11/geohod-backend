@@ -1,5 +1,6 @@
 package me.geohod.geohodbackend.service.notification.processor.strategy;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,12 +26,14 @@ import me.geohod.geohodbackend.service.IUserService;
 import me.geohod.geohodbackend.service.notification.NotificationChannel;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.MessageFormatter;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.TemplateType;
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implements NotificationStrategy {
 
+    private final GeohodProperties properties;
     private final EventParticipantRepository eventParticipantRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
@@ -60,6 +63,9 @@ public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implement
             params.put("participantList", participantList);
             params.put("notifyParticipants", true);
 
+            String eventLink = createEventLink(event);
+            params.put("eventLink", eventLink);
+
             var author = userService.getUser(event.getAuthorId());
             String message = messageFormatter.formatMessageFromTemplate(
                     "event.cancelled.organizer.notify-participants",
@@ -71,6 +77,18 @@ public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implement
         } catch (JsonProcessingException e) {
             log.error("Failed to parse payload for EVENT_CANCELLED (notify participants): {}", payload, e);
         }
+    }
+
+    private String createEventLink(Event event) throws JsonProcessingException {
+        var eventLinkAction = objectMapper.createObjectNode();
+        eventLinkAction.put("action", "open");
+        eventLinkAction.put("eventId", event.getId().toString());
+
+        String eventLinkString = objectMapper.writeValueAsString(eventLinkAction);
+        String eventLinkBase64 = Base64.getEncoder().encodeToString(eventLinkString.getBytes());
+
+        String eventLink = properties.linkTemplates().startappLink() + eventLinkBase64;
+        return eventLink;
     }
 
     private Set<UUID> getRecipients(Event event) {
