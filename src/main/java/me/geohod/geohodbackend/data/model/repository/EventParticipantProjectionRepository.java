@@ -14,34 +14,36 @@ import me.geohod.geohodbackend.data.dto.EventParticipantProjection;
 @Repository
 @RequiredArgsConstructor
 public class EventParticipantProjectionRepository {
-    private final NamedParameterJdbcTemplate jdbcTemplate;
+        private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public List<EventParticipantProjection> findEventParticipantByEventId(UUID eventId) {
-        String sql = """
-                SELECT u.id                                      AS participant_id,
-                       u.tg_username                             AS username,
-                       u.tg_id                                   AS tg_user_id,
-                       CONCAT_WS(' ', u.first_name, u.last_name) AS name,
-                       u.tg_image_url                            AS image_url,
-                       COUNT(ep.id)                              AS participant_count
-                FROM events e
-                         JOIN event_participants ep ON ep.event_id = e.id
-                         JOIN users u ON u.id = ep.user_id
-                WHERE e.id = :eventId
-                GROUP BY u.id, u.tg_username, u.tg_id, u.first_name, u.last_name, u.tg_image_url
-                """;
+        public List<EventParticipantProjection> findEventParticipantByEventId(UUID eventId) {
+                String sql = """
+                                SELECT u.id                                      AS participant_id,
+                                       u.tg_username                             AS username,
+                                       u.tg_id                                   AS tg_user_id,
+                                       CONCAT_WS(' ', u.first_name, u.last_name) AS name,
+                                       u.tg_image_url                            AS image_url,
+                                       COUNT(ep.id)                              AS participant_count,
+                                       us.phone_number                           AS phone_number
+                                FROM events e
+                                         JOIN event_participants ep ON ep.event_id = e.id
+                                         JOIN users u ON u.id = ep.user_id
+                                         LEFT JOIN user_settings us ON us.user_id = u.id
+                                WHERE e.id = :eventId
+                                GROUP BY u.id, u.tg_username, u.tg_id, u.first_name, u.last_name, u.tg_image_url, us.phone_number
+                                """;
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("eventId", eventId);
+                Map<String, Object> params = new HashMap<>();
+                params.put("eventId", eventId);
 
-        return jdbcTemplate.query(sql, params,
-                (rs, rowNum) -> new EventParticipantProjection(
-                        rs.getString("participant_id"),
-                        rs.getString("username"),
-                        rs.getString("tg_user_id"),
-                        rs.getString("name"),
-                        rs.getString("image_url"),
-                        rs.getInt("participant_count")
-                ));
-    }
+                return jdbcTemplate.query(sql, params,
+                                (rs, rowNum) -> new EventParticipantProjection(
+                                                rs.getString("participant_id"),
+                                                rs.getString("username"),
+                                                rs.getString("tg_user_id"),
+                                                rs.getString("name"),
+                                                rs.getString("image_url"),
+                                                rs.getInt("participant_count"),
+                                                rs.getString("phone_number")));
+        }
 }

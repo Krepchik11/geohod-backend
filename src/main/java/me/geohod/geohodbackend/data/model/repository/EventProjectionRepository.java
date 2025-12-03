@@ -27,6 +27,7 @@ public class EventProjectionRepository {
                         u.first_name AS author_first_name,
                         u.last_name AS author_last_name,
                         u.tg_image_url AS author_image_url,
+                        us.phone_number AS author_phone_number,
                         e.name AS event_name,
                         e.description AS event_description,
                         e.date AS event_date,
@@ -44,11 +45,13 @@ public class EventProjectionRepository {
                     JOIN
                         users u ON e.author_id = u.id
                     LEFT JOIN
+                        user_settings us ON us.user_id = u.id
+                    LEFT JOIN
                         event_participants p ON e.id = p.event_id AND p.user_id = :userId
                     WHERE
                         e.id = :eventId
                     GROUP BY
-                        e.id, u.id
+                        e.id, u.id, us.phone_number
                 """;
 
         Map<String, Object> params = new HashMap<>();
@@ -65,7 +68,8 @@ public class EventProjectionRepository {
                                 rs.getString("author_username"),
                                 rs.getString("author_first_name"),
                                 rs.getString("author_last_name"),
-                                rs.getString("author_image_url")),
+                                rs.getString("author_image_url"),
+                                rs.getString("author_phone_number")),
                         rs.getString("event_name"),
                         rs.getString("event_description"),
                         rs.getTimestamp("event_date").toInstant(),
@@ -112,6 +116,7 @@ public class EventProjectionRepository {
         String baseSql = """
                     FROM events e
                         JOIN users u ON e.author_id = u.id
+                        LEFT JOIN user_settings us ON us.user_id = u.id
                         LEFT JOIN event_participants p ON e.id = p.event_id
                 """;
 
@@ -128,6 +133,7 @@ public class EventProjectionRepository {
                         u.first_name AS author_first_name,
                         u.last_name AS author_last_name,
                         u.tg_image_url AS author_image_url,
+                        us.phone_number AS author_phone_number,
                         e.name AS event_name,
                         e.description AS event_description,
                         e.date AS event_date,
@@ -140,7 +146,7 @@ public class EventProjectionRepository {
                         BOOL_OR(p.poll_link_sent) as poll_link_sent,
                         BOOL_OR(p.cash_donated) as cash_donated,
                         BOOL_OR(p.transfer_donated) as transfer_donated
-                """ + baseSql + whereClause + " GROUP BY e.id, u.id ORDER BY " + orderByClause
+                """ + baseSql + whereClause + " GROUP BY e.id, u.id, us.phone_number ORDER BY " + orderByClause
                 + " OFFSET :offset LIMIT :pageSize";
 
         params.put("offset", pageable.getOffset());
@@ -157,7 +163,8 @@ public class EventProjectionRepository {
                                 rs.getString("author_username"),
                                 rs.getString("author_first_name"),
                                 rs.getString("author_last_name"),
-                                rs.getString("author_image_url")),
+                                rs.getString("author_image_url"),
+                                rs.getString("author_phone_number")),
                         rs.getString("event_name"),
                         rs.getString("event_description"),
                         rs.getTimestamp("event_date").toInstant(),
