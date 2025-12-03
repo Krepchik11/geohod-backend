@@ -54,7 +54,7 @@ public class UserSettingsController {
             @Valid @RequestBody DefaultMaxParticipantsRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
         UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), request.defaultMaxParticipants(),
-                dto.paymentGatewayUrl(), dto.showBecomeOrganizer());
+                dto.paymentGatewayUrl(), dto.showBecomeOrganizer(), dto.phoneNumber());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
         UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
         return ApiResponse.success(response);
@@ -66,7 +66,7 @@ public class UserSettingsController {
             @Valid @RequestBody PaymentGatewayUrlRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
         UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(),
-                request.paymentGatewayUrl(), dto.showBecomeOrganizer());
+                request.paymentGatewayUrl(), dto.showBecomeOrganizer(), dto.phoneNumber());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
         UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
         return ApiResponse.success(response);
@@ -78,7 +78,19 @@ public class UserSettingsController {
             @Valid @RequestBody ShowBecomeOrganizerRequest request) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
         UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(),
-                dto.paymentGatewayUrl(), request.showBecomeOrganizer());
+                dto.paymentGatewayUrl(), request.showBecomeOrganizer(), dto.phoneNumber());
+        UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
+        UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
+        return ApiResponse.success(response);
+    }
+
+    @PutMapping("/phone-number")
+    public ApiResponse<UserSettingsResponse> updatePhoneNumber(
+            @AuthenticationPrincipal TelegramPrincipal principal,
+            @Valid @RequestBody me.geohod.geohodbackend.api.dto.request.PhoneNumberRequest request) {
+        UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
+        UserSettingsDto updated = new UserSettingsDto(dto.defaultDonationAmount(), dto.defaultMaxParticipants(),
+                dto.paymentGatewayUrl(), dto.showBecomeOrganizer(), request.phoneNumber());
         UserSettingsDto saved = userSettingsService.updateUserSettings(principal.userId(), updated);
         UserSettingsResponse response = userSettingsApiMapper.toResponse(saved);
         return ApiResponse.success(response);
