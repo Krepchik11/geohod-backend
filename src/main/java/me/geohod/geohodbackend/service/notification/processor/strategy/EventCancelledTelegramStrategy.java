@@ -1,12 +1,11 @@
 package me.geohod.geohodbackend.service.notification.processor.strategy;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -16,75 +15,73 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.geohod.geohodbackend.data.dto.NotificationCreateDto;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.User;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.UserRepository;
+import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
+import me.geohod.geohodbackend.service.IUserService;
+import me.geohod.geohodbackend.service.notification.NotificationChannel;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.MessageFormatter;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.TemplateType;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class EventCancelledStrategy implements NotificationStrategy {
+public class EventCancelledTelegramStrategy implements NotificationStrategy {
 
     private final EventParticipantRepository eventParticipantRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final MessageFormatter messageFormatter;
+    private final ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher;
+    private final IUserService userService;
 
     @Override
-    public Map<String, Object> createTelegramParams(Event event, String payload) {
+    public NotificationChannel getChannel() {
+        return NotificationChannel.TELEGRAM;
+    }
+
+    @Override
+    public void send(Event event, String payload) {
         try {
             JsonNode root = objectMapper.readTree(payload);
             boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
 
             Map<String, Object> params = new HashMap<>();
-
             if (notifyParticipants) {
                 String participantList = buildParticipantList(event.getId());
                 params.put("participantList", participantList);
             }
-
             params.put("notifyParticipants", notifyParticipants);
-            return params;
+
+            var author = userService.getUser(event.getAuthorId());
+            String message = formatMessage(event, author, params);
+            Set<UUID> recipients = getRecipients(event, notifyParticipants);
+
+            recipients.forEach(userId -> publishMessage(userId, message));
+
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse payload for event cancelled params: {}", payload, e);
-            Map<String, Object> fallbackParams = new HashMap<>();
-            fallbackParams.put("notifyParticipants", false);
-            return fallbackParams;
+            log.error("Failed to parse payload for EVENT_CANCELLED: {}", payload, e);
         }
     }
 
-    @Override
-    public Collection<UUID> getRecipients(Event event, String payload) {
-        try {
-            JsonNode root = objectMapper.readTree(payload);
-            boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
+    private Set<UUID> getRecipients(Event event, boolean notifyParticipants) {
+        Set<UUID> recipients = new HashSet<>();
+        // Always include the organizer
+        recipients.add(event.getAuthorId());
 
-            Set<UUID> recipients = new HashSet<>();
-
-            // Always include the organizer
-            recipients.add(event.getAuthorId());
-
-            // Include participants if they should be notified
-            if (notifyParticipants) {
-                eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
-                        .map(EventParticipant::getUserId)
-                        .forEach(recipients::add);
-            }
-
-            return recipients;
-        } catch (JsonProcessingException e) {
-            log.error("Failed to parse payload for event cancelled recipients: {}", payload, e);
-            return Collections.singleton(event.getAuthorId());
+        // Include participants if they should be notified
+        if (notifyParticipants) {
+            eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
+                    .map(EventParticipant::getUserId)
+                    .forEach(recipients::add);
         }
+        return recipients;
     }
 
-    @Override
-    public String formatTelegramMessage(Event event, User author, Map<String, Object> params) {
+    private String formatMessage(Event event, User author, Map<String, Object> params) {
         try {
             boolean hasParticipants = params.containsKey("participantList") &&
                     params.get("participantList") != null &&
@@ -102,37 +99,6 @@ public class EventCancelledStrategy implements NotificationStrategy {
         }
     }
 
-    @Override
-    public NotificationCreateDto createInAppNotification(UUID userId, Event event,
-            String payload) {
-        return new NotificationCreateDto(
-                userId,
-                StrategyNotificationType.EVENT_CANCELLED,
-                payload,
-                event.getId());
-    }
-
-    @Override
-    public StrategyNotificationType getType() {
-        return StrategyNotificationType.EVENT_CANCELLED;
-    }
-
-    @Override
-    public boolean isValid(Event event, String payload) {
-        if (event == null) {
-            return false;
-        }
-
-        try {
-            JsonNode root = objectMapper.readTree(payload);
-            // Valid if payload can be parsed
-            return root != null;
-        } catch (JsonProcessingException e) {
-            log.error("Invalid payload for EVENT_CANCELLED: {}", payload, e);
-            return false;
-        }
-    }
-
     private String buildParticipantList(UUID eventId) {
         return eventParticipantRepository.findEventParticipantByEventId(eventId).stream()
                 .map(participant -> {
@@ -143,7 +109,16 @@ public class EventCancelledStrategy implements NotificationStrategy {
                     return null;
                 })
                 .filter(username -> username != null)
-                .collect(java.util.stream.Collectors.joining(", "));
+                .collect(Collectors.joining(", "));
     }
 
+    private void publishMessage(UUID userId, String message) {
+        try {
+            telegramOutboxMessagePublisher.publish(userId, message);
+            log.debug("Published notification for user {} via strategy {}", userId, getClass().getSimpleName());
+        } catch (Exception e) {
+            log.error("Failed to publish notification for user {} via strategy {}: {}",
+                    userId, getClass().getSimpleName(), e.getMessage(), e);
+        }
+    }
 }
