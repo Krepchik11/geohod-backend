@@ -4,7 +4,8 @@ public record UserSettingsDto(
         String defaultDonationAmount,
         Integer defaultMaxParticipants,
         String paymentGatewayUrl,
-        Boolean showBecomeOrganizer) {
+        Boolean showBecomeOrganizer,
+        String phoneNumber) {
     public UserSettingsDto {
     }
 }
