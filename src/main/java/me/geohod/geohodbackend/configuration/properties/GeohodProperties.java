@@ -6,28 +6,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("geohod")
 public record GeohodProperties(
-        TelegramBot telegramBot,
-        LinkTemplates linkTemplates,
-        Cors cors
-) {
-    public record TelegramBot(
-            String token,
-            String username
-    ) {
-    }
+                TelegramBot telegramBot,
+                LinkTemplates linkTemplates,
+                Cors cors) {
+        public record TelegramBot(
+                        String token,
+                        String username) {
+        }
 
-    public record LinkTemplates(
-            String eventRegistrationLink,
-            String reviewLink
-    ) {
-    }
+        public record LinkTemplates(
+                        String startappLink) {
+        }
 
-    public record Cors(
-            List<String> allowedOrigins,
-            List<String> allowedMethods,
-            List<String> allowedHeaders,
-            Boolean allowCredentials,
-            Long maxAge
-    ) {
-    }
+        public record Cors(
+                        List<String> allowedOrigins,
+                        List<String> allowedMethods,
+                        List<String> allowedHeaders,
+                        Boolean allowCredentials,
+                        Long maxAge) {
+        }
 }

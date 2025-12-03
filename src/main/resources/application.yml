@@ -50,8 +50,7 @@ geohod:
      token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
      username: ${GEOHOD_TELEGRAM_BOT_USERNAME}
    linkTemplates:
-     eventRegistrationLink: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}
-     reviewLink: ${GEOHOD_REVIEW_LINK_TEMPLATE}
+     startappLink: https://t.me/${GEOHOD_TELEGRAM_BOT_USERNAME}?startapp=
      
    cors:
      allowed-origins:
