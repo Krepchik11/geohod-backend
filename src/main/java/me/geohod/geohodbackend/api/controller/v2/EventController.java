@@ -42,6 +42,9 @@ import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
 
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
 @RequestMapping("/api/v2/events")
 @RequiredArgsConstructor
 public class EventController {
@@ -65,14 +68,11 @@ public class EventController {
 
             @RequestParam(required = false) List<Event.Status> statuses,
 
-            @PageableDefault(size = 30) @Parameter(
-                description = """
+            @PageableDefault(size = 30) @Parameter(description = """
                     Pagination and sorting
                     - `sort` available fields: `name`, `date`, `status`, `createdAt`, `updatedAt`
                     - default sort: `createdAt,desc` (newest events first)
-                    """,
-                in = ParameterIn.QUERY
-            ) Pageable pageable,
+                    """, in = ParameterIn.QUERY) Pageable pageable,
 
             @AuthenticationPrincipal TelegramPrincipal principal) {
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
