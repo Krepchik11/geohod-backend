@@ -6,10 +6,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import me.geohod.geohodbackend.data.dto.UserSettingsDto;
+import me.geohod.geohodbackend.data.mapper.UserSettingsModelMapper;
 import me.geohod.geohodbackend.data.model.UserSettings;
 import me.geohod.geohodbackend.data.model.repository.UserSettingsRepository;
-import me.geohod.geohodbackend.data.mapper.UserSettingsModelMapper;
-import me.geohod.geohodbackend.data.dto.UserSettingsDto;
 import me.geohod.geohodbackend.service.IUserSettingsService;
 
 @Service
@@ -30,7 +30,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         Optional<UserSettings> settingsOpt = userSettingsRepository.findByUserId(userId);
         return settingsOpt
                 .map(userSettingsModelMapper::toDto)
-                .orElse(new UserSettingsDto(null, null, null, null));
+                .orElse(new UserSettingsDto(null, null, null, null, null));
     }
 
     @Override
@@ -40,7 +40,8 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
                 userSettingsDto.defaultDonationAmount(),
                 userSettingsDto.defaultMaxParticipants(),
                 userSettingsDto.paymentGatewayUrl(),
-                userSettingsDto.showBecomeOrganizer());
+                userSettingsDto.showBecomeOrganizer(),
+                userSettingsDto.phoneNumber());
         UserSettings saved = userSettingsRepository.save(settings);
         return userSettingsModelMapper.toDto(saved);
     }
@@ -73,6 +74,14 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
     public UserSettingsDto updateShowBecomeOrganizer(UUID userId, Boolean showBecomeOrganizer) {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updateShowBecomeOrganizer(showBecomeOrganizer);
+        UserSettings saved = userSettingsRepository.save(settings);
+        return userSettingsModelMapper.toDto(saved);
+    }
+
+    @Override
+    public UserSettingsDto updatePhoneNumber(UUID userId, String phoneNumber) {
+        UserSettings settings = getOrCreateSettings(userId);
+        settings.updatePhoneNumber(phoneNumber);
         UserSettings saved = userSettingsRepository.save(settings);
         return userSettingsModelMapper.toDto(saved);
     }

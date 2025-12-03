@@ -18,4 +18,5 @@
     <include file="db.changelog-2.2-remove-unique-constraint.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2.3-user-show-organizer-ad.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2.4-add-event-action-states.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2.5-add-phone-number.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

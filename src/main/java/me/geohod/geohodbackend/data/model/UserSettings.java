@@ -23,6 +23,7 @@ public class UserSettings implements Persistable<UUID> {
     private Integer defaultMaxParticipants;
     private String paymentGatewayUrl;
     private Boolean showBecomeOrganizer;
+    private String phoneNumber;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -32,26 +33,28 @@ public class UserSettings implements Persistable<UUID> {
     }
 
     public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants,
-            String paymentGatewayUrl, Boolean showBecomeOrganizer) {
+            String paymentGatewayUrl, Boolean showBecomeOrganizer, String phoneNumber) {
         this.userId = userId;
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
         this.paymentGatewayUrl = paymentGatewayUrl;
         this.showBecomeOrganizer = showBecomeOrganizer;
+        this.phoneNumber = phoneNumber;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
     public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants) {
-        this(userId, defaultDonationAmount, defaultMaxParticipants, null, null);
+        this(userId, defaultDonationAmount, defaultMaxParticipants, null, null, null);
     }
 
     public void updateSettings(String defaultDonationAmount, Integer defaultMaxParticipants,
-            String paymentGatewayUrl, Boolean showBecomeOrganizer) {
+            String paymentGatewayUrl, Boolean showBecomeOrganizer, String phoneNumber) {
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
         this.paymentGatewayUrl = paymentGatewayUrl;
         this.showBecomeOrganizer = showBecomeOrganizer;
+        this.phoneNumber = phoneNumber;
         this.updatedAt = Instant.now();
     }
 
@@ -78,6 +81,11 @@ public class UserSettings implements Persistable<UUID> {
 
     public void updateShowBecomeOrganizer(Boolean showBecomeOrganizer) {
         this.showBecomeOrganizer = showBecomeOrganizer;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
         this.updatedAt = Instant.now();
     }
 

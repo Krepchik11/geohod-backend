@@ -7,7 +7,8 @@ public record UserSettingsRequest(
         @Deprecated String defaultDonationAmount,
         Integer defaultMaxParticipants,
         String paymentGatewayUrl,
-        boolean showBecomeOrganizer) {
+        boolean showBecomeOrganizer,
+        String phoneNumber) {
     public UserSettingsRequest {
     }
 }
