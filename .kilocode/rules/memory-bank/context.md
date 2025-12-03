@@ -6,30 +6,60 @@ The Geohod backend is in active development focusing on solidifying the v2 API, 
 
 ## Recent Changes (derived from repository)
 
+### Latest Updates (December 2025)
+
+1. **User Settings Enhancement**
+   - Added `phoneNumber` field to `UserSettings` entity with dedicated CRUD operations
+   - New endpoint: `PUT /api/v2/user-settings/phone-number` via `PhoneNumberRequest` DTO
+   - Database migration: `db.changelog-2.5-add-phone-number.xml`
+   - Phone number exposed in `UserSettingsResponse` and `UserSettingsDto`
+
+2. **Notification System Refactor** (Major architectural change)
+   - **Channel-specific strategies**: Separated notification strategies by channel (In-App vs Telegram)
+   - **New architecture**:
+     - `NotificationChannel` enum: IN_APP, TELEGRAM
+     - `NotificationConfiguration` class for strategy configuration
+     - Refactored `NotificationStrategy` interface to be channel-agnostic
+   - **Strategy reorganization**:
+     - Deleted unified strategies: `EventCancelledStrategy`, `EventCreatedStrategy`, `EventFinishedStrategy`, `ParticipantRegisteredStrategy`, `ParticipantUnregisteredStrategy`
+     - Created channel-specific strategies:
+       - In-App: `EventCancelledInAppStrategy`, `EventCreatedInAppStrategy`, `EventFinishedInAppStrategy`, `ParticipantRegisteredInAppStrategy`, `ParticipantUnregisteredInAppStrategy`
+       - Telegram: `EventCancelledOrganizerNoNotifyTelegramStrategy`, `EventCancelledOrganizerNotifyParticipantsTelegramStrategy`, `EventCreatedTelegramStrategy`, `EventFinishedTelegramStrategy`, `ParticipantRegisteredTelegramStrategy`, `ParticipantUnregisteredTelegramStrategy`
+   - **Processor updates**:
+     - `InAppNotificationProcessor` and `TelegramNotificationProcessor` refactored to work with channel-specific strategies
+     - `StrategyRegistry` updated to support channel-based strategy resolution
+   - **Template improvements**:
+     - `MessageTemplateRegistry` simplified and reorganized
+     - `MessageFormatter` refactored for better maintainability
+   - Added `startAppLink` template to `GeohodProperties`
+
+3. **Event Management Improvements**
+   - Enhanced OpenAPI descriptions for event endpoints
+   - Improved `CreateEventDto` mapping using constructor pattern
+   - EventParticipantDetails and projections updated to support phone number
+
+### Historical Changes
+
 1. API and Docs
-   - OpenAPI configuration present with security scheme for Telegram header and a local server entry.
-   - v2 controllers exist for events, participation, notifications, reviews, users, and user settings.
-   - ApiResponse<T> wrapper implemented for consistent responses.
+   - OpenAPI configuration present with security scheme for Telegram header and a local server entry
+   - v2 controllers exist for events, participation, notifications, reviews, users, and user settings
+   - ApiResponse<T> wrapper implemented for consistent responses
 
 2. Security
    - Custom Telegram auth implemented:
-     - Filter: extracts Authorization header and delegates to AuthenticationManager.
-     - Provider: verifies Telegram WebApp data, upserts user, sets TelegramPrincipal.
-     - Stateless session; CORS configured for specific origins.
-   - Logging filter present in the security chain.
+     - Filter: extracts Authorization header and delegates to AuthenticationManager
+     - Provider: verifies Telegram WebApp data, upserts user, sets TelegramPrincipal
+     - Stateless session; CORS configured for specific origins
+   - Logging filter present in the security chain
 
-3. Notification System
-   - Outbox entities and repositories exist (TelegramOutboxMessage, NotificationProcessorProgress).
-   - Telegram bot service wraps telegrambots starter and throws domain exception on failure.
+3. Data Access
+   - Spring Data JDBC used throughout with repositories and projection interfaces
+   - Liquibase configured via application.yml (classpath:db/changelog/db.changelog-master.xml)
 
-4. Data Access
-   - Spring Data JDBC used throughout with repositories and projection interfaces.
-   - Liquibase configured via application.yml (classpath:db/changelog/db.changelog-master.xml).
-
-5. Operations & Dev Experience
-   - Docker Compose for local Postgres and app.
-   - Healthcheck via Actuator; dev profile enables Swagger.
-   - Configuration properties via @ConfigurationProperties (GeohodProperties), including link templates.
+4. Operations & Dev Experience
+   - Docker Compose for local Postgres and app
+   - Healthcheck via Actuator; dev profile enables Swagger
+   - Configuration properties via @ConfigurationProperties (GeohodProperties), including link templates
 
 ## Next Steps (immediate)
 

@@ -20,8 +20,12 @@ Geohod Backend is a layered Spring Boot application organized into API, Service,
     - .../api/response/ApiResponse.java
 - Service Layer
   - Interfaces: .../service/I*.java
-  - Implementations: .../service/impl/*.java (EventService, EventManager, Participation services, ReviewServiceImpl, GeohodTelegramBotService, etc.)
-  - Processors and notification services: .../service/notification, .../service/processor (present for extensibility)
+  - Implementations: .../service/impl/*.java (EventService, EventManager, Participation services, ReviewServiceImpl, UserSettingsServiceImpl, GeohodTelegramBotService, etc.)
+  - Notification system:
+    - Processors: .../service/notification/processor/ (InAppNotificationProcessor, TelegramNotificationProcessor)
+    - Strategies: .../service/notification/processor/strategy/ (channel-specific notification strategies)
+    - Templates: .../service/notification/processor/strategy/message/ (MessageTemplateRegistry, MessageFormatter)
+    - Configuration: .../service/notification/ (NotificationChannel, NotificationConfiguration)
 - Data Access Layer
   - Models/Entities: .../data/model/** (Event, EventParticipant, User, Review, TelegramOutboxMessage, Notification, NotificationProcessorProgress, EventLog)
   - Repositories: .../data/model/repository/** (Spring Data JDBC repositories and projections)
@@ -112,17 +116,57 @@ Files:
 
 - PostgreSQL as the primary datastore.
 - Liquibase enabled; master changelog at classpath:db/changelog/db.changelog-master.xml.
-- Entities: Event, EventParticipant, User, Review, Notification, TelegramOutboxMessage, NotificationProcessorProgress, EventLog, UserRating.
+- Entities: Event, EventParticipant, User, Review, Notification, TelegramOutboxMessage, NotificationProcessorProgress, EventLog, UserRating, UserSettings.
+- Recent migrations:
+  - `db.changelog-2.5-add-phone-number.xml`: Added `phone_number` column to `user_settings` table
 - Indexing and constraints implemented via changelogs (review uniqueness per event/user implied from service logic and repository projections).
 
 ## Notification Processing
 
-- Outbox enqueue on business events (e.g., event changes, participation).
-- Processor components poll outbox and dispatch via:
-  - GeohodTelegramBotService → Telegram Bot API (telegrambots starter).
+### Architecture Overview
+- **Channel-specific design**: Separate strategies for In-App and Telegram notifications
+- **Configuration-driven**: `NotificationConfiguration` classes define strategy mappings per channel
+- Outbox enqueue on business events (e.g., event changes, participation)
+
+### Processing Flow
+1. Business events create `Notification` records with event types
+2. Channel-specific processors (`InAppNotificationProcessor`, `TelegramNotificationProcessor`) poll notifications
+3. `StrategyRegistry` resolves appropriate strategy based on:
+   - Notification channel (`NotificationChannel.IN_APP` or `NotificationChannel.TELEGRAM`)
+   - Event type (e.g., `EVENT_CREATED`, `PARTICIPANT_REGISTERED`)
+   - Additional context (e.g., organizer action for event cancellation)
+4. Strategy builds and delivers notification via channel-specific service
+
+### Strategy Pattern Implementation
+- **Base interface**: `NotificationStrategy` with channel-agnostic contract
+- **In-App strategies**:
+  - `EventCancelledInAppStrategy`, `EventCreatedInAppStrategy`, `EventFinishedInAppStrategy`
+  - `ParticipantRegisteredInAppStrategy`, `ParticipantUnregisteredInAppStrategy`
+- **Telegram strategies**:
+  - `EventCancelledOrganizerNoNotifyTelegramStrategy` (organizer cancels but doesn't notify participants)
+  - `EventCancelledOrganizerNotifyParticipantsTelegramStrategy` (organizer cancels and notifies participants)
+  - `EventCreatedTelegramStrategy`, `EventFinishedTelegramStrategy`
+  - `ParticipantRegisteredTelegramStrategy`, `ParticipantUnregisteredTelegramStrategy`
+
+### Message Templating
+- `MessageTemplateRegistry`: Centralized template storage and retrieval
+- `MessageFormatter`: Formats messages with event-specific data (event name, dates, links, etc.)
+- Templates support placeholders for dynamic content injection
+
+### Delivery & Reliability
+- Telegram delivery via `GeohodTelegramBotService` → Telegram Bot API (telegrambots starter)
 - Retry and error handling:
-  - Domain exception TelegramNotificationException thrown on Telegram API failure.
-  - NotificationProcessorProgress tracks processing state.
+  - Domain exception `TelegramNotificationException` thrown on Telegram API failure
+  - `NotificationProcessorProgress` tracks processing state and retry attempts
+- Processor delays configurable via `geohod.processor.in-app.delay` and `geohod.processor.telegram.delay`
+
+### Key Files
+- Processors: `service/notification/processor/InAppNotificationProcessor.java`, `TelegramNotificationProcessor.java`
+- Strategies: `service/notification/processor/strategy/*Strategy.java`
+- Registry: `service/notification/processor/strategy/StrategyRegistry.java`
+- Templates: `service/notification/processor/strategy/message/MessageTemplateRegistry.java`, `MessageFormatter.java`
+- Configuration: `service/notification/NotificationConfiguration.java`
+- Channel enum: `service/notification/NotificationChannel.java`
 
 ## Configuration Management
 

@@ -25,8 +25,8 @@
   - management.endpoints.web.exposure.include: health,info
   - geohod:
     - telegram-bot.token / username from env (GEOHOD_TELEGRAM_BOT_TOKEN / GEOHOD_TELEGRAM_BOT_USERNAME)
-    - linkTemplates.eventRegistrationLink / reviewLink from env
-    - processor delays for in-app and telegram
+    - linkTemplates.eventRegistrationLink / reviewLink / startAppLink from env
+    - processor delays for in-app and telegram (geohod.processor.in-app.delay, geohod.processor.telegram.delay)
 - Dev profile (activated with SPRING_PROFILES_ACTIVE=dev) enables Swagger/OpenAPI as per README guidance
 
 ## Environment Variables (README)
@@ -63,8 +63,11 @@
   - Mappers: MapStruct mappers for API↔internal DTOs
   - ApiResponse<T> wrapper with static success/error
 - Service Layer:
-  - Interfaces: IEventService, IEventManager, IEventParticipationService, IEventProjectionService, IAppNotificationService, etc.
-  - Implementations: EventService, EventManager, EventParticipationService, ReviewServiceImpl, GeohodTelegramBotService, etc.
+  - Interfaces: IEventService, IEventManager, IEventParticipationService, IEventProjectionService, IAppNotificationService, IUserSettingsService, etc.
+  - Implementations: EventService, EventManager, EventParticipationService, ReviewServiceImpl, UserSettingsServiceImpl, GeohodTelegramBotService, etc.
+  - Notification processors: InAppNotificationProcessor, TelegramNotificationProcessor
+  - Notification strategies: Channel-specific strategies for event and participation notifications (In-App and Telegram variants)
+  - Message templating: MessageTemplateRegistry, MessageFormatter
 - Data Access Layer:
   - Entities: Event, EventParticipant, User, Review, TelegramOutboxMessage, Notification, NotificationProcessorProgress, EventLog, UserRating
   - Repositories: Spring Data JDBC repositories, projections (EventProjectionRepository, UserRatingRepository, etc.)
@@ -119,3 +122,9 @@
 - configuration/OpenApiConfiguration.java
 - api/response/ApiResponse.java
 - service/impl/GeohodTelegramBotService.java
+- service/notification/NotificationChannel.java
+- service/notification/NotificationConfiguration.java
+- service/notification/processor/InAppNotificationProcessor.java
+- service/notification/processor/TelegramNotificationProcessor.java
+- service/notification/processor/strategy/StrategyRegistry.java
+- service/notification/processor/strategy/message/MessageTemplateRegistry.java

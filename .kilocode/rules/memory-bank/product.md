@@ -12,7 +12,7 @@ Geohod provides community event management tightly integrated with Telegram for 
 - Event lifecycle: create, update, cancel, finish; read event details and projections
 - Participation: register/unregister; list participants; organizer participant management
 - Reviews: submit/update single review per user-event; compute user ratings
-- Users: create/update on first Telegram login; retrieve user details
+- Users: create/update on first Telegram login; retrieve user details; manage user settings including phone number
 - Notifications: outbox-based reliable notifications, Telegram delivery
 - Authentication: validate Telegram WebApp init data; stateless security
 - API versioning: v1 (legacy) and v2 (primary) endpoints with consistent responses
