@@ -8,6 +8,5 @@ public record EventParticipantDetails(
                 String tgUserId,
                 String name,
                 String imageUrl,
-                int participantCount,
                 String phoneNumber) {
 }
