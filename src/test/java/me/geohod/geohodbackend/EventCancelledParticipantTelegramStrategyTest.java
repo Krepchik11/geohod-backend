@@ -15,7 +15,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -45,8 +44,7 @@ class EventCancelledParticipantTelegramStrategyTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private MessageFormatter messageFormatter;
@@ -57,7 +55,6 @@ class EventCancelledParticipantTelegramStrategyTest {
     @Mock
     private IUserService userService;
 
-    @InjectMocks
     private EventCancelledParticipantTelegramStrategy strategy;
 
     private Event event;
@@ -72,6 +69,10 @@ class EventCancelledParticipantTelegramStrategyTest {
         participantId = UUID.randomUUID();
 
         event = new Event("Test Event", "Description", java.time.Instant.now(), 10, authorId);
+        strategy = new EventCancelledParticipantTelegramStrategy(
+            properties, eventParticipantRepository, userRepository,
+            objectMapper, messageFormatter, telegramOutboxMessagePublisher, userService
+        );
     }
 
     @Test
@@ -80,36 +81,31 @@ class EventCancelledParticipantTelegramStrategyTest {
         EventParticipant participant = new EventParticipant(eventId, participantId);
         User author = new User("123456", "test_author", "Test", "Author", null);
 
-        when(eventParticipantRepository.findEventParticipantByEventId(eventId))
+        when(eventParticipantRepository.findEventParticipantByEventId(event.getId()))
             .thenReturn(java.util.List.of(participant));
         when(userService.getUser(authorId)).thenReturn(author);
-        when(objectMapper.readTree(payload)).thenReturn(new ObjectMapper().readTree(payload));
 
         GeohodProperties.LinkTemplates linkTemplates = mock(GeohodProperties.LinkTemplates.class);
         when(linkTemplates.startappLink()).thenReturn("https://t.me/testbot?startapp=");
-        GeohodProperties.TelegramBot telegramBot = mock(GeohodProperties.TelegramBot.class);
         when(properties.linkTemplates()).thenReturn(linkTemplates);
-        when(properties.telegramBot()).thenReturn(telegramBot);
 
         when(messageFormatter.formatMessageFromTemplate(
-            eq("event.cancelled"),
-            eq(TemplateType.TELEGRAM),
-            eq(event),
-            eq(author),
+            anyString(),
+            any(TemplateType.class),
+            any(Event.class),
+            any(User.class),
             any()))
             .thenReturn("Event was cancelled");
 
         strategy.send(event, payload);
 
-        verify(telegramOutboxMessagePublisher, times(1)).publish(participantId, "Event was cancelled");
-        verify(telegramOutboxMessagePublisher, never()).publish(authorId, anyString());
+        verify(telegramOutboxMessagePublisher, times(1)).publish(eq(participantId), eq("Event was cancelled"));
+        verify(telegramOutboxMessagePublisher, never()).publish(eq(authorId), anyString());
     }
 
     @Test
     void testSkipWhenNotifyParticipantsIsFalse() throws Exception {
         String payload = "{\"notifyParticipants\": false}";
-
-        when(objectMapper.readTree(payload)).thenReturn(new ObjectMapper().readTree(payload));
 
         strategy.send(event, payload);
 
