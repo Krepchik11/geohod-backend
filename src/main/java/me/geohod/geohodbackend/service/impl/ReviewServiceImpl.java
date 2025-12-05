@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
 import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
 import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
 import me.geohod.geohodbackend.data.model.review.Review;
@@ -30,6 +31,7 @@ public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
     private final EventRepository eventRepository;
+    private final EventParticipantRepository eventParticipantRepository;
     private final IUserRatingService userRatingService;
 
     @Override
@@ -38,8 +40,20 @@ public class ReviewServiceImpl implements IReviewService {
         // Get the event to validate it exists and get the author (target)
         Event event = eventRepository.findById(request.eventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found: " + request.eventId()));
-        
-        // Check if review already exists for this user and event
+
+        if (!event.isFinished()) {
+            throw new IllegalArgumentException("Reviews can only be submitted for finished events");
+        }
+
+        boolean isParticipant = eventParticipantRepository.existsByEventIdAndUserId(request.eventId(), authorId);
+        if (!isParticipant) {
+            throw new IllegalArgumentException("User is not a participant of this event");
+        }
+
+        if (event.getAuthorId().equals(authorId)) {
+            throw new IllegalArgumentException("Event author cannot review their own event");
+        }
+
         Optional<Review> existingReview = reviewRepository.findByEventIdAndAuthorId(request.eventId(), authorId);
         
         Review review;
