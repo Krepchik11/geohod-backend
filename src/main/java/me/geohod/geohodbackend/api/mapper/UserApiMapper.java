@@ -6,9 +6,9 @@ import org.mapstruct.Mapping;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantDetails;
 import me.geohod.geohodbackend.api.dto.response.UserDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.UserResponse;
-import me.geohod.geohodbackend.data.dto.EventParticipantProjection;
 import me.geohod.geohodbackend.data.dto.UserDto;
 import me.geohod.geohodbackend.data.model.User;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantProjectionRepository.EventParticipantProjection;
 import me.geohod.geohodbackend.mapper.GlobalMapperConfig;
 
 @Mapper(config = GlobalMapperConfig.class)
