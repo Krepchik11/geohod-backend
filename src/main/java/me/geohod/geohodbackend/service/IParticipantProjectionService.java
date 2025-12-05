@@ -1,9 +1,9 @@
 package me.geohod.geohodbackend.service;
 
-import me.geohod.geohodbackend.data.dto.EventParticipantProjection;
-
 import java.util.List;
 import java.util.UUID;
+
+import me.geohod.geohodbackend.data.model.repository.EventParticipantProjectionRepository.EventParticipantProjection;
 
 public interface IParticipantProjectionService {
     List<EventParticipantProjection> eventParticipants(UUID eventId);

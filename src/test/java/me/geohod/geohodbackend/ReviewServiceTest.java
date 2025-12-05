@@ -2,6 +2,7 @@ package me.geohod.geohodbackend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import me.geohod.geohodbackend.api.dto.review.ReviewCreateRequest;
 import me.geohod.geohodbackend.data.dto.ReviewWithAuthorDto;
 import me.geohod.geohodbackend.data.model.Event;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
 import me.geohod.geohodbackend.data.model.repository.ReviewRepository;
 import me.geohod.geohodbackend.data.model.review.Review;
@@ -35,13 +37,15 @@ public class ReviewServiceTest {
     @Mock
     private EventRepository eventRepository;
     @Mock
+    private EventParticipantRepository eventParticipantRepository;
+    @Mock
     private IUserRatingService userRatingService;
     private ReviewServiceImpl reviewService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        reviewService = new ReviewServiceImpl(reviewRepository, eventRepository, userRatingService);
+        reviewService = new ReviewServiceImpl(reviewRepository, eventRepository, eventParticipantRepository, userRatingService);
     }
 
     @Test
@@ -50,20 +54,23 @@ public class ReviewServiceTest {
         UUID eventId = UUID.randomUUID();
         UUID eventAuthorId = UUID.randomUUID();
         ReviewCreateRequest request = new ReviewCreateRequest(eventId, 5, "Great event!");
-        
+
         Event event = new Event("Test Event", "Test Description", Instant.now(), 10, eventAuthorId);
+        event.finish(false, false, false);
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        
+        when(eventParticipantRepository.existsByEventIdAndUserId(eventId, authorId)).thenReturn(true);
+        when(reviewRepository.findByEventIdAndAuthorId(eventId, authorId)).thenReturn(Optional.empty());
+
         Review review = new Review(request.eventId(), authorId, request.rating(), request.comment());
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
-        
+
         Review result = reviewService.submitReview(authorId, request);
-        
+
         assertEquals(request.eventId(), result.getEventId());
         assertEquals(authorId, result.getAuthorId());
         assertEquals(request.rating(), result.getRating());
         assertEquals(request.comment(), result.getComment());
-        
+
         // Verify that user rating update was called
         verify(userRatingService).updateUserRatingAsync(eventAuthorId);
     }
@@ -173,4 +180,58 @@ public class ReviewServiceTest {
         verify(reviewRepository).findReviewsWithAuthorForUser(userId, false, 10, 0);
         verify(reviewRepository).countReviewsWithAuthorForUser(userId, false);
     }
+
+    @Test
+    void testSubmitReview_NonFinishedEvent_ThrowsException() {
+        UUID authorId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
+        UUID eventAuthorId = UUID.randomUUID();
+        ReviewCreateRequest request = new ReviewCreateRequest(eventId, 5, "Great event!");
+
+        Event event = new Event("Test Event", "Test Description", Instant.now(), 10, eventAuthorId);
+        // Event is ACTIVE, not FINISHED
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            reviewService.submitReview(authorId, request);
+        });
+    }
+
+    @Test
+    void testSubmitReview_NonParticipant_ThrowsException() {
+        UUID authorId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
+        UUID eventAuthorId = UUID.randomUUID();
+        ReviewCreateRequest request = new ReviewCreateRequest(eventId, 5, "Great event!");
+
+        Event event = new Event("Test Event", "Test Description", Instant.now(), 10, eventAuthorId);
+        event.finish(false, false, false); // Make event finished
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(eventParticipantRepository.existsByEventIdAndUserId(eventId, authorId)).thenReturn(false); // Not a participant
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            reviewService.submitReview(authorId, request);
+        });
+
+        assertEquals("User is not a participant of this event", exception.getMessage());
+    }
+
+    @Test
+    void testSubmitReview_EventAuthor_ThrowsException() {
+        UUID authorId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
+        ReviewCreateRequest request = new ReviewCreateRequest(eventId, 5, "Great event!");
+
+        Event event = new Event("Test Event", "Test Description", Instant.now(), 10, authorId); // authorId is event author
+        event.finish(false, false, false); // Make event finished
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(eventParticipantRepository.existsByEventIdAndUserId(eventId, authorId)).thenReturn(true); // Is a participant
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            reviewService.submitReview(authorId, request);
+        });
+
+        assertEquals("Event author cannot review their own event", exception.getMessage());
+    }
 }
+

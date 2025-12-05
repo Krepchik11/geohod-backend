@@ -3,7 +3,7 @@ package me.geohod.geohodbackend.service.notification.processor.strategy;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,8 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.data.model.repository.EventParticipantProjectionRepository;
-import me.geohod.geohodbackend.data.model.repository.EventParticipantProjectionRepository.EventParticipantContactInfo;
+import me.geohod.geohodbackend.data.model.EventParticipant;
+import me.geohod.geohodbackend.data.model.repository.EventParticipantRepository;
+import me.geohod.geohodbackend.data.model.repository.UserRepository;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
 import me.geohod.geohodbackend.service.notification.NotificationChannel;
@@ -28,10 +29,11 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implements NotificationStrategy {
+public class EventCancelledParticipantTelegramStrategy implements NotificationStrategy {
 
     private final GeohodProperties properties;
-    private final EventParticipantProjectionRepository eventParticipantProjectionRepository;
+    private final EventParticipantRepository eventParticipantRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final MessageFormatter messageFormatter;
     private final ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher;
@@ -48,29 +50,27 @@ public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implement
             JsonNode root = objectMapper.readTree(payload);
             boolean notifyParticipants = root.path("notifyParticipants").asBoolean(false);
 
+            // Only execute if notifyParticipants is true
             if (!notifyParticipants) {
                 log.trace("Skipping {} - notifyParticipants is false", getClass().getSimpleName());
                 return;
             }
 
             Map<String, Object> params = new HashMap<>();
-            String participantList = buildParticipantList(event.getId());
-            params.put("participantList", participantList);
-            params.put("notifyParticipants", true);
-
             String eventLink = createEventLink(event);
             params.put("eventLink", eventLink);
 
             var author = userService.getUser(event.getAuthorId());
             String message = messageFormatter.formatMessageFromTemplate(
-                    "event.cancelled.organizer.notify-participants",
+                    "event.cancelled",
                     TemplateType.TELEGRAM, event, author, params);
 
-            var sendTo = event.getAuthorId();
+            // Send only to participants, not the organizer
+            Set<UUID> participantIds = getParticipants(event);
+            participantIds.forEach(userId -> publishMessage(userId, message));
 
-            publishMessage(sendTo, message);
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse payload for EVENT_CANCELLED (notify participants): {}", payload, e);
+            log.error("Failed to parse payload for EVENT_CANCELLED (participant): {}", payload, e);
         }
     }
 
@@ -82,38 +82,14 @@ public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implement
         String eventLinkString = objectMapper.writeValueAsString(eventLinkAction);
         String eventLinkBase64 = Base64.getEncoder().encodeToString(eventLinkString.getBytes());
 
-        return properties.linkTemplates().startappLink() + eventLinkBase64;
+        String eventLink = properties.linkTemplates().startappLink() + eventLinkBase64;
+        return eventLink;
     }
 
-    private String buildParticipantList(UUID eventId) {
-        if (eventId == null) {
-            log.warn("No eventId provided to buildParticipantList");
-            return "";
-        }
-
-        return eventParticipantProjectionRepository.findEventParticipantContactInfoByEventId(eventId)
-                .stream()
-                .map(this::formatContactInfo)
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining("\n"));
-    }
-
-    private String formatContactInfo(EventParticipantContactInfo contact) {
-        if (contact == null) {
-            return null;
-        }
-
-        // username if available and not blank
-        if (contact.username() != null && !contact.username().isBlank()) {
-            return "@" + contact.username();
-        }
-
-        // phone number if available and not blank
-        if (contact.phoneNumber() != null && !contact.phoneNumber().isBlank()) {
-            return contact.phoneNumber();
-        }
-
-        return null;
+    private Set<UUID> getParticipants(Event event) {
+        return eventParticipantRepository.findEventParticipantByEventId(event.getId()).stream()
+                .map(EventParticipant::getUserId)
+                .collect(Collectors.toSet());
     }
 
     private void publishMessage(UUID userId, String message) {
