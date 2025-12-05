@@ -95,6 +95,7 @@ public class EventCancelledOrganizerNotifyParticipantsTelegramStrategy implement
                 .stream()
                 .map(this::formatContactInfo)
                 .filter(Objects::nonNull)
+                .distinct()
                 .collect(Collectors.joining("\n"));
     }
 

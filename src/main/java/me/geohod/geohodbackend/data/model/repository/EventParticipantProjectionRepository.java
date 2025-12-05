@@ -16,7 +16,7 @@ public class EventParticipantProjectionRepository {
 
         public List<EventParticipantProjection> findEventParticipantByEventId(UUID eventId) {
                 String sql = """
-                                SELECT u.id                                      AS participant_id,
+                                SELECT ep.id                                     AS participant_id,
                                        u.tg_username                             AS username,
                                        u.tg_id                                   AS tg_user_id,
                                        CONCAT_WS(' ', u.first_name, u.last_name) AS name,
@@ -28,7 +28,7 @@ public class EventParticipantProjectionRepository {
                                          JOIN users u ON u.id = ep.user_id
                                          LEFT JOIN user_settings us ON us.user_id = u.id
                                 WHERE e.id = :eventId
-                                GROUP BY u.id, u.tg_username, u.tg_id, u.first_name, u.last_name, u.tg_image_url, us.phone_number
+                                GROUP BY ep.id, u.tg_username, u.tg_id, u.first_name, u.last_name, u.tg_image_url, us.phone_number
                                 """;
 
                 Map<String, Object> params = Map.of("eventId", eventId);
@@ -50,7 +50,7 @@ public class EventParticipantProjectionRepository {
                 }
 
                 final String sql = """
-                                SELECT u.id AS participant_id,
+                                SELECT ep.id AS participant_id,
                                        u.tg_username AS username,
                                        us.phone_number AS phone_number
                                 FROM events e
