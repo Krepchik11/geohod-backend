@@ -15,10 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import me.geohod.geohodbackend.data.dto.UserSettingsDto;
+import me.geohod.geohodbackend.data.mapper.UserSettingsModelMapper;
 import me.geohod.geohodbackend.data.model.UserSettings;
 import me.geohod.geohodbackend.data.model.repository.UserSettingsRepository;
-import me.geohod.geohodbackend.data.mapper.UserSettingsModelMapper;
-import me.geohod.geohodbackend.data.dto.UserSettingsDto;
 
 @ExtendWith(MockitoExtension.class)
 class UserSettingsServiceTest {
@@ -77,8 +77,8 @@ class UserSettingsServiceTest {
 
     @Test
     void updateUserSettings_handlesNulls() {
-        UserSettingsDto input = new UserSettingsDto(null, null, null, null, null);
-        UserSettings entityWithNulls = new UserSettings(userId, null, null, null, null, null);
+        UserSettingsDto input = new UserSettingsDto(null, null, null, null);
+        UserSettings entityWithNulls = new UserSettings(userId, null, null, null, true, null);
         when(repository.findByUserId(userId)).thenReturn(Optional.empty());
         when(repository.save(any(UserSettings.class))).thenReturn(entityWithNulls);
         when(mapper.toDto(entityWithNulls)).thenReturn(input);
@@ -86,7 +86,7 @@ class UserSettingsServiceTest {
         assertNull(result.defaultDonationAmount());
         assertNull(result.defaultMaxParticipants());
         assertNull(result.paymentGatewayUrl());
-        assertNull(result.showBecomeOrganizer());
+        assertEquals(true, result.showBecomeOrganizer());
         assertNull(result.phoneNumber());
     }
 }
