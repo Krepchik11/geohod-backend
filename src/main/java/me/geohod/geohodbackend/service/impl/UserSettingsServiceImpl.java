@@ -30,7 +30,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
         Optional<UserSettings> settingsOpt = userSettingsRepository.findByUserId(userId);
         return settingsOpt
                 .map(userSettingsModelMapper::toDto)
-                .orElse(new UserSettingsDto(null, null, null, null, null));
+                .orElse(new UserSettingsDto(null, null, null, null));
     }
 
     @Override
@@ -71,7 +71,7 @@ public class UserSettingsServiceImpl implements IUserSettingsService {
     }
 
     @Override
-    public UserSettingsDto updateShowBecomeOrganizer(UUID userId, Boolean showBecomeOrganizer) {
+    public UserSettingsDto updateShowBecomeOrganizer(UUID userId, boolean showBecomeOrganizer) {
         UserSettings settings = getOrCreateSettings(userId);
         settings.updateShowBecomeOrganizer(showBecomeOrganizer);
         UserSettings saved = userSettingsRepository.save(settings);

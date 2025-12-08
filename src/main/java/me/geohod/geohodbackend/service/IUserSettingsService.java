@@ -15,7 +15,7 @@ public interface IUserSettingsService {
 
     UserSettingsDto updatePaymentGatewayUrl(UUID userId, String paymentGatewayUrl);
 
-    UserSettingsDto updateShowBecomeOrganizer(UUID userId, Boolean showBecomeOrganizer);
+    UserSettingsDto updateShowBecomeOrganizer(UUID userId, boolean showBecomeOrganizer);
 
     UserSettingsDto updatePhoneNumber(UUID userId, String phoneNumber);
 }

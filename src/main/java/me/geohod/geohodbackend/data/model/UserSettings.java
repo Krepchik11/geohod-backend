@@ -22,7 +22,7 @@ public class UserSettings implements Persistable<UUID> {
     private String defaultDonationAmount;
     private Integer defaultMaxParticipants;
     private String paymentGatewayUrl;
-    private Boolean showBecomeOrganizer;
+    private boolean showBecomeOrganizer;
     private String phoneNumber;
     private Instant createdAt;
     private Instant updatedAt;
@@ -30,10 +30,11 @@ public class UserSettings implements Persistable<UUID> {
     public UserSettings() {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+        this.showBecomeOrganizer = true;
     }
 
     public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants,
-            String paymentGatewayUrl, Boolean showBecomeOrganizer, String phoneNumber) {
+            String paymentGatewayUrl, boolean showBecomeOrganizer, String phoneNumber) {
         this.userId = userId;
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
@@ -45,11 +46,11 @@ public class UserSettings implements Persistable<UUID> {
     }
 
     public UserSettings(UUID userId, String defaultDonationAmount, Integer defaultMaxParticipants) {
-        this(userId, defaultDonationAmount, defaultMaxParticipants, null, null, null);
+        this(userId, defaultDonationAmount, defaultMaxParticipants, null, true, null);
     }
 
     public void updateSettings(String defaultDonationAmount, Integer defaultMaxParticipants,
-            String paymentGatewayUrl, Boolean showBecomeOrganizer, String phoneNumber) {
+            String paymentGatewayUrl, boolean showBecomeOrganizer, String phoneNumber) {
         this.defaultDonationAmount = defaultDonationAmount;
         this.defaultMaxParticipants = defaultMaxParticipants;
         this.paymentGatewayUrl = paymentGatewayUrl;
@@ -79,7 +80,7 @@ public class UserSettings implements Persistable<UUID> {
         this.updatedAt = Instant.now();
     }
 
-    public void updateShowBecomeOrganizer(Boolean showBecomeOrganizer) {
+    public void updateShowBecomeOrganizer(boolean showBecomeOrganizer) {
         this.showBecomeOrganizer = showBecomeOrganizer;
         this.updatedAt = Instant.now();
     }
