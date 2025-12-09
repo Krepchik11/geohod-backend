@@ -63,6 +63,41 @@ This task was completed in commit 169b127 and serves as a good example of adding
 - Comprehensive error handling (404 for non-existent events)
 - OpenAPI documentation for client code generation
 
+## Add Method-Level Security to Endpoints
+
+**Last performed:** December 9, 2025
+
+**Files involved:**
+- Controller: `src/main/java/me/geohod/geohodbackend/api/controller/v2/EventParticipationController.java`
+- Security service: `src/main/java/me/geohod/geohodbackend/security/EventSecurity.java` (new file)
+
+**Steps:**
+1. Create a new security service class (e.g., `EventSecurity`) with methods that validate authorization conditions
+2. Add `@Service` annotation to make it a Spring bean
+3. Implement authorization logic using `SecurityContextHolder` and repository lookups
+4. In the controller, replace manual authorization checks with `@PreAuthorize` annotations
+5. Use Spring Security Expression Language (SpEL) to call the security service methods
+6. Remove redundant imports and service dependencies that are no longer needed
+7. Update OpenAPI documentation to reflect the new security requirements
+
+**Example implementation:**
+- Created `EventSecurity.isEventAuthor(UUID eventId)` method that checks if the current user is the event author
+- Added `@PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")` to endpoints that require event ownership
+- Removed manual checks like `if (!event.authorId().equals(loggedUserId))`
+
+**Benefits:**
+- Consistent authorization approach across endpoints
+- Reduced boilerplate code
+- Better separation of concerns
+- Improved security through declarative approach
+- Easier to maintain and test authorization logic
+
+**Key aspects:**
+- Use Spring Security's method-level security annotations
+- Keep authorization logic in dedicated security services
+- Ensure proper error handling for unauthorized access
+- Update OpenAPI documentation with appropriate response codes (403)
+
 ## Adding a Notification via Outbox
 
 Last verified: 2025-08-05

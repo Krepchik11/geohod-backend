@@ -90,7 +90,8 @@ Geohod Backend is a layered Spring Boot application organized into API, Service,
 2) TelegramInitDataAuthenticationFilter creates TelegramTokenAuthentication and delegates to AuthenticationManager.
 3) TelegramTokenAuthenticationProvider verifies token (TelegramTokenService), extracts Telegram user data, createOrUpdateUser, and returns authenticated TelegramTokenAuthentication with TelegramPrincipal.
 4) SecurityContext populated; request continues to controller.
-5) Session policy STATELESS; CORS configured for allowed origins and methods.
+5) Method-level security annotations like `@PreAuthorize` are evaluated using Spring Security's expression-based access control.
+6) Session policy STATELESS; CORS configured for allowed origins and methods.
 
 Files:
 - SecurityConfiguration.java
@@ -98,6 +99,7 @@ Files:
 - TelegramTokenAuthenticationProvider.java
 - TelegramTokenAuthentication.java
 - configuration/properties/GeohodProperties.java
+- security/EventSecurity.java (method-level security service)
 
 ## API Design
 

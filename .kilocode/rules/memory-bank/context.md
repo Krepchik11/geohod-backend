@@ -45,6 +45,24 @@ The Geohod backend is in active development focusing on solidifying the v2 API, 
    - Implementation validates event existence and checks participation using existing repository method
    - Comprehensive OpenAPI documentation for code generation compatibility
 
+5. **Event Participation Security Enhancement** (December 9, 2025)
+   - **Security hardening for event participation endpoints**: Implemented method-level security using `@PreAuthorize` annotations
+   - **Changes made**:
+     - Added `@PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")` to `DELETE /api/v2/events/{eventId}/participants/{participantId}` endpoint
+     - Added `@PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")` to `GET /api/v2/events/{eventId}/participants` endpoint
+     - Replaced manual authorization checks with declarative security using Spring Security's `@PreAuthorize`
+     - Removed redundant imports and service dependencies
+     - Enhanced OpenAPI documentation for the participants endpoint with comprehensive response codes
+   - **New security component**: `EventSecurity` service with `isEventAuthor()` method that validates event ownership
+   - **Benefits**:
+     - Consistent authorization approach across endpoints
+     - Reduced boilerplate code
+     - Improved security by using Spring Security's method-level security
+     - Better separation of concerns
+   - **Files modified**:
+     - `src/main/java/me/geohod/geohodbackend/api/controller/v2/EventParticipationController.java`
+     - `src/main/java/me/geohod/geohodbackend/security/EventSecurity.java` (new file)
+
 ### Historical Changes
 
 1. API and Docs
