@@ -15,9 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventRegisterRequest;
 import me.geohod.geohodbackend.api.dto.request.UpdateParticipantStateRequest;
+import me.geohod.geohodbackend.api.dto.response.EventParticipationCheckResponse;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
@@ -91,5 +96,19 @@ public class EventParticipationController {
             @AuthenticationPrincipal TelegramPrincipal principal) {
         participationService.updateParticipantState(principal.userId(), eventId, request);
         return ApiResponse.success(null);
+    }
+
+    @GetMapping("/{eventId}/participation/check")
+    @Operation(summary = "Check if user is participating in event", description = "Returns whether the currently authenticated user is registered as a participant in the specified event")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfull"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Auth missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Event does not exist")
+    })
+    public ApiResponse<EventParticipationCheckResponse> checkParticipation(
+            @Parameter(required = true) @PathVariable UUID eventId,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        boolean isParticipant = participationService.isUserParticipant(principal.userId(), eventId);
+        return ApiResponse.success(new EventParticipationCheckResponse(isParticipant));
     }
 }

@@ -12,4 +12,6 @@ public interface IEventParticipationService {
     void unregisterParticipantFromEvent(UUID participantId, UUID eventId);
 
     void updateParticipantState(UUID userId, UUID eventId, UpdateParticipantStateRequest request);
+
+    boolean isUserParticipant(UUID userId, UUID eventId);
 }
