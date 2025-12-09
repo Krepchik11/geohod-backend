@@ -3,7 +3,7 @@ package me.geohod.geohodbackend.api.controller.v2;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventRegisterRequest;
@@ -29,11 +27,9 @@ import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
 import me.geohod.geohodbackend.api.dto.response.EventUnregisterResponse;
 import me.geohod.geohodbackend.api.mapper.UserApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
-import me.geohod.geohodbackend.data.dto.EventDto;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantProjectionRepository.EventParticipantProjection;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventParticipationService;
-import me.geohod.geohodbackend.service.IEventService;
 import me.geohod.geohodbackend.service.IParticipantProjectionService;
 
 @RestController
@@ -41,7 +37,6 @@ import me.geohod.geohodbackend.service.IParticipantProjectionService;
 @RequiredArgsConstructor
 public class EventParticipationController {
     private final UserApiMapper userApiMapper;
-    private final IEventService eventService;
     private final IEventParticipationService participationService;
     private final IParticipantProjectionService participantProjectionService;
 
@@ -66,20 +61,23 @@ public class EventParticipationController {
     }
 
     @DeleteMapping("/{eventId}/participants/{participantId}")
+    @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventRemoveParticipant> removeParticipant(@PathVariable UUID eventId,
             @PathVariable UUID participantId,
             @AuthenticationPrincipal TelegramPrincipal principal) {
-        UUID loggedUserId = principal.userId();
-        EventDto event = eventService.event(eventId);
-        if (!event.authorId().equals(loggedUserId)) {
-            throw new AccessDeniedException("You do not have permission to remove participants from this event");
-        }
-
         participationService.unregisterParticipantFromEvent(participantId, eventId);
         return ApiResponse.success(new EventRemoveParticipant("success"));
     }
 
     @GetMapping("/{eventId}/participants")
+    @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
+    @Operation(summary = "Get event participants", description = "Retrieves the list of participants for the specified event. Only the event author can access this information.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Success"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Auth missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Event not found")
+    })
     public ApiResponse<EventParticipantsResponse> eventParticipants(@PathVariable UUID eventId) {
         List<EventParticipantProjection> participants = participantProjectionService.eventParticipants(eventId);
         EventParticipantsResponse response = new EventParticipantsResponse(
