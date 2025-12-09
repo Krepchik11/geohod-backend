@@ -38,6 +38,13 @@ The Geohod backend is in active development focusing on solidifying the v2 API, 
    - Improved `CreateEventDto` mapping using constructor pattern
    - EventParticipantDetails and projections updated to support phone number
 
+4. **Event Participation Check Endpoint** (December 2025)
+   - Added `GET /api/v2/events/{eventId}/participation/check` endpoint
+   - New DTO: `EventParticipationCheckResponse` with OpenAPI schema annotations
+   - Service method: `IEventParticipationService.isUserParticipant(UUID userId, UUID eventId)`
+   - Implementation validates event existence and checks participation using existing repository method
+   - Comprehensive OpenAPI documentation for code generation compatibility
+
 ### Historical Changes
 
 1. API and Docs

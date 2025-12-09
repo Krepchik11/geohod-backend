@@ -39,6 +39,30 @@ Gotchas:
 - Ensure Telegram authentication is required (no extra permitAll on the path).
 - Use projection DTOs for read queries to avoid N+1 and over-fetching.
 
+## Example: Event Participation Check Endpoint (Completed December 2025)
+
+This task was completed in commit 169b127 and serves as a good example of adding a simple read-only endpoint.
+
+**Files involved:**
+- Controller: `src/main/java/me/geohod/geohodbackend/api/controller/v2/EventParticipationController.java`
+- Response DTO: `src/main/java/me/geohod/geohodbackend/api/dto/response/EventParticipationCheckResponse.java`
+- Service interface: `src/main/java/me/geohod/geohodbackend/service/IEventParticipationService.java`
+- Service implementation: `src/main/java/me/geohod/geohodbackend/service/impl/EventParticipationService.java`
+
+**Implementation details:**
+- Added `GET /api/v2/events/{eventId}/participation/check` endpoint
+- Used existing repository method `eventParticipantRepository.existsByEventIdAndUserId()`
+- Added comprehensive OpenAPI annotations for API documentation
+- Followed v2 API pattern with `ApiResponse<EventParticipationCheckResponse>` return type
+- Simple boolean response wrapped in DTO for consistency
+
+**Key aspects:**
+- No new database changes required (used existing tables)
+- Minimal service layer logic (just validation + repository call)
+- Proper authentication via TelegramPrincipal
+- Comprehensive error handling (404 for non-existent events)
+- OpenAPI documentation for client code generation
+
 ## Adding a Notification via Outbox
 
 Last verified: 2025-08-05
