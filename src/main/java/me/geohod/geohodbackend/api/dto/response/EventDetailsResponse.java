@@ -1,13 +1,15 @@
 package me.geohod.geohodbackend.api.dto.response;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+
 import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
 import me.geohod.geohodbackend.data.model.Event;
-
-import java.time.Instant;
 
 public record EventDetailsResponse(
                 String id,
                 TelegramUserDetails author,
+                AuthorRating authorRating,
                 String name,
                 String description,
                 Instant date,
@@ -18,6 +20,10 @@ public record EventDetailsResponse(
                 boolean donationCash,
                 boolean donationTransfer,
                 ParticipantState participantState) {
+        public record AuthorRating(
+                        BigDecimal averageRating,
+                        int totalReviewsCount) {}
+        
         public record ParticipantState(
                         boolean pollLinkSent,
                         boolean cashDonated,

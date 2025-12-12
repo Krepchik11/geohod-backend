@@ -1,17 +1,23 @@
 package me.geohod.geohodbackend.data.model.repository;
 
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
-import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
-import me.geohod.geohodbackend.data.model.Event;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.util.*;
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
+import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
+import me.geohod.geohodbackend.data.model.Event;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,7 +45,9 @@ public class EventProjectionRepository {
                         e.donation_transfer,
                         BOOL_OR(p.poll_link_sent) as poll_link_sent,
                         BOOL_OR(p.cash_donated) as cash_donated,
-                        BOOL_OR(p.transfer_donated) as transfer_donated
+                        BOOL_OR(p.transfer_donated) as transfer_donated,
+                        COALESCE(AVG(r.rating), 0) as author_average_rating,
+                        COUNT(r.id) as author_total_reviews
                     FROM
                         events e
                     JOIN
@@ -48,6 +56,8 @@ public class EventProjectionRepository {
                         user_settings us ON us.user_id = u.id
                     LEFT JOIN
                         event_participants p ON e.id = p.event_id AND p.user_id = :userId
+                    LEFT JOIN
+                        reviews r ON r.event_id = e.id
                     WHERE
                         e.id = :eventId
                     GROUP BY
@@ -70,6 +80,9 @@ public class EventProjectionRepository {
                                 rs.getString("author_last_name"),
                                 rs.getString("author_image_url"),
                                 rs.getString("author_phone_number")),
+                        new EventDetailedProjection.AuthorRating(
+                                rs.getBigDecimal("author_average_rating"),
+                                rs.getInt("author_total_reviews")),
                         rs.getString("event_name"),
                         rs.getString("event_description"),
                         rs.getTimestamp("event_date").toInstant(),
@@ -145,8 +158,12 @@ public class EventProjectionRepository {
                         e.donation_transfer,
                         BOOL_OR(p.poll_link_sent) as poll_link_sent,
                         BOOL_OR(p.cash_donated) as cash_donated,
-                        BOOL_OR(p.transfer_donated) as transfer_donated
-                """ + baseSql + whereClause + " GROUP BY e.id, u.id, us.phone_number ORDER BY " + orderByClause
+                        BOOL_OR(p.transfer_donated) as transfer_donated,
+                        COALESCE(AVG(r.rating), 0) as author_average_rating,
+                        COUNT(r.id) as author_total_reviews
+                """ + baseSql + 
+                " LEFT JOIN reviews r ON r.event_id = e.id " +
+                whereClause + " GROUP BY e.id, u.id, us.phone_number ORDER BY " + orderByClause
                 + " OFFSET :offset LIMIT :pageSize";
 
         params.put("offset", pageable.getOffset());
@@ -165,6 +182,9 @@ public class EventProjectionRepository {
                                 rs.getString("author_last_name"),
                                 rs.getString("author_image_url"),
                                 rs.getString("author_phone_number")),
+                        new EventDetailedProjection.AuthorRating(
+                                rs.getBigDecimal("author_average_rating"),
+                                rs.getInt("author_total_reviews")),
                         rs.getString("event_name"),
                         rs.getString("event_description"),
                         rs.getTimestamp("event_date").toInstant(),
