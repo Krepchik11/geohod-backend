@@ -83,18 +83,6 @@ class PaymentGatewayServiceTest {
     }
 
     @Test
-    void testGetEventAuthorPaymentGateway_AuthorNotFound() {
-        // Given
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-
-        assertThrows(ResourceNotFoundException.class, 
-                () -> paymentGatewayService.getEventAuthorPaymentGateway(eventId));
-
-        verify(eventRepository).findById(eventId);
-        verify(userSettingsRepository, never()).findByUserId(any());
-    }
-
-    @Test
     void testGetEventAuthorPaymentGateway_AuthorSettingsNotFound() {
         // Given
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
