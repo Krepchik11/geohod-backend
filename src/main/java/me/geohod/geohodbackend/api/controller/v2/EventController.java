@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventCancelRequest;
 import me.geohod.geohodbackend.api.dto.request.EventCreateRequest;
@@ -29,6 +32,7 @@ import me.geohod.geohodbackend.api.dto.response.EventCreateResponse;
 import me.geohod.geohodbackend.api.dto.response.EventDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventFinishResponse;
 import me.geohod.geohodbackend.api.dto.response.EventUpdateResponse;
+import me.geohod.geohodbackend.api.dto.response.PaymentGatewayUrlResponse;
 import me.geohod.geohodbackend.api.mapper.EventApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.api.response.PageResponse;
@@ -36,13 +40,14 @@ import me.geohod.geohodbackend.data.dto.CancelEventDto;
 import me.geohod.geohodbackend.data.dto.CreateEventDto;
 import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
 import me.geohod.geohodbackend.data.dto.EventDto;
+import me.geohod.geohodbackend.data.dto.PaymentGatewayInfoDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
+import me.geohod.geohodbackend.data.mapper.PaymentGatewayModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
-
-import org.springframework.web.bind.annotation.RestController;
+import me.geohod.geohodbackend.service.IPaymentGatewayService;
 
 @RestController
 @RequestMapping("/api/v2/events")
@@ -51,6 +56,8 @@ public class EventController {
     private final EventApiMapper mapper;
     private final IEventService eventService;
     private final IEventProjectionService eventProjectionService;
+    private final IPaymentGatewayService paymentGatewayService;
+    private final PaymentGatewayModelMapper paymentGatewayMapper;
 
     @GetMapping("/{eventId}")
     public ApiResponse<EventDetailsResponse> getEventById(@PathVariable UUID eventId,
@@ -122,5 +129,27 @@ public class EventController {
             @AuthenticationPrincipal TelegramPrincipal principal) {
         eventService.finishEvent(mapper.map(request, eventId));
         return ApiResponse.success(new EventFinishResponse("success"));
+    }
+
+    @GetMapping("/{eventId}/author/payment-gateway")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+        summary = "Get event author's payment gateway",
+        description = "Retrieves the payment gateway URL for donations"
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Success"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Authentication missing"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Event not found")
+    })
+    public ApiResponse<PaymentGatewayUrlResponse> getEventAuthorPaymentGateway(
+            @Parameter(required = true, description = "event id")
+            @PathVariable UUID eventId,
+            @AuthenticationPrincipal TelegramPrincipal principal) {
+        PaymentGatewayInfoDto paymentGatewayInfo = paymentGatewayService.getEventAuthorPaymentGateway(eventId);
+        PaymentGatewayUrlResponse response = paymentGatewayMapper.toResponse(paymentGatewayInfo);
+        
+        return ApiResponse.success(response);
     }
 }
