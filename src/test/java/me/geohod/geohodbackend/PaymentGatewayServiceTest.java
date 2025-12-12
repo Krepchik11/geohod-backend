@@ -64,7 +64,7 @@ class PaymentGatewayServiceTest {
 
         PaymentGatewayInfoDto result = paymentGatewayService.getEventAuthorPaymentGateway(eventId);
 
-        assertEquals("https://payment.example.com/donate", result.paymentUrl());
+        assertEquals("https://payment.example.com/donate", result.paymentGatewayUrl());
 
         verify(eventRepository).findById(eventId);
         verify(userSettingsRepository).findByUserId(authorId);
