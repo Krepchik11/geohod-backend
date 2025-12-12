@@ -1,14 +1,15 @@
 package me.geohod.geohodbackend.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
-import me.geohod.geohodbackend.data.model.repository.EventProjectionRepository;
-import me.geohod.geohodbackend.service.IEventProjectionService;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.data.dto.EventDetailedProjection;
+import me.geohod.geohodbackend.data.model.repository.EventProjectionRepository;
+import me.geohod.geohodbackend.service.IEventProjectionService;
 
 @Service
 @RequiredArgsConstructor
