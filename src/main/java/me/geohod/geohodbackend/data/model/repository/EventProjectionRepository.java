@@ -46,8 +46,8 @@ public class EventProjectionRepository {
                         BOOL_OR(p.poll_link_sent) as poll_link_sent,
                         BOOL_OR(p.cash_donated) as cash_donated,
                         BOOL_OR(p.transfer_donated) as transfer_donated,
-                        COALESCE(AVG(r.rating), 0) as author_average_rating,
-                        COUNT(r.id) as author_total_reviews
+                        COALESCE(ur.average_rating, 0) as author_average_rating,
+                        COALESCE(ur.total_reviews_count, 0) as author_total_reviews
                     FROM
                         events e
                     JOIN
@@ -57,11 +57,11 @@ public class EventProjectionRepository {
                     LEFT JOIN
                         event_participants p ON e.id = p.event_id AND p.user_id = :userId
                     LEFT JOIN
-                        reviews r ON r.event_id = e.id
+                        user_ratings ur ON ur.user_id = u.id
                     WHERE
                         e.id = :eventId
                     GROUP BY
-                        e.id, u.id, us.phone_number
+                        e.id, u.id, us.phone_number, ur.average_rating, ur.total_reviews_count
                 """;
 
         Map<String, Object> params = new HashMap<>();
@@ -159,11 +159,11 @@ public class EventProjectionRepository {
                         BOOL_OR(p.poll_link_sent) as poll_link_sent,
                         BOOL_OR(p.cash_donated) as cash_donated,
                         BOOL_OR(p.transfer_donated) as transfer_donated,
-                        COALESCE(AVG(r.rating), 0) as author_average_rating,
-                        COUNT(r.id) as author_total_reviews
-                """ + baseSql + 
-                " LEFT JOIN reviews r ON r.event_id = e.id " +
-                whereClause + " GROUP BY e.id, u.id, us.phone_number ORDER BY " + orderByClause
+                        COALESCE(ur.average_rating, 0) as author_average_rating,
+                        COALESCE(ur.total_reviews_count, 0) as author_total_reviews
+                """ + baseSql +
+                " LEFT JOIN user_ratings ur ON ur.user_id = u.id " +
+                whereClause + " GROUP BY e.id, u.id, us.phone_number, ur.average_rating, ur.total_reviews_count ORDER BY " + orderByClause
                 + " OFFSET :offset LIMIT :pageSize";
 
         params.put("offset", pageable.getOffset());
