@@ -29,14 +29,14 @@ public class Notification implements Persistable<Long> {
     private UUID userId;
     private StrategyNotificationType type;
     private JsonbString payload;
-    private boolean isRead;
+    private boolean read;
     private Instant createdAt;
 
     public Notification(UUID userId, StrategyNotificationType type, String payload) {
         this.userId = userId;
         this.type = type;
         this.payload = new JsonbString(payload);
-        this.isRead = false;
+        this.read = false;
         this.createdAt = Instant.now();
     }
 
@@ -44,7 +44,7 @@ public class Notification implements Persistable<Long> {
         this.userId = userId;
         this.type = type;
         this.payload = payload;
-        this.isRead = false;
+        this.read = false;
         this.createdAt = Instant.now();
     }
 
@@ -53,12 +53,12 @@ public class Notification implements Persistable<Long> {
         this.userId = userId;
         this.type = type;
         this.payload = payload;
-        this.isRead = false;
+        this.read = false;
         this.createdAt = Instant.now();
     }
 
     public void dismiss() {
-        this.isRead = true;
+        this.read = true;
     }
 
     @Override

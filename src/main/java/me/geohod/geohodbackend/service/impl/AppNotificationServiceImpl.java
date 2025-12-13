@@ -32,7 +32,7 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
             if (isRead == null) {
                 notifications = notificationRepository.findByUserIdOrderByIdDesc(userId, PageRequest.of(0, limit));
             } else {
-                notifications = notificationRepository.findByUserIdAndIsReadOrderByIdDesc(userId, isRead, PageRequest.of(0, limit));
+                notifications = notificationRepository.findByUserIdAndReadOrderByIdDesc(userId, isRead, PageRequest.of(0, limit));
             }
         } else {
             if (isRead == null) {

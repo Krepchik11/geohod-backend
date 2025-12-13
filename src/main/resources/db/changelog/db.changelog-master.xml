@@ -19,4 +19,5 @@
     <include file="db.changelog-2.3-user-show-organizer-ad.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2.4-add-event-action-states.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2.5-add-phone-number.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2.6-rename-is-read-to-read.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

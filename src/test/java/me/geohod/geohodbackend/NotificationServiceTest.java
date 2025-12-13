@@ -46,7 +46,7 @@ public class NotificationServiceTest {
         // Use NotificationType in DTO for API compatibility
         NotificationDto notificationDto = new NotificationDto(1L, userId, NotificationType.EVENT_CREATED, "payload", false, null, UUID.randomUUID());
         
-        when(notificationRepository.findByUserIdAndIsReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
+        when(notificationRepository.findByUserIdAndReadOrderByIdDesc(eq(userId), eq(false), any())).thenReturn(Collections.singletonList(notification));
         when(notificationMapper.toDto(notification)).thenReturn(notificationDto);
         
         var result = notificationService.getNotifications(userId, 10, false, null);
