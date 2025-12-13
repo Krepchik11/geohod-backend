@@ -10,7 +10,7 @@ public record NotificationDto(
         UUID userId,
         NotificationType type,
         String payload,
-        boolean isRead,
+        boolean read,
         Instant createdAt,
         UUID eventId
 ) {
