@@ -14,4 +14,6 @@ public interface IEventParticipationService {
     void updateParticipantState(UUID userId, UUID eventId, UpdateParticipantStateRequest request);
 
     boolean isUserParticipant(UUID userId, UUID eventId);
+
+    int getUserParticipantCount(UUID userId, UUID eventId);
 }

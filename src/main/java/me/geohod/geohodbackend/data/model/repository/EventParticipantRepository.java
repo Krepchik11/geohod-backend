@@ -22,6 +22,9 @@ public interface EventParticipantRepository extends CrudRepository<EventParticip
 
     boolean existsByEventIdAndUserId(UUID eventId, UUID userId);
 
+    @Query("SELECT COUNT(*) FROM event_participants WHERE event_id = :eventId AND user_id = :userId")
+    int countByEventIdAndUserId(@Param("eventId") UUID eventId, @Param("userId") UUID userId);
+
     @Modifying
     @Query("DELETE FROM event_participants WHERE event_id = :eventId AND user_id = :userId")
     int deleteByEventIdAndUserId(@Param("eventId") UUID eventId, @Param("userId") UUID userId);

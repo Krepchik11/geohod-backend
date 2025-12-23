@@ -20,8 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.request.EventRegisterRequest;
 import me.geohod.geohodbackend.api.dto.request.UpdateParticipantStateRequest;
-import me.geohod.geohodbackend.api.dto.response.EventParticipationCheckResponse;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantsResponse;
+import me.geohod.geohodbackend.api.dto.response.EventParticipationCheckResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRegisterResponse;
 import me.geohod.geohodbackend.api.dto.response.EventRemoveParticipant;
 import me.geohod.geohodbackend.api.dto.response.EventUnregisterResponse;
@@ -107,6 +107,7 @@ public class EventParticipationController {
             @Parameter(required = true) @PathVariable UUID eventId,
             @AuthenticationPrincipal TelegramPrincipal principal) {
         boolean isParticipant = participationService.isUserParticipant(principal.userId(), eventId);
-        return ApiResponse.success(new EventParticipationCheckResponse(isParticipant));
+        int amountOfParticipants = participationService.getUserParticipantCount(principal.userId(), eventId);
+        return ApiResponse.success(new EventParticipationCheckResponse(isParticipant, amountOfParticipants));
     }
 }
