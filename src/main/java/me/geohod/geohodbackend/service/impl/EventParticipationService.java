@@ -88,10 +88,12 @@ public class EventParticipationService implements IEventParticipationService {
 
     @Override
     public boolean isUserParticipant(UUID userId, UUID eventId) {
-        eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event does not exist"));
-
         return eventParticipantRepository.existsByEventIdAndUserId(eventId, userId);
+    }
+
+    @Override
+    public int getUserParticipantCount(UUID userId, UUID eventId) {
+        return eventParticipantRepository.countByEventIdAndUserId(eventId, userId);
     }
 
     private void performUnregister(UUID userId, UUID eventId) {
