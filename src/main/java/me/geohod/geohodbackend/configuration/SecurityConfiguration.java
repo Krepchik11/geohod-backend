@@ -1,10 +1,13 @@
 package me.geohod.geohodbackend.configuration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,12 +22,12 @@ import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
 import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
 
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfiguration.class);
+
     private final ProviderManager providerManager;
     private final TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider;
     private final GeohodProperties properties;
@@ -46,6 +49,13 @@ public class SecurityConfiguration {
         configuration.setAllowedHeaders(properties.cors().allowedHeaders());
         configuration.setAllowCredentials(properties.cors().allowCredentials());
         configuration.setMaxAge(properties.cors().maxAge());
+
+        log.info("CORS configuration: origins={}, methods={}, headers={}, credentials={}, maxAge={}",
+                properties.cors().allowedOrigins(),
+                properties.cors().allowedMethods(),
+                properties.cors().allowedHeaders(),
+                properties.cors().allowCredentials(),
+                properties.cors().maxAge());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
