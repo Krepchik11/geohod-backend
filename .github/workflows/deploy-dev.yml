@@ -41,7 +41,7 @@ jobs:
 
       - name: Create .env file
         run: |
-          cat << EOF > .env
+          cat << EOF > /tmp/.env
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
@@ -66,9 +66,10 @@ jobs:
           host: ${{ vars.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: ".env,/tmp/geohod-backend-image.tar.gz"
+          source: "/tmp/.env,/tmp/geohod-backend-image.tar.gz"
           target: "~/geohod-backend-dev"
           strip_components: 1
+          overwrite: true
 
       - name: Transfer configuration to VPS
         uses: appleboy/scp-action@v1.0.0
