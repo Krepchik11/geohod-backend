@@ -3,7 +3,6 @@ package me.geohod.geohodbackend;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.EventParticipant;
 import me.geohod.geohodbackend.data.model.User;
@@ -34,9 +32,6 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 
 @ExtendWith(MockitoExtension.class)
 class EventCancelledParticipantTelegramStrategyTest {
-
-    @Mock
-    private GeohodProperties properties;
 
     @Mock
     private EventParticipantRepository eventParticipantRepository;
@@ -55,6 +50,9 @@ class EventCancelledParticipantTelegramStrategyTest {
     @Mock
     private IUserService userService;
 
+    @Mock
+    private me.geohod.geohodbackend.service.link.BinaryLinkGenerator binaryLinkGenerator;
+
     private EventCancelledParticipantTelegramStrategy strategy;
 
     private Event event;
@@ -70,8 +68,7 @@ class EventCancelledParticipantTelegramStrategyTest {
 
         event = new Event("Test Event", "Description", java.time.Instant.now(), 10, authorId);
         strategy = new EventCancelledParticipantTelegramStrategy(
-            properties, eventParticipantRepository, userRepository,
-            objectMapper, messageFormatter, telegramOutboxMessagePublisher, userService
+            eventParticipantRepository, objectMapper, binaryLinkGenerator, messageFormatter, telegramOutboxMessagePublisher, userService
         );
     }
 
@@ -84,10 +81,6 @@ class EventCancelledParticipantTelegramStrategyTest {
         when(eventParticipantRepository.findEventParticipantByEventId(event.getId()))
             .thenReturn(java.util.List.of(participant));
         when(userService.getUser(authorId)).thenReturn(author);
-
-        GeohodProperties.LinkTemplates linkTemplates = mock(GeohodProperties.LinkTemplates.class);
-        when(linkTemplates.startappLink()).thenReturn("https://t.me/testbot?startapp=");
-        when(properties.linkTemplates()).thenReturn(linkTemplates);
 
         when(messageFormatter.formatMessageFromTemplate(
             anyString(),
@@ -104,7 +97,7 @@ class EventCancelledParticipantTelegramStrategyTest {
     }
 
     @Test
-    void testSkipWhenNotifyParticipantsIsFalse() throws Exception {
+    void testSkipWhenNotifyParticipantsIsFalse() {
         String payload = "{\"notifyParticipants\": false}";
 
         strategy.send(event, payload);

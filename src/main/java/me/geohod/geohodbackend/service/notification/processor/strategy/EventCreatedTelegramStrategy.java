@@ -1,21 +1,18 @@
 package me.geohod.geohodbackend.service.notification.processor.strategy;
 
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.service.ITelegramOutboxMessagePublisher;
 import me.geohod.geohodbackend.service.IUserService;
+import me.geohod.geohodbackend.service.link.BinaryLinkGenerator;
+import me.geohod.geohodbackend.service.link.LinkAction;
 import me.geohod.geohodbackend.service.notification.NotificationChannel;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.MessageFormatter;
 import me.geohod.geohodbackend.service.notification.processor.strategy.message.TemplateType;
@@ -25,8 +22,7 @@ import me.geohod.geohodbackend.service.notification.processor.strategy.message.T
 @RequiredArgsConstructor
 public class EventCreatedTelegramStrategy implements NotificationStrategy {
 
-    private final GeohodProperties properties;
-    private final ObjectMapper objectMapper;
+    private final BinaryLinkGenerator binaryLinkGenerator;
     private final MessageFormatter messageFormatter;
     private final ITelegramOutboxMessagePublisher telegramOutboxMessagePublisher;
     private final IUserService userService;
@@ -57,26 +53,12 @@ public class EventCreatedTelegramStrategy implements NotificationStrategy {
         }
     }
 
-    private String createRegisterLink(Event event) throws JsonProcessingException {
-        var registerAction = objectMapper.createObjectNode();
-        registerAction.put("action", "register");
-        registerAction.put("eventId", event.getId().toString());
-
-        String registerActionString = objectMapper.writeValueAsString(registerAction);
-        String registerActionBase64 = Base64.getEncoder().encodeToString(registerActionString.getBytes());
-
-        return properties.linkTemplates().startappLink() + registerActionBase64;
+    private String createRegisterLink(Event event) {
+        return binaryLinkGenerator.generateLink(LinkAction.REGISTER_FOR_EVENT, event.getId());
     }
 
-    private String createEventLink(Event event) throws JsonProcessingException {
-        var eventLinkAction = objectMapper.createObjectNode();
-        eventLinkAction.put("action", "open");
-        eventLinkAction.put("eventId", event.getId().toString());
-
-        String eventLinkString = objectMapper.writeValueAsString(eventLinkAction);
-        String eventLinkBase64 = Base64.getEncoder().encodeToString(eventLinkString.getBytes());
-
-        return properties.linkTemplates().startappLink() + eventLinkBase64;
+    private String createEventLink(Event event) {
+        return binaryLinkGenerator.generateLink(LinkAction.OPEN_EVENT, event.getId());
     }
 
     private void publishMessage(UUID userId, String message) {
