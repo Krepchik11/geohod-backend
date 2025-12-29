@@ -45,6 +45,24 @@ The API supports versioning with backward compatibility:
 - **v1**: Legacy endpoints (maintained for backward compatibility)
 - **v2**: New endpoints with improved response format using `ApiResponse<T>` wrapper
 
+## Binary link structure protocol
+
+Creates binary data from action and UUID, then encodes base64
+
+17-byte encoded sequences that contain:
+- **1 byte** for the action code
+- **16 bytes** for the UUID representation
+
+```
+[Action Code (1 byte)] [UUID MSB (8 bytes)] [UUID LSB (8 bytes)]
+```
+
+### Actions
+
+- **OPEN_EVENT (0x01)**: Opens/view event details
+- **REGISTER_FOR_EVENT (0x02)**: Register for event
+- **REVIEW_EVENT (0x03)**: Submit review for event
+
 ## Database Migrations
 
 This project uses Liquibase for database schema management. Migrations are automatically applied when the application starts.
