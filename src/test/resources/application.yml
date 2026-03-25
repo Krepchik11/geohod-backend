@@ -1,0 +1,53 @@
+geohod:
+  telegram-bot:
+    token: test-token
+    username: test_bot
+  linkTemplates:
+    startappLink: https://t.me/test_bot?startapp=
+  cors:
+    allowed-origins:
+    allowed-methods:
+      - "GET"
+      - "POST"
+      - "PATCH"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    allowed-headers:
+      - "*"
+    allow-credentials: true
+    max-age: 3600
+  security:
+    jwt:
+      secret: test-secret-key-that-is-at-least-32-characters-long-for-hmac-sha256
+      access-token-expiration: 15m
+      refresh-token-expiration: 30d
+    legacy-telegram-auth:
+      enabled: true
+    email-otp:
+      code-length: 6
+      expiration: 5m
+      max-attempts: 5
+      max-sends-per-hour: 3
+    telegram-oidc:
+      client-id: test-client-id
+      client-secret: test-client-secret
+      issuer-uri: https://oauth.telegram.org
+      jwks-uri: https://oauth.telegram.org/.well-known/jwks.json
+      token-uri: https://oauth.telegram.org/token
+      jwks-cache-ttl: 1h
+    telegram-init-data:
+      max-age: 5m
+
+spring:
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  mail:
+    host: localhost
+    port: 1025
+  processor:
+    in-app:
+      delay: 5000
+    telegram:
+      delay: 5000

@@ -1,5 +1,10 @@
 package me.geohod.geohodbackend.configuration;
 
+import me.geohod.geohodbackend.auth.service.JwtService;
+import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
+import me.geohod.geohodbackend.security.filter.JwtAuthenticationFilter;
+import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
+import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -18,10 +23,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
-import me.geohod.geohodbackend.security.filter.TelegramInitDataAuthenticationFilter;
-import me.geohod.geohodbackend.security.provider.TelegramTokenAuthenticationProvider;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -30,20 +31,21 @@ public class SecurityConfiguration {
 
     private final ProviderManager providerManager;
     private final TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider;
+    private final JwtService jwtService;
     private final GeohodProperties properties;
 
     public SecurityConfiguration(TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider,
-            GeohodProperties properties) {
+                                 JwtService jwtService,
+                                 GeohodProperties properties) {
         this.telegramTokenAuthenticationProvider = telegramTokenAuthenticationProvider;
+        this.jwtService = jwtService;
         this.properties = properties;
-        this.providerManager = new ProviderManager(
-                telegramTokenAuthenticationProvider);
+        this.providerManager = new ProviderManager(telegramTokenAuthenticationProvider);
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
         configuration.setAllowedOrigins(properties.cors().allowedOrigins());
         configuration.setAllowedMethods(properties.cors().allowedMethods());
         configuration.setAllowedHeaders(properties.cors().allowedHeaders());
@@ -69,20 +71,31 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        var chain = http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml")
-                        .permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
+                        .requestMatchers("/api/v2/auth/**").permitAll()
+                        .requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v2/**").authenticated()
                         .anyRequest().fullyAuthenticated())
                 .authenticationProvider(telegramTokenAuthenticationProvider)
                 .addFilterBefore(loggingFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(tgInitDataAuthFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(sessionConfigurer -> sessionConfigurer
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .build();
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        if (properties.security().legacyTelegramAuth().enabled()) {
+            chain.addFilterAfter(tgInitDataAuthFilter(), JwtAuthenticationFilter.class);
+        }
+
+        return chain.build();
+    }
+
+    private JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtService);
     }
 
     private TelegramInitDataAuthenticationFilter tgInitDataAuthFilter() {

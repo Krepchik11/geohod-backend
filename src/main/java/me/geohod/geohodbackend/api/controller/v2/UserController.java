@@ -24,7 +24,7 @@ import me.geohod.geohodbackend.api.response.PageResponse;
 import me.geohod.geohodbackend.data.dto.UserDto;
 import me.geohod.geohodbackend.data.dto.UserRatingDto;
 import me.geohod.geohodbackend.data.model.User;
-import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.security.principal.AppPrincipal;
 import me.geohod.geohodbackend.service.IReviewService;
 import me.geohod.geohodbackend.service.IUserRatingService;
 import me.geohod.geohodbackend.service.IUserService;
@@ -50,7 +50,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/reviews")
-    public ApiResponse<PageResponse<ReviewResponse>> getUserReviews(@PathVariable UUID id, @PageableDefault(size = 10) Pageable pageable, @AuthenticationPrincipal TelegramPrincipal principal) {
+    public ApiResponse<PageResponse<ReviewResponse>> getUserReviews(@PathVariable UUID id, @PageableDefault(size = 10) Pageable pageable, @AuthenticationPrincipal AppPrincipal principal) {
         Page<ReviewResponse> reviewsPage = reviewService.getReviewsWithAuthorForUser(id, principal.userId(), pageable)
                 .map(reviewApiMapper::map);
         return ApiResponse.success(new PageResponse<>(reviewsPage));

@@ -28,7 +28,7 @@ import me.geohod.geohodbackend.api.dto.response.EventUnregisterResponse;
 import me.geohod.geohodbackend.api.mapper.UserApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.model.repository.EventParticipantProjectionRepository.EventParticipantProjection;
-import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.security.principal.AppPrincipal;
 import me.geohod.geohodbackend.service.IEventParticipationService;
 import me.geohod.geohodbackend.service.IParticipantProjectionService;
 
@@ -45,7 +45,7 @@ public class EventParticipationController {
     public ApiResponse<EventRegisterResponse> registerForEvent(
             @PathVariable UUID eventId,
             @RequestBody(required = false) EventRegisterRequest request,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         int amount = (request != null) ? request.amountOfParticipants() : 1;
         UUID loggedUserId = principal.userId();
         participationService.registerForEvent(loggedUserId, eventId, amount);
@@ -54,7 +54,7 @@ public class EventParticipationController {
 
     @DeleteMapping("/{eventId}/unregister")
     public ApiResponse<EventUnregisterResponse> unregisterFromEvent(@PathVariable UUID eventId,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         UUID loggedUserId = principal.userId();
         participationService.unregisterFromEvent(loggedUserId, eventId);
         return ApiResponse.success(new EventUnregisterResponse("success"));
@@ -64,7 +64,7 @@ public class EventParticipationController {
     @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventRemoveParticipant> removeParticipant(@PathVariable UUID eventId,
             @PathVariable UUID participantId,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         participationService.unregisterParticipantFromEvent(participantId, eventId);
         return ApiResponse.success(new EventRemoveParticipant("success"));
     }
@@ -91,7 +91,7 @@ public class EventParticipationController {
     @PatchMapping("/{eventId}/participation/state")
     public ApiResponse<Void> updateParticipantState(@PathVariable UUID eventId,
             @RequestBody UpdateParticipantStateRequest request,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         participationService.updateParticipantState(principal.userId(), eventId, request);
         return ApiResponse.success(null);
     }
@@ -105,7 +105,7 @@ public class EventParticipationController {
     })
     public ApiResponse<EventParticipationCheckResponse> checkParticipation(
             @Parameter(required = true) @PathVariable UUID eventId,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         boolean isParticipant = participationService.isUserParticipant(principal.userId(), eventId);
         int amountOfParticipants = participationService.getUserParticipantCount(principal.userId(), eventId);
         return ApiResponse.success(new EventParticipationCheckResponse(isParticipant, amountOfParticipants));

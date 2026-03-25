@@ -44,7 +44,7 @@ import me.geohod.geohodbackend.data.dto.PaymentGatewayInfoDto;
 import me.geohod.geohodbackend.data.dto.UpdateEventDto;
 import me.geohod.geohodbackend.data.mapper.PaymentGatewayModelMapper;
 import me.geohod.geohodbackend.data.model.Event;
-import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.security.principal.AppPrincipal;
 import me.geohod.geohodbackend.service.IEventProjectionService;
 import me.geohod.geohodbackend.service.IEventService;
 import me.geohod.geohodbackend.service.IPaymentGatewayService;
@@ -61,7 +61,7 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     public ApiResponse<EventDetailsResponse> getEventById(@PathVariable UUID eventId,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         UUID userId = principal != null ? principal.userId() : null;
         EventDetailedProjection event = eventProjectionService.event(eventId, userId);
         return ApiResponse.success(mapper.response(event));
@@ -81,7 +81,7 @@ public class EventController {
                     - default sort: `createdAt,desc` (newest events first)
                     """, in = ParameterIn.QUERY) Pageable pageable,
 
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         UUID filterByAuthorUserId = iamAuthor ? principal.userId() : null;
         UUID filterByParticipantUserId = iamParticipant ? principal.userId() : null;
         Page<EventDetailedProjection> events = eventProjectionService.events(
@@ -94,7 +94,7 @@ public class EventController {
 
     @PostMapping
     public ApiResponse<EventCreateResponse> createEvent(@RequestBody EventCreateRequest request,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         CreateEventDto createDto = mapper.map(request, principal.userId());
         EventDto createdEvent = eventService.createEvent(createDto);
 
@@ -107,7 +107,7 @@ public class EventController {
     @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventUpdateResponse> updateEvent(@PathVariable UUID eventId,
             @RequestBody EventUpdateRequest request,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         UpdateEventDto updateDto = mapper.map(request, eventId);
         eventService.updateEventDetails(updateDto);
         return ApiResponse.success(new EventUpdateResponse("success"));
@@ -117,7 +117,7 @@ public class EventController {
     @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventCancelResponse> cancelEvent(@PathVariable UUID eventId,
             @RequestBody EventCancelRequest request,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         eventService.cancelEvent(new CancelEventDto(eventId, request.notifyParticipants()));
         return ApiResponse.success(new EventCancelResponse("success"));
     }
@@ -126,7 +126,7 @@ public class EventController {
     @PreAuthorize("@eventSecurity.isEventAuthor(#eventId)")
     public ApiResponse<EventFinishResponse> finishEvent(@PathVariable UUID eventId,
             @RequestBody EventFinishRequest request,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         eventService.finishEvent(mapper.map(request, eventId));
         return ApiResponse.success(new EventFinishResponse("success"));
     }
@@ -146,7 +146,7 @@ public class EventController {
     public ApiResponse<PaymentGatewayUrlResponse> getEventAuthorPaymentGateway(
             @Parameter(required = true, description = "event id")
             @PathVariable UUID eventId,
-            @AuthenticationPrincipal TelegramPrincipal principal) {
+            @AuthenticationPrincipal AppPrincipal principal) {
         PaymentGatewayInfoDto paymentGatewayInfo = paymentGatewayService.getEventAuthorPaymentGateway(eventId);
         PaymentGatewayUrlResponse response = paymentGatewayMapper.toResponse(paymentGatewayInfo);
         

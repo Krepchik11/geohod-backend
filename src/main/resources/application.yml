@@ -13,6 +13,17 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 springdoc:
   api-docs:
@@ -65,6 +76,28 @@ geohod:
        - "*"
      allow-credentials: true
      max-age: 3600
+
+   security:
+     telegram-oidc:
+       client-id: ${TELEGRAM_OIDC_CLIENT_ID:}
+       client-secret: ${TELEGRAM_OIDC_CLIENT_SECRET:}
+       issuer-uri: https://oauth.telegram.org
+       jwks-uri: https://oauth.telegram.org/.well-known/jwks.json
+       token-uri: https://oauth.telegram.org/token
+       jwks-cache-ttl: 1h
+     telegram-init-data:
+       max-age: 5m
+     jwt:
+       secret: ${JWT_SECRET}
+       access-token-expiration: 15m
+       refresh-token-expiration: 30d
+     legacy-telegram-auth:
+       enabled: true
+     email-otp:
+       code-length: 6
+       expiration: 5m
+       max-attempts: 5
+       max-sends-per-hour: 3
 
    processor:
      in-app:
