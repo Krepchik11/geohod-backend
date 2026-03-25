@@ -18,7 +18,7 @@ import me.geohod.geohodbackend.api.dto.response.UserSettingsResponse;
 import me.geohod.geohodbackend.api.mapper.UserSettingsApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.dto.UserSettingsDto;
-import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.security.principal.AppPrincipal;
 import me.geohod.geohodbackend.service.IUserSettingsService;
 
 @RestController
@@ -29,7 +29,7 @@ public class UserSettingsController {
     private final UserSettingsApiMapper userSettingsApiMapper;
 
     @GetMapping
-    public ApiResponse<UserSettingsResponse> getUserSettings(@AuthenticationPrincipal TelegramPrincipal principal) {
+    public ApiResponse<UserSettingsResponse> getUserSettings(@AuthenticationPrincipal AppPrincipal principal) {
         UserSettingsDto dto = userSettingsService.getUserSettings(principal.userId());
         UserSettingsResponse response = userSettingsApiMapper.toResponse(dto);
         return ApiResponse.success(response);
@@ -37,7 +37,7 @@ public class UserSettingsController {
 
     @PutMapping
     public ApiResponse<UserSettingsResponse> updateUserSettings(
-            @AuthenticationPrincipal TelegramPrincipal principal,
+            @AuthenticationPrincipal AppPrincipal principal,
             @RequestBody UserSettingsRequest request) {
         var userId = principal.userId();
 
@@ -48,7 +48,7 @@ public class UserSettingsController {
 
     @PutMapping("/default-max-participants")
     public ApiResponse<UserSettingsResponse> updateMaxParticipants(
-            @AuthenticationPrincipal TelegramPrincipal principal,
+            @AuthenticationPrincipal AppPrincipal principal,
             @Valid @RequestBody DefaultMaxParticipantsRequest request) {
         var userId = principal.userId();
         var maxParticipants = request.defaultMaxParticipants();
@@ -60,7 +60,7 @@ public class UserSettingsController {
 
     @PutMapping("/payment-gateway-url")
     public ApiResponse<UserSettingsResponse> updatePaymentGatewayUrl(
-            @AuthenticationPrincipal TelegramPrincipal principal,
+            @AuthenticationPrincipal AppPrincipal principal,
             @Valid @RequestBody PaymentGatewayUrlRequest request) {
         var userId = principal.userId();
         var paymentGatewayUrl = request.paymentGatewayUrl();
@@ -72,7 +72,7 @@ public class UserSettingsController {
 
     @PutMapping("/show-become-organizer")
     public ApiResponse<UserSettingsResponse> updateShowBecomeOrganizer(
-            @AuthenticationPrincipal TelegramPrincipal principal,
+            @AuthenticationPrincipal AppPrincipal principal,
             @Valid @RequestBody ShowBecomeOrganizerRequest request) {
         var userId = principal.userId();
         var showBecomeOrginizer = request.showBecomeOrganizer();
@@ -84,7 +84,7 @@ public class UserSettingsController {
 
     @PutMapping("/phone-number")
     public ApiResponse<UserSettingsResponse> updatePhoneNumber(
-            @AuthenticationPrincipal TelegramPrincipal principal,
+            @AuthenticationPrincipal AppPrincipal principal,
             @Valid @RequestBody PhoneNumberRequest request) {
         var userId = principal.userId();
         var phoneNumber = request.phoneNumber();

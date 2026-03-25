@@ -8,6 +8,9 @@ logging:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 spring:
+  mail:
+    host: localhost
+    port: 1025
   datasource:
     hikari:
       maximum-pool-size: 3
@@ -36,7 +39,20 @@ geohod:
      allowed-origins:
        - "http://localhost:3000"
        - "http://127.0.0.1:3000"
-       
+
+   security:
+     jwt:
+       secret: dev-secret-key-at-least-32-characters-long-for-hmac
+       access-token-expiration: 60m
+       refresh-token-expiration: 30d
+     legacy-telegram-auth:
+       enabled: true
+     email-otp:
+       code-length: 6
+       expiration: 10m
+       max-attempts: 10
+       max-sends-per-hour: 20
+
    processor:
      in-app:
        delay: 10000

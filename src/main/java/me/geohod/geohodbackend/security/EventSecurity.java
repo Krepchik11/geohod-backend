@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.data.model.Event;
 import me.geohod.geohodbackend.data.model.repository.EventRepository;
-import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.security.principal.AppPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class EventSecurity {
     public boolean isEventAuthor(UUID eventId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (eventId == null || authentication == null
-                || !(authentication.getPrincipal() instanceof TelegramPrincipal principal)) {
+                || !(authentication.getPrincipal() instanceof AppPrincipal principal)) {
             return false;
         }
 
