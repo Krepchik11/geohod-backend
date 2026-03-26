@@ -7,7 +7,6 @@ Wants=network-online.target
 Image=ghcr.io/krepchik11/geohod-backend:dev-latest
 ContainerName=geohod-backend-dev
 EnvironmentFile=%h/geohod-backend-dev/.env
-PublishPort=127.0.0.1:8080:8080
 Network=geohod-net-dev.network
 HealthCmd=wget -qO- http://localhost:8080/actuator/health
 HealthInterval=30s
