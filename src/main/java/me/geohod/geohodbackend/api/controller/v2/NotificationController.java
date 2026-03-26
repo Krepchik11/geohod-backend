@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import me.geohod.geohodbackend.api.dto.notification.NotificationResponse;
 import me.geohod.geohodbackend.api.mapper.NotificationApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
-import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
+import me.geohod.geohodbackend.security.principal.AppPrincipal;
 import me.geohod.geohodbackend.service.notification.IAppNotificationService;
 
 @RestController
@@ -26,7 +26,7 @@ public class NotificationController {
 
     @GetMapping
     public ApiResponse<List<NotificationResponse>> getNotifications(
-            @AuthenticationPrincipal TelegramPrincipal principal,
+            @AuthenticationPrincipal AppPrincipal principal,
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(required = false) Boolean isRead,
             @RequestParam(required = false) Long cursorIdAfter) {
@@ -41,13 +41,13 @@ public class NotificationController {
     }
 
     @PostMapping("/{id}/dismiss")
-    public ApiResponse<Void> dismiss(@AuthenticationPrincipal TelegramPrincipal principal, @PathVariable Long id) {
+    public ApiResponse<Void> dismiss(@AuthenticationPrincipal AppPrincipal principal, @PathVariable Long id) {
         appNotificationService.dismiss(id, principal.userId());
         return ApiResponse.success(null);
     }
 
     @PostMapping("/dismiss-all")
-    public ApiResponse<Void> dismissAll(@AuthenticationPrincipal TelegramPrincipal principal) {
+    public ApiResponse<Void> dismissAll(@AuthenticationPrincipal AppPrincipal principal) {
         appNotificationService.dismissAll(principal.userId());
         return ApiResponse.success(null);
     }
