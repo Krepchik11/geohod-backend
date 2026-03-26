@@ -93,7 +93,7 @@ jobs:
 
             echo "--> Reloading systemd and restarting backend..."
             systemctl --user daemon-reload
-            systemctl --user enable --now geohod-postgres-dev
+            systemctl --user start geohod-postgres-dev
             systemctl --user restart geohod-backend-dev
 
             echo "--> Waiting for container to become healthy..."
