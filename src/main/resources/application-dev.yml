@@ -21,11 +21,6 @@ spring:
       hibernate:
         format_sql: false
         use_sql_comments: false
-  mvc:
-    cors:
-      allowed-origins:
-        - "https://localhost:3000"
-        - "https://127.0.0.1:3000"
 
 management:
   endpoints:
@@ -37,11 +32,16 @@ management:
       show-details: when-authorized
 
 geohod:
-  processor:
-    in-app:
-      delay: 10000
-    telegram:
-      delay: 10000
+   cors:
+     allowed-origins:
+       - "http://localhost:3000"
+       - "http://127.0.0.1:3000"
+       
+   processor:
+     in-app:
+       delay: 10000
+     telegram:
+       delay: 10000
 
 springdoc:
   api-docs:

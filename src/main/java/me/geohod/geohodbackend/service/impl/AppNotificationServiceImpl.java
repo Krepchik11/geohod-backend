@@ -12,7 +12,7 @@ import me.geohod.geohodbackend.data.dto.NotificationDto;
 import me.geohod.geohodbackend.data.mapper.NotificationMapper;
 import me.geohod.geohodbackend.data.model.notification.Notification;
 import me.geohod.geohodbackend.data.model.repository.NotificationRepository;
-import me.geohod.geohodbackend.service.IAppNotificationService;
+import me.geohod.geohodbackend.service.notification.IAppNotificationService;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class AppNotificationServiceImpl implements IAppNotificationService {
             if (isRead == null) {
                 notifications = notificationRepository.findByUserIdOrderByIdDesc(userId, PageRequest.of(0, limit));
             } else {
-                notifications = notificationRepository.findByUserIdAndIsReadOrderByIdDesc(userId, isRead, PageRequest.of(0, limit));
+                notifications = notificationRepository.findByUserIdAndReadOrderByIdDesc(userId, isRead, PageRequest.of(0, limit));
             }
         } else {
             if (isRead == null) {

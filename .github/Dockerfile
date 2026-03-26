@@ -1,12 +1,13 @@
-FROM docker.io/library/eclipse-temurin:23-jre-alpine AS runtime
+FROM eclipse-temurin:23-jre-alpine
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --chown=appuser:appgroup build/libs/*.jar /app/app.jar 
+
+USER appuser
 
 WORKDIR /app
 
-COPY ./build/libs/*.jar geohod.jar
-
 EXPOSE 8080
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=90.0", "-jar", "geohod.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

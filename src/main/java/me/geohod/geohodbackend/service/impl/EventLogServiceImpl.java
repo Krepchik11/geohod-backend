@@ -3,9 +3,11 @@ package me.geohod.geohodbackend.service.impl;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.geohod.geohodbackend.data.model.eventlog.EventLog;
 import me.geohod.geohodbackend.data.model.eventlog.EventType;
 import me.geohod.geohodbackend.data.model.repository.EventLogRepository;
@@ -14,6 +16,7 @@ import me.geohod.geohodbackend.service.IEventLogService;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventLogServiceImpl implements IEventLogService {
 
     private final EventLogRepository eventLogRepository;
@@ -23,6 +26,17 @@ public class EventLogServiceImpl implements IEventLogService {
     public EventLog createLogEntry(UUID eventId, EventType type, String payload) {
         EventLog eventLog = new EventLog(eventId, type, payload);
         return eventLogRepository.save(eventLog);
+    }
+
+    @Override
+    @Async
+    public void createLogEntryAsync(UUID eventId, EventType type, String payload) {
+        try {
+            EventLog eventLog = new EventLog(eventId, type, payload);
+            eventLogRepository.save(eventLog);
+        } catch (Exception e) {
+            log.error("Failed to create async log entry: {}", e.getMessage(), e);
+        }
     }
 
     @Override
@@ -48,3 +62,4 @@ public class EventLogServiceImpl implements IEventLogService {
         }
     }
 }
+

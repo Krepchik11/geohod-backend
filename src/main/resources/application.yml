@@ -13,18 +13,6 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
-  mvc:
-    cors:
-      allowed-methods:
-        - "GET"
-        - "POST"
-        - "PATCH"
-        - "PUT"
-        - "DELETE"
-        - "OPTIONS"
-      allowed-headers: "*"
-      allow-credentials: true
-      max-age: 3600
 
 springdoc:
   api-docs:
@@ -58,14 +46,28 @@ management:
       enabled: true
 
 geohod:
-  telegram-bot:
-    token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
-    username: ${GEOHOD_TELEGRAM_BOT_USERNAME}
-  linkTemplates:
-    eventRegistrationLink: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}
-    reviewLink: ${GEOHOD_REVIEW_LINK_TEMPLATE}
-  processor:
-    in-app:
-      delay: 5000
-    telegram:
-      delay: 5000
+   telegram-bot:
+     token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
+     username: ${GEOHOD_TELEGRAM_BOT_USERNAME}
+   linkTemplates:
+     startappLink: https://t.me/${GEOHOD_TELEGRAM_BOT_USERNAME}?startapp=
+     
+   cors:
+     allowed-origins:
+     allowed-methods:
+       - "GET"
+       - "POST"
+       - "PATCH"
+       - "PUT"
+       - "DELETE"
+       - "OPTIONS"
+     allowed-headers:
+       - "*"
+     allow-credentials: true
+     max-age: 3600
+
+   processor:
+     in-app:
+       delay: 5000
+     telegram:
+       delay: 5000

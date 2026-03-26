@@ -10,14 +10,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IEventProjectionService {
-    EventDetailedProjection event(UUID eventId);
+    EventDetailedProjection event(UUID eventId, @Nullable UUID userId);
 
     Page<EventDetailedProjection> events(EventsDetailedProjectionFilter filter, Pageable pageable);
 
     record EventsDetailedProjectionFilter(
             @Nullable UUID authorUserId,
             @Nullable UUID participantUserId,
-            @Nullable List<Event.Status> statuses
-    ) {
+            @Nullable List<Event.Status> statuses) {
     }
 }

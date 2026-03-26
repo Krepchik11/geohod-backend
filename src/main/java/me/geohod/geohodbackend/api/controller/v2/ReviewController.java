@@ -17,6 +17,7 @@ import me.geohod.geohodbackend.api.dto.review.ReviewResponse;
 import me.geohod.geohodbackend.api.mapper.ReviewApiMapper;
 import me.geohod.geohodbackend.api.response.ApiResponse;
 import me.geohod.geohodbackend.data.model.review.Review;
+import me.geohod.geohodbackend.exception.ResourceNotFoundException;
 import me.geohod.geohodbackend.security.principal.TelegramPrincipal;
 import me.geohod.geohodbackend.service.IReviewService;
 
@@ -29,7 +30,7 @@ public class ReviewController {
 
     @PostMapping
     public ApiResponse<ReviewResponse> submitReview(
-            @RequestBody ReviewCreateRequest request, 
+            @RequestBody ReviewCreateRequest request,
             @AuthenticationPrincipal TelegramPrincipal principal) {
         Review review = reviewService.submitReview(principal.userId(), request);
         return ApiResponse.success(reviewApiMapper.map(review));
@@ -40,17 +41,14 @@ public class ReviewController {
             @PathVariable UUID eventId,
             @AuthenticationPrincipal TelegramPrincipal principal) {
         var reviewOptional = reviewService.getUserReviewForEvent(principal.userId(), eventId);
-        if (reviewOptional.isPresent()) {
-            ReviewResponse response = reviewApiMapper.map(reviewOptional.get());
-            return ApiResponse.success(response);
-        } else {
-            return new ApiResponse<>("ERROR", "Review not found for this event", null);
-        }
+        return reviewOptional
+                .map(review -> ApiResponse.success(reviewApiMapper.map(review)))
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found for this event"));
     }
 
     @PatchMapping("/{id}/hide")
     public ApiResponse<Void> hideReview(
-            @PathVariable UUID id, 
+            @PathVariable UUID id,
             @AuthenticationPrincipal TelegramPrincipal principal) {
         reviewService.hideReview(id, principal.userId());
         return ApiResponse.success(null);
@@ -58,7 +56,7 @@ public class ReviewController {
 
     @PatchMapping("/{id}/unhide")
     public ApiResponse<Void> unhideReview(
-            @PathVariable UUID id, 
+            @PathVariable UUID id,
             @AuthenticationPrincipal TelegramPrincipal principal) {
         reviewService.unhideReview(id, principal.userId());
         return ApiResponse.success(null);

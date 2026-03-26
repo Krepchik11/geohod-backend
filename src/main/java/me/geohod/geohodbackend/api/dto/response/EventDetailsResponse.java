@@ -1,17 +1,32 @@
 package me.geohod.geohodbackend.api.dto.response;
 
-import me.geohod.geohodbackend.data.model.Event;
-
+import java.math.BigDecimal;
 import java.time.Instant;
 
+import me.geohod.geohodbackend.data.dto.TelegramUserDetails;
+import me.geohod.geohodbackend.data.model.Event;
+
 public record EventDetailsResponse(
-        String id,
-        TelegramUserDetails author,
-        String name,
-        String description,
-        Instant date,
-        int maxParticipants,
-        int currentParticipants,
-        Event.Status status
-) {
+                String id,
+                TelegramUserDetails author,
+                AuthorRating authorRating,
+                String name,
+                String description,
+                Instant date,
+                int maxParticipants,
+                int currentParticipants,
+                Event.Status status,
+                boolean sendPollLink,
+                boolean donationCash,
+                boolean donationTransfer,
+                ParticipantState participantState) {
+        public record AuthorRating(
+                        BigDecimal averageRating,
+                        int totalReviewsCount) {}
+        
+        public record ParticipantState(
+                        boolean pollLinkSent,
+                        boolean cashDonated,
+                        boolean transferDonated) {
+        }
 }

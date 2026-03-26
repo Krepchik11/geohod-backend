@@ -1,3 +1,8 @@
+* text=auto
+
+/.github/Dockerfile text eol=lf
+/compose.yml text eol=lf
 /gradlew text eol=lf
+*.sln text eol=crlf
 *.bat text eol=crlf
 *.jar binary
