@@ -1,0 +1,23 @@
+[Unit]
+Description=Geohod Backend (prod)
+After=geohod-postgres.service network-online.target
+Wants=network-online.target
+
+[Container]
+Image=ghcr.io/krepchik11/geohod-backend:v0.0.1
+ContainerName=geohod-backend
+EnvironmentFile=%h/geohod-backend/.env
+PublishPort=127.0.0.1:8080:8080
+Network=geohod-net.network
+HealthCmd=wget -qO- http://localhost:8080/actuator/health
+HealthInterval=30s
+HealthTimeout=5s
+HealthStartPeriod=60s
+HealthRetries=3
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
