@@ -24,6 +24,7 @@ spring:
           auth: true
           starttls:
             enable: true
+    test-connection: false
 
 springdoc:
   api-docs:
