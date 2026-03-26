@@ -23,6 +23,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Compute lowercase owner
+        id: vars
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -40,8 +44,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/geohod-backend:${{ github.ref_name }}
-            ghcr.io/${{ github.repository_owner }}/geohod-backend:latest
+            ghcr.io/${{ steps.vars.outputs.owner }}/geohod-backend:${{ github.ref_name }}
+            ghcr.io/${{ steps.vars.outputs.owner }}/geohod-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -86,7 +90,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -euo pipefail
-            OWNER="${{ github.repository_owner }}"
+            OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
             TAG="${{ steps.resolve_tag.outputs.tag }}"
             IMAGE="ghcr.io/${OWNER}/geohod-backend:${TAG}"
             QUADLET_DIR="$HOME/.config/containers/systemd"
