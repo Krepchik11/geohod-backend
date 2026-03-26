@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing image tag to deploy (e.g. v1.2.3) — skips build, use for rollback'
+        required: true
+
+jobs:
+  build:
+    name: Build and Push Release Image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push release image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/geohod-backend:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/geohod-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    needs: [build]
+    # Run if build succeeded (tag push) OR build was skipped (manual dispatch/rollback)
+    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    environment: production
+    permissions: {}
+
+    steps:
+      - name: Resolve tag
+        id: resolve_tag
+        run: |
+          # On workflow_dispatch: inputs.tag is set; github.ref_name is the branch ("main")
+          # On push: inputs.tag is empty; github.ref_name is the pushed tag (e.g. "v1.2.3")
+          TAG="${{ inputs.tag }}"
+          [ -z "$TAG" ] && TAG="${{ github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Deploying tag: $TAG"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy Quadlet files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "deployments/prod/*.container,deployments/prod/*.network,deployments/prod/*.volume"
+          target: "/tmp/geohod-deploy-prod/"
+          strip_components: 2
+
+      - name: Deploy to prod VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            OWNER="${{ github.repository_owner }}"
+            TAG="${{ steps.resolve_tag.outputs.tag }}"
+            IMAGE="ghcr.io/${OWNER}/geohod-backend:${TAG}"
+            QUADLET_DIR="$HOME/.config/containers/systemd"
+
+            echo "--> Installing Quadlet files..."
+            mkdir -p "$QUADLET_DIR"
+            cp /tmp/geohod-deploy-prod/*.container "$QUADLET_DIR/"
+            cp /tmp/geohod-deploy-prod/*.network "$QUADLET_DIR/"
+            cp /tmp/geohod-deploy-prod/*.volume "$QUADLET_DIR/"
+            rm -rf /tmp/geohod-deploy-prod/
+
+            echo "--> Updating image to ${IMAGE}..."
+            sed -i "s|^Image=ghcr\.io/.*/geohod-backend:.*|Image=${IMAGE}|" "$QUADLET_DIR/geohod-backend.container"
+
+            echo "--> Pulling image..."
+            podman pull "$IMAGE"
+
+            echo "--> Reloading systemd and restarting backend..."
+            systemctl --user daemon-reload
+            systemctl --user enable --now geohod-postgres
+            systemctl --user restart geohod-backend
+
+            echo "--> Waiting for container to become healthy..."
+            for i in $(seq 1 24); do
+              sleep 5
+              echo "Health check $i/24..."
+              STATUS=$(podman inspect geohod-backend --format='{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+              echo "Container status: $STATUS"
+              if [ "$STATUS" = "healthy" ]; then
+                echo "Deployment successful"
+                exit 0
+              fi
+            done
+            echo "Health check timed out — deployment FAILED"
+            exit 1

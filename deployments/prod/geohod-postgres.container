@@ -1,0 +1,21 @@
+[Unit]
+Description=Geohod Postgres (prod)
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/library/postgres:17-alpine
+ContainerName=geohod-postgres
+EnvironmentFile=%h/geohod-backend/.env
+Volume=geohod-postgres-data.volume:/var/lib/postgresql/data
+Network=geohod-net.network
+HealthCmd=pg_isready
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
