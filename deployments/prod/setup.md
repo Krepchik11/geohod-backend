@@ -1,28 +1,48 @@
-# Deployment Setup (Podman Compose)
+# Prod Deployment Setup
 
 ## One-Time Server Setup
-- **Install Podman & Podman Compose**
-  - Follow official documentation for your OS.
-- **Create Deploy User & Directories**
-  ```bash
-  # As root or with sudo
-  sudo useradd -m -s /bin/bash geohod
-  sudo mkdir -p /home/geohod/geohod-backend
-  sudo chown -R geohod:geohod /home/geohod
-  ```
-- **Enable User Lingering**
-  ```bash
-  # As root or with sudo
-  sudo loginctl enable-linger geohod
-  ```
-- **SSH Access**
-  - Add the public key for the `VPS_SSH_KEY` secret to `~/.ssh/authorized_keys` for the `geohod` user.
 
-## Running a Deployment
-- **Configure GitHub Secrets & Variables**
-  - `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`
-  - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
-  - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`
-  - etc.
-- **Run GitHub Action**
-  - Go to **Actions** -> **Deploy prod** -> **Run workflow**. The first run will set up and start the systemd service automatically.
+```bash
+sudo useradd -m -s /bin/bash geohod
+sudo loginctl enable-linger geohod
+# Add VPS_SSH_KEY public key to ~/.ssh/authorized_keys for the geohod user
+```
+
+## GitHub Environment: `production`
+
+Go to **Settings → Environments → production** and configure:
+
+### Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `VPS_SSH_KEY` | Private SSH key for the deploy user |
+| `DB_PASSWORD` | Database password |
+| `SPRING_MAIL_PASSWORD` | SMTP account password |
+| `GEOHOD_TELEGRAM_BOT_TOKEN` | Telegram bot token |
+| `GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID` | Telegram OIDC client ID |
+| `GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET` | Telegram OIDC client secret |
+| `GEOHOD_SECURITY_JWT_SECRET` | JWT signing secret (≥32 chars) |
+
+### Variables
+
+| Variable | Example |
+|----------|---------|
+| `VPS_HOST` | `geohod.ru` |
+| `VPS_USER` | `geohod` |
+| `DB_USER` | `geohod` |
+| `DB_NAME` | `geohod` |
+| `SPRING_MAIL_HOST` | `smtp.example.com` |
+| `SPRING_MAIL_PORT` | `587` |
+| `SPRING_MAIL_USERNAME` | `noreply@geohod.ru` |
+| `GEOHOD_TELEGRAM_BOT_USERNAME` | `GeohodBot` |
+| `GEOHOD_CORS_ALLOWED_ORIGINS` | `https://app.geohod.ru` |
+
+## How It Works
+
+Each deploy writes two files on the VPS (regenerated every run):
+
+- `~/geohod-backend/postgres.env` → loaded by the postgres container
+- `~/geohod-backend/app.env` → loaded by the Spring backend container
+
+Both files get `chmod 600` (owner-readable only).

@@ -5,39 +5,65 @@
 ### Prerequisites
 
 - Java 23
-- Docker / Podman
+- Docker or Podman + Compose plugin
 - Gradle 8.1
 
-### Environment variables
-
-Create `.env` in the project root:
-
-```properties
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:54321/geohod
-SPRING_DATASOURCE_USERNAME=geohod
-SPRING_DATASOURCE_PASSWORD=secret
-GEOHOD_TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-GEOHOD_TELEGRAM_BOT_USERNAME=your_telegram_bot_username
-```
-
-### Run
+### 1. Create env files
 
 ```bash
-# Start Postgres
-docker compose up -d
-
-# Run the app
-./gradlew bootRun
+cp postgres.env.template postgres.env
+cp app.env.template app.env
 ```
 
-To enable Swagger UI, add `--spring.profiles.active=dev`:
+Edit `postgres.env` — set your local database credentials:
+
+```properties
+POSTGRES_USER=geohod
+POSTGRES_PASSWORD=secret
+POSTGRES_DB=geohod
+```
+
+Edit `app.env` — at minimum set these three (leave the rest as-is for local dev):
+
+```properties
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/geohod   # keep "postgres" — it's the compose service name
+SPRING_DATASOURCE_USERNAME=geohod                               # must match POSTGRES_USER
+SPRING_DATASOURCE_PASSWORD=secret                               # must match POSTGRES_PASSWORD
+
+GEOHOD_TELEGRAM_BOT_TOKEN=your-bot-token
+GEOHOD_TELEGRAM_BOT_USERNAME=your-bot-username
+GEOHOD_SECURITY_JWT_SECRET=any-random-string-at-least-32-chars
+```
+
+All other vars in `app.env` are optional for local development (mail is disabled by default).
+
+### 2. Run with Docker / Podman Compose
+
+```bash
+docker compose up --build       # or: podman compose up --build
+```
+
+The app starts after Postgres passes its health check.
+
+- API: http://localhost:8080
+- Health: http://localhost:8080/actuator/health
+- Swagger UI: http://localhost:8080/swagger-ui.html *(dev profile enabled automatically in compose)*
+
+### Run without Compose (IDE / Gradle)
+
+Start Postgres first:
+
+```bash
+docker compose up postgres -d
+```
+
+Then run the app with the dev profile:
 
 ```bash
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- OpenAPI JSON: http://localhost:8080/api-docs
+Env vars must be set in your shell or IDE run configuration. The ones required are the same as `app.env` above — `SPRING_DATASOURCE_*`, `GEOHOD_TELEGRAM_BOT_TOKEN`, `GEOHOD_TELEGRAM_BOT_USERNAME`, `GEOHOD_SECURITY_JWT_SECRET`.
 
 ---
 
@@ -52,18 +78,7 @@ On every deploy, CI copies the Quadlet unit files from `deployments/` to the VPS
 
 ### Required GitHub configuration
 
-**Secrets** (Settings → Secrets and variables → Actions):
-
-| Name | Value |
-|------|-------|
-| `VPS_SSH_KEY` | Private SSH key for VPS access |
-
-**Variables** (same page, Variables tab):
-
-| Name | Value |
-|------|-------|
-| `VPS_HOST` | VPS hostname or IP |
-| `VPS_USER` | SSH username |
+See `deployments/dev/setup.md` and `deployments/prod/setup.md` for the full secrets/variables tables.
 
 **Environments** (Settings → Environments):
 
@@ -71,8 +86,6 @@ On every deploy, CI copies the Quadlet unit files from `deployments/` to the VPS
 - `production` — add required reviewers; restrict to tag pattern `v*`
 
 ### One-time VPS bootstrap
-
-Two manual steps required before the first deploy:
 
 **1. Enable user lingering** (so systemd user session starts at boot without login):
 
@@ -86,28 +99,7 @@ sudo loginctl enable-linger <username>
 podman login ghcr.io -u <github-username> -p <PAT>
 ```
 
-**3. Create `.env` files:**
-
-```bash
-mkdir -p ~/geohod-backend ~/geohod-backend-dev
-```
-
-`~/geohod-backend/.env` (prod) and `~/geohod-backend-dev/.env` (dev):
-
-```properties
-POSTGRES_USER=geohod
-POSTGRES_PASSWORD=secret
-POSTGRES_DB=geohod
-SPRING_DATASOURCE_URL=jdbc:postgresql://geohod-postgres:5432/geohod
-SPRING_DATASOURCE_USERNAME=geohod
-SPRING_DATASOURCE_PASSWORD=secret
-GEOHOD_TELEGRAM_BOT_TOKEN=your_token
-GEOHOD_TELEGRAM_BOT_USERNAME=your_bot_username
-GEOHOD_CREATED_EVENT_LINK_TEMPLATE=https://yourdomain.com/event/{id}
-JWT_SECRET=your_jwt_secret
-```
-
-After that, trigger a deploy (push to `main` for dev, push a tag for prod) — CI handles everything else.
+After that, trigger a deploy (push to `main` for dev, push a tag for prod). CI writes `postgres.env` and `app.env` on the VPS automatically — no manual file creation needed.
 
 ### nginx
 

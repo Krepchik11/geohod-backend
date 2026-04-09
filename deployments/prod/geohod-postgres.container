@@ -6,7 +6,7 @@ Wants=network-online.target
 [Container]
 Image=docker.io/library/postgres:17-alpine
 ContainerName=geohod-postgres
-EnvironmentFile=%h/geohod-backend/.env
+EnvironmentFile=%h/geohod-backend/postgres.env
 Volume=geohod-postgres-data.volume:/var/lib/postgresql/data
 Network=geohod-net.network
 HealthCmd=pg_isready

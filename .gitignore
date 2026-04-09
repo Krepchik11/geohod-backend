@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment files ###
+.env
+postgres.env
+app.env

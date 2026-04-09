@@ -14,10 +14,10 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
   mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME:}
-    password: ${SMTP_PASSWORD:}
+    host: localhost
+    port: 587
+    username:
+    password:
     properties:
       mail:
         smtp:
@@ -60,50 +60,50 @@ management:
       enabled: false
 
 geohod:
-   telegram-bot:
-     token: ${GEOHOD_TELEGRAM_BOT_TOKEN}
-     username: ${GEOHOD_TELEGRAM_BOT_USERNAME}
-   linkTemplates:
-     startappLink: https://t.me/${GEOHOD_TELEGRAM_BOT_USERNAME}?startapp=
-     
-   cors:
-     allowed-origins:
-     allowed-methods:
-       - "GET"
-       - "POST"
-       - "PATCH"
-       - "PUT"
-       - "DELETE"
-       - "OPTIONS"
-     allowed-headers:
-       - "*"
-     allow-credentials: true
-     max-age: 3600
+  telegram-bot:
+    token:
+    username:
+  linkTemplates:
+    startappLink: https://t.me/${GEOHOD_TELEGRAM_BOT_USERNAME}?startapp=
 
-   security:
-     telegram-oidc:
-       client-id: ${TELEGRAM_OIDC_CLIENT_ID:}
-       client-secret: ${TELEGRAM_OIDC_CLIENT_SECRET:}
-       issuer-uri: https://oauth.telegram.org
-       jwks-uri: https://oauth.telegram.org/.well-known/jwks.json
-       token-uri: https://oauth.telegram.org/token
-       jwks-cache-ttl: 1h
-     telegram-init-data:
-       max-age: 5m
-     jwt:
-       secret: ${JWT_SECRET}
-       access-token-expiration: 15m
-       refresh-token-expiration: 30d
-     legacy-telegram-auth:
-       enabled: true
-     email-otp:
-       code-length: 6
-       expiration: 5m
-       max-attempts: 5
-       max-sends-per-hour: 3
+  cors:
+    allowed-origins:
+    allowed-methods:
+      - "GET"
+      - "POST"
+      - "PATCH"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    allowed-headers:
+      - "*"
+    allow-credentials: true
+    max-age: 3600
 
-   processor:
-     in-app:
-       delay: 5000
-     telegram:
-       delay: 5000
+  security:
+    telegram-oidc:
+      client-id:
+      client-secret:
+      issuer-uri: https://oauth.telegram.org
+      jwks-uri: https://oauth.telegram.org/.well-known/jwks.json
+      token-uri: https://oauth.telegram.org/token
+      jwks-cache-ttl: 1h
+    telegram-init-data:
+      max-age: 5m
+    jwt:
+      secret:
+      access-token-expiration: 15m
+      refresh-token-expiration: 30d
+    legacy-telegram-auth:
+      enabled: true
+    email-otp:
+      code-length: 6
+      expiration: 5m
+      max-attempts: 5
+      max-sends-per-hour: 3
+
+  processor:
+    in-app:
+      delay: 5000
+    telegram:
+      delay: 5000
