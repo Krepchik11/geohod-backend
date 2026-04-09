@@ -66,7 +66,7 @@ public class AuthController {
         Object providerRequest = switch (request.providerType()) {
             case TELEGRAM -> request.oidcCode() != null
                     ? new TelegramOidcLoginRequest(request.oidcCode(), request.redirectUri(),
-                            request.codeVerifier(), request.nonce())
+                            request.codeVerifier(), request.nonce(), null)
                     : new TelegramLoginRequest(request.initData());
             case EMAIL -> new EmailOtpVerifyRequest(request.email(), request.code());
         };

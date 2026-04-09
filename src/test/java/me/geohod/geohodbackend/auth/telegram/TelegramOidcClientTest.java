@@ -85,6 +85,13 @@ class TelegramOidcClientTest {
     }
 
     @Test
+    void verifyDirectIdToken_invalidToken_throwsSecurityException() {
+        // jwtProcessor is null (init() not called) — verifyIdToken wraps any exception as SecurityException
+        assertThrows(SecurityException.class,
+                () -> oidcClient.verifyDirectIdToken("not.a.valid.jwt", null));
+    }
+
+    @Test
     void extractUserInfo_missingOptionalFields_returnsNulls() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject("99999")
