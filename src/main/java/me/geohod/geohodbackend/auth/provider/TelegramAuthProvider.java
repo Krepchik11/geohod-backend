@@ -30,8 +30,12 @@ public class TelegramAuthProvider implements AuthProvider {
                     data.lastName(), data.photoUrl());
         }
         if (request instanceof TelegramOidcLoginRequest r) {
-            OidcUserInfo data = telegramOidcClient.exchangeAndVerify(
-                    r.code(), r.redirectUri(), r.codeVerifier(), r.nonce());
+            if (r.idToken() == null && r.code() == null) {
+                throw new IllegalArgumentException("Either idToken or code must be provided for Telegram OIDC authentication");
+            }
+            OidcUserInfo data = r.idToken() != null
+                    ? telegramOidcClient.verifyDirectIdToken(r.idToken(), r.nonce())
+                    : telegramOidcClient.exchangeAndVerify(r.code(), r.redirectUri(), r.codeVerifier(), r.nonce());
             return AuthProviderResult.authenticatedWithProfile(
                     data.telegramUserId(), AuthProviderType.TELEGRAM,
                     data.username(), data.name(),

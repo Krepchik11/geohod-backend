@@ -31,7 +31,7 @@ class AuthControllerTelegramOidcTest {
 
     @Test
     void telegramOidcLogin_validRequest_returnsTokens() {
-        var request = new TelegramOidcLoginRequest("auth-code", "https://example.com/callback", "verifier", "nonce");
+        var request = new TelegramOidcLoginRequest("auth-code", "https://example.com/callback", "verifier", "nonce", null);
         when(authService.authenticate(eq(AuthProviderType.TELEGRAM), any(TelegramOidcLoginRequest.class)))
                 .thenReturn(AuthTokenResponse.tokens("access-12345", "refresh-45678910"));
 
@@ -46,7 +46,7 @@ class AuthControllerTelegramOidcTest {
 
     @Test
     void telegramOidcLogin_authServiceThrowsSecurity_propagatesException() {
-        var request = new TelegramOidcLoginRequest("bad-code", "https://example.com/callback", null, null);
+        var request = new TelegramOidcLoginRequest("bad-code", "https://example.com/callback", null, null, null);
         when(authService.authenticate(eq(AuthProviderType.TELEGRAM), any()))
                 .thenThrow(new SecurityException("OIDC verification failed"));
 

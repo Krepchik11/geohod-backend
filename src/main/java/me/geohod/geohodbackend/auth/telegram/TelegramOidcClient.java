@@ -79,6 +79,12 @@ public class TelegramOidcClient {
         return extractUserInfo(claims);
     }
 
+    public OidcUserInfo verifyDirectIdToken(String idToken, @Nullable String nonce) {
+        JWTClaimsSet claims = verifyIdToken(idToken);
+        validateNonce(claims, nonce);
+        return extractUserInfo(claims);
+    }
+
     @SuppressWarnings("unchecked")
     private String exchangeCodeForIdToken(String code, String redirectUri, @Nullable String codeVerifier) {
         var oidcConfig = properties.security().telegramOidc();

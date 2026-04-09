@@ -58,7 +58,7 @@ class TelegramAuthProviderTest {
 
     @Test
     void authenticate_withOidcRequest_delegatesToOidcClient() {
-        var request = new TelegramOidcLoginRequest("auth-code", "https://redirect.url", "verifier", "nonce");
+        var request = new TelegramOidcLoginRequest("auth-code", "https://redirect.url", "verifier", "nonce", null);
         var oidcUserInfo = new OidcUserInfo("99999", "Jane Doe", "janedoe", "https://photo.url");
         when(telegramOidcClient.exchangeAndVerify("auth-code", "https://redirect.url", "verifier", "nonce"))
                 .thenReturn(oidcUserInfo);
@@ -72,6 +72,44 @@ class TelegramAuthProviderTest {
         assertEquals("Jane Doe", result.firstName());
         verify(telegramOidcClient).exchangeAndVerify("auth-code", "https://redirect.url", "verifier", "nonce");
         verifyNoInteractions(telegramInitDataVerifier);
+    }
+
+    @Test
+    void authenticate_withOidcIdToken_delegatesToDirectVerification() {
+        var request = new TelegramOidcLoginRequest(null, null, null, "nonce", "eyJ.direct.token");
+        var oidcUserInfo = new OidcUserInfo("99999", "Jane Doe", "janedoe", "https://photo.url");
+        when(telegramOidcClient.verifyDirectIdToken("eyJ.direct.token", "nonce"))
+                .thenReturn(oidcUserInfo);
+
+        AuthProviderResult result = telegramAuthProvider.authenticate(request);
+
+        assertEquals("99999", result.providerId());
+        assertEquals(AuthProviderType.TELEGRAM, result.type());
+        assertTrue(result.authenticated());
+        verify(telegramOidcClient).verifyDirectIdToken("eyJ.direct.token", "nonce");
+        verifyNoMoreInteractions(telegramOidcClient);
+        verifyNoInteractions(telegramInitDataVerifier);
+    }
+
+    @Test
+    void authenticate_withOidcIdTokenAndNoNonce_delegatesToDirectVerificationWithNullNonce() {
+        var request = new TelegramOidcLoginRequest(null, null, null, null, "eyJ.direct.token");
+        var oidcUserInfo = new OidcUserInfo("99999", "Jane Doe", "janedoe", null);
+        when(telegramOidcClient.verifyDirectIdToken("eyJ.direct.token", null))
+                .thenReturn(oidcUserInfo);
+
+        AuthProviderResult result = telegramAuthProvider.authenticate(request);
+
+        assertTrue(result.authenticated());
+        verify(telegramOidcClient).verifyDirectIdToken("eyJ.direct.token", null);
+    }
+
+    @Test
+    void authenticate_withOidcRequestMissingBothCodeAndIdToken_throwsIllegalArgumentException() {
+        var request = new TelegramOidcLoginRequest(null, null, null, null, null);
+
+        assertThrows(IllegalArgumentException.class, () -> telegramAuthProvider.authenticate(request));
+        verifyNoInteractions(telegramOidcClient);
     }
 
     @Test
