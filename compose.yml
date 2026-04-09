@@ -9,11 +9,7 @@ services:
     image: docker.io/library/postgres:17-alpine
     container_name: geohod-postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      TZ: ${TZ:-UTC}
+    env_file: postgres.env
     volumes:
       - geohod_postgres_data_dev:/var/lib/postgresql/data:Z
     healthcheck:
@@ -29,23 +25,10 @@ services:
     image: geohod-backend:dev-local
     container_name: geohod-app
     restart: unless-stopped
+    env_file: app.env
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
-      TZ: ${TZ:-UTC}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/geohod}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-geohod_user}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-geohod_password}
-      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE:-never}
-      SPRING_LIQUIBASE_ENABLED: ${SPRING_LIQUIBASE_ENABLED:-true}
-      SERVER_PORT: ${SERVER_PORT:-8080}
-      GEOHOD_TELEGRAM_BOT_TOKEN: ${GEOHOD_TELEGRAM_BOT_TOKEN}
-      GEOHOD_TELEGRAM_BOT_USERNAME: ${GEOHOD_TELEGRAM_BOT_USERNAME}
-      GEOHOD_CREATED_EVENT_LINK_TEMPLATE: ${GEOHOD_CREATED_EVENT_LINK_TEMPLATE}
-      GEOHOD_REVIEW_LINK_TEMPLATE: ${GEOHOD_REVIEW_LINK_TEMPLATE}
-      GEOHOD_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
     ports:
       - "8080:8080"
     healthcheck:
