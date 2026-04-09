@@ -13,7 +13,7 @@ services:
     volumes:
       - geohod_postgres_data_dev:/var/lib/postgresql/data:Z
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -h 127.0.0.1 -p 5432"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\" -h 127.0.0.1 -p 5432"]
       <<: *health-common
     ports:
       - "5432:5432"
