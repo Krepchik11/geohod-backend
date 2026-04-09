@@ -6,7 +6,7 @@ Wants=network-online.target
 [Container]
 Image=ghcr.io/krepchik11/geohod-backend:v0.0.1
 ContainerName=geohod-backend
-EnvironmentFile=%h/geohod-backend/.env
+EnvironmentFile=%h/geohod-backend/app.env
 Network=geohod-net.network
 HealthCmd=wget -qO- http://localhost:8080/actuator/health
 HealthInterval=30s
