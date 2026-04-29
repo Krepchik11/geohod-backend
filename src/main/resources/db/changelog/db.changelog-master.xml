@@ -25,4 +25,5 @@
     <include file="db.changelog-3.2-email-otp.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-3.3-user-role.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-3.4-auth-data-migration.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-3.5-user-notification-settings.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
