@@ -2,5 +2,6 @@ package me.geohod.geohodbackend.service.notification;
 
 public enum NotificationChannel {
     TELEGRAM,
-    IN_APP
+    IN_APP,
+    PUSH
 }

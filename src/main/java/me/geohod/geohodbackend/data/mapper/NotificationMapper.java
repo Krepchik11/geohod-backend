@@ -26,6 +26,7 @@ public interface NotificationMapper {
             case EVENT_FINISHED -> NotificationType.EVENT_FINISHED;
             case PARTICIPANT_REGISTERED -> NotificationType.PARTICIPANT_REGISTERED;
             case PARTICIPANT_UNREGISTERED -> NotificationType.PARTICIPANT_UNREGISTERED;
+            case REGISTRATION_ENDED -> null;
         };
     }
 }
