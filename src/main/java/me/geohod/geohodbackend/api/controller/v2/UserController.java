@@ -41,6 +41,13 @@ public class UserController {
     private final IReviewService reviewService;
     private final IUserStatsService userStatsService;
 
+    @GetMapping("/me")
+    @Operation(summary = "Get current authenticated user details")
+    public ApiResponse<UserDetailsResponse> getCurrentUser(@AuthenticationPrincipal AppPrincipal principal) {
+        User user = userService.getUser(principal.userId());
+        return ApiResponse.success(userMapper.mapToDetails(user));
+    }
+
     @GetMapping("/by-tg-id/{tgId}")
     public ApiResponse<UserResponse> userByTgId(@PathVariable String tgId) {
         UserDto user = userService.getUserByTelegramId(tgId);
