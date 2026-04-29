@@ -96,6 +96,9 @@ geohod:
       refresh-token-expiration: 30d
     legacy-telegram-auth:
       enabled: true
+    cookie:
+      same-site: Lax
+      secure: true
     email-otp:
       code-length: 6
       expiration: 5m

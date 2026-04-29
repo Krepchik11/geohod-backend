@@ -1,5 +1,6 @@
 package me.geohod.geohodbackend.configuration;
 
+import me.geohod.geohodbackend.auth.api.AuthCookieHelper;
 import me.geohod.geohodbackend.auth.service.JwtService;
 import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import me.geohod.geohodbackend.security.filter.JwtAuthenticationFilter;
@@ -32,13 +33,16 @@ public class SecurityConfiguration {
     private final ProviderManager providerManager;
     private final TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider;
     private final JwtService jwtService;
+    private final AuthCookieHelper cookieHelper;
     private final GeohodProperties properties;
 
     public SecurityConfiguration(TelegramTokenAuthenticationProvider telegramTokenAuthenticationProvider,
                                  JwtService jwtService,
+                                 AuthCookieHelper cookieHelper,
                                  GeohodProperties properties) {
         this.telegramTokenAuthenticationProvider = telegramTokenAuthenticationProvider;
         this.jwtService = jwtService;
+        this.cookieHelper = cookieHelper;
         this.properties = properties;
         this.providerManager = new ProviderManager(telegramTokenAuthenticationProvider);
     }
@@ -95,7 +99,7 @@ public class SecurityConfiguration {
     }
 
     private JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtService);
+        return new JwtAuthenticationFilter(jwtService, cookieHelper);
     }
 
     private TelegramInitDataAuthenticationFilter tgInitDataAuthFilter() {

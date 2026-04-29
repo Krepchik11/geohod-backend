@@ -32,7 +32,7 @@ class TelegramInitDataVerifierTest {
     void setUp() {
         var telegramBot = new GeohodProperties.TelegramBot(BOT_TOKEN, "testbot");
         var telegramInitData = new GeohodProperties.TelegramInitData(Duration.ofMinutes(5));
-        var security = new GeohodProperties.Security(null, null, null, null, telegramInitData);
+        var security = new GeohodProperties.Security(null, null, null, null, telegramInitData, null);
         var properties = new GeohodProperties(telegramBot, null, null, security);
         verifier = new TelegramInitDataVerifier(properties);
     }

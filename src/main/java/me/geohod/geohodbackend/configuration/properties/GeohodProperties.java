@@ -33,7 +33,11 @@ public record GeohodProperties(
                         LegacyTelegramAuth legacyTelegramAuth,
                         EmailOtp emailOtp,
                         TelegramOidc telegramOidc,
-                        TelegramInitData telegramInitData) {
+                        TelegramInitData telegramInitData,
+                        Cookie cookie) {
+        }
+
+        public record Cookie(String sameSite, boolean secure) {
         }
 
         public record Jwt(

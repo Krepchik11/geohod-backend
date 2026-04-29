@@ -26,7 +26,7 @@ class TelegramOidcClientTest {
                 "https://oauth.telegram.org/.well-known/jwks.json",
                 "https://oauth.telegram.org/token",
                 Duration.ofHours(1));
-        var security = new GeohodProperties.Security(null, null, null, oidcConfig, null);
+        var security = new GeohodProperties.Security(null, null, null, oidcConfig, null, null);
         var properties = new GeohodProperties(null, null, null, security);
 
         // NOTE: We don't call init() because it tries to connect to the real JWKS URL
