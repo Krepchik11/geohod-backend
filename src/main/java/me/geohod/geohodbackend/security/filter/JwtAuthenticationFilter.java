@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.geohod.geohodbackend.auth.api.AuthCookieHelper;
 import me.geohod.geohodbackend.auth.service.JwtService;
 import me.geohod.geohodbackend.security.principal.AppPrincipal;
 import me.geohod.geohodbackend.security.token.JwtAuthenticationToken;
@@ -21,17 +22,19 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private static final String BEARER_PREFIX = "Bearer ";
+
     private final JwtService jwtService;
+    private final AuthCookieHelper cookieHelper;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
+        String token = resolveToken(request);
 
-        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-            String token = authHeader.substring(BEARER_PREFIX.length());
+        if (token != null) {
             try {
                 Claims claims = jwtService.validateAccessToken(token);
                 UUID userId = UUID.fromString(claims.getSubject());
@@ -47,5 +50,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String cookieToken = cookieHelper.extractAccessToken(request);
+        if (cookieToken != null) {
+            return cookieToken;
+        }
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            return authHeader.substring(BEARER_PREFIX.length());
+        }
+        return null;
     }
 }

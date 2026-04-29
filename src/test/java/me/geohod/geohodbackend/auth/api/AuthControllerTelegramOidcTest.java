@@ -1,5 +1,6 @@
 package me.geohod.geohodbackend.auth.api;
 
+import jakarta.servlet.http.HttpServletResponse;
 import me.geohod.geohodbackend.auth.api.dto.AuthTokenResponse;
 import me.geohod.geohodbackend.auth.api.dto.LinkProviderRequest;
 import me.geohod.geohodbackend.auth.api.dto.TelegramLoginRequest;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.when;
 class AuthControllerTelegramOidcTest {
 
     @Mock AuthService authService;
+    @Mock AuthCookieHelper cookieHelper;
+    @Mock HttpServletResponse httpResponse;
     @InjectMocks AuthController authController;
 
     @Test
@@ -35,7 +38,7 @@ class AuthControllerTelegramOidcTest {
         when(authService.authenticate(eq(AuthProviderType.TELEGRAM), any(TelegramOidcLoginRequest.class)))
                 .thenReturn(AuthTokenResponse.tokens("access-12345", "refresh-45678910"));
 
-        var response = authController.telegramOidcLogin(request);
+        var response = authController.telegramOidcLogin(request, httpResponse);
 
         assertEquals("SUCCESS", response.getResult());
         assertNotNull(response.getData());
@@ -45,12 +48,34 @@ class AuthControllerTelegramOidcTest {
     }
 
     @Test
+    void telegramOidcLogin_setsTokenCookiesOnSuccess() {
+        var request = new TelegramOidcLoginRequest("auth-code", "https://example.com/callback", null, null, null);
+        when(authService.authenticate(eq(AuthProviderType.TELEGRAM), any()))
+                .thenReturn(AuthTokenResponse.tokens("access-token", "refresh-token"));
+
+        authController.telegramOidcLogin(request, httpResponse);
+
+        verify(cookieHelper).setTokenCookies(httpResponse, "access-token", "refresh-token");
+    }
+
+    @Test
+    void telegramOidcLogin_pendingResponse_doesNotSetCookies() {
+        var request = new TelegramOidcLoginRequest("auth-code", "https://example.com/callback", null, null, null);
+        when(authService.authenticate(eq(AuthProviderType.TELEGRAM), any()))
+                .thenReturn(AuthTokenResponse.pending("verification required"));
+
+        authController.telegramOidcLogin(request, httpResponse);
+
+        verify(cookieHelper, org.mockito.Mockito.never()).setTokenCookies(any(), any(), any());
+    }
+
+    @Test
     void telegramOidcLogin_authServiceThrowsSecurity_propagatesException() {
         var request = new TelegramOidcLoginRequest("bad-code", "https://example.com/callback", null, null, null);
         when(authService.authenticate(eq(AuthProviderType.TELEGRAM), any()))
                 .thenThrow(new SecurityException("OIDC verification failed"));
 
-        assertThrows(SecurityException.class, () -> authController.telegramOidcLogin(request));
+        assertThrows(SecurityException.class, () -> authController.telegramOidcLogin(request, httpResponse));
     }
 
     @Test
