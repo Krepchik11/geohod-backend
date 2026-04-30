@@ -39,9 +39,10 @@ class TelegramOidcClientTest {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer(ISSUER_URI)
                 .audience(CLIENT_ID)
-                .subject("99999")
+                .subject("oauth-sub-identifier")
                 .issueTime(new Date())
                 .expirationTime(Date.from(Instant.now().plusSeconds(3600)))
+                .claim("id", 987654321L)
                 .claim("name", "John Doe")
                 .claim("preferred_username", "johndoe")
                 .claim("picture", "https://photo.url")
@@ -49,7 +50,7 @@ class TelegramOidcClientTest {
 
         OidcUserInfo result = oidcClient.extractUserInfo(claims);
 
-        assertEquals("99999", result.telegramUserId());
+        assertEquals("987654321", result.telegramUserId());
         assertEquals("John Doe", result.name());
         assertEquals("johndoe", result.username());
         assertEquals("https://photo.url", result.photoUrl());
@@ -94,7 +95,8 @@ class TelegramOidcClientTest {
     @Test
     void extractUserInfo_missingOptionalFields_returnsNulls() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject("99999")
+                .subject("oauth-sub-identifier")
+                .claim("id", 99999L)
                 .build();
 
         OidcUserInfo result = oidcClient.extractUserInfo(claims);
@@ -103,5 +105,24 @@ class TelegramOidcClientTest {
         assertNull(result.name());
         assertNull(result.username());
         assertNull(result.photoUrl());
+    }
+
+    @Test
+    void extractUserInfo_missingIdClaim_throwsSecurityException() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject("oauth-sub-identifier")
+                .build();
+
+        assertThrows(SecurityException.class, () -> oidcClient.extractUserInfo(claims));
+    }
+
+    @Test
+    void extractUserInfo_nonNumericIdClaim_throwsSecurityException() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject("oauth-sub-identifier")
+                .claim("id", "not-a-number")
+                .build();
+
+        assertThrows(SecurityException.class, () -> oidcClient.extractUserInfo(claims));
     }
 }
