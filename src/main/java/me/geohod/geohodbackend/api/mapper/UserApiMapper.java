@@ -3,6 +3,7 @@ package me.geohod.geohodbackend.api.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import me.geohod.geohodbackend.api.dto.response.CurrentUserDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.EventParticipantDetails;
 import me.geohod.geohodbackend.api.dto.response.UserDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.UserResponse;
@@ -21,6 +22,11 @@ public interface UserApiMapper {
     @Mapping(target = "username", source = "tgUsername")
     @Mapping(target = "imageUrl", source = "tgImageUrl")
     UserDetailsResponse mapToDetails(User user);
+
+    @Mapping(target = "name", expression = "java(mapFullName(user.getFirstName(), user.getLastName()))")
+    @Mapping(target = "username", source = "tgUsername")
+    @Mapping(target = "imageUrl", source = "tgImageUrl")
+    CurrentUserDetailsResponse mapToCurrentUserDetails(User user);
 
     default String mapFullName(String firstName, String lastName) {
         StringBuilder fullName = new StringBuilder();
