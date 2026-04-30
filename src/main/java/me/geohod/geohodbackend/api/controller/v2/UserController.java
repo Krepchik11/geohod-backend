@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import me.geohod.geohodbackend.api.dto.response.CurrentUserDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.UserDetailsResponse;
 import me.geohod.geohodbackend.api.dto.response.UserResponse;
 import me.geohod.geohodbackend.api.dto.response.UserStatsResponse;
@@ -43,9 +44,9 @@ public class UserController {
 
     @GetMapping("/me")
     @Operation(summary = "Get current authenticated user details")
-    public ApiResponse<UserDetailsResponse> getCurrentUser(@AuthenticationPrincipal AppPrincipal principal) {
+    public ApiResponse<CurrentUserDetailsResponse> getCurrentUser(@AuthenticationPrincipal AppPrincipal principal) {
         User user = userService.getUser(principal.userId());
-        return ApiResponse.success(userMapper.mapToDetails(user));
+        return ApiResponse.success(userMapper.mapToCurrentUserDetails(user));
     }
 
     @GetMapping("/by-tg-id/{tgId}")
