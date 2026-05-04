@@ -16,7 +16,7 @@ public class AuthCookieHelper {
 
     static final String ACCESS_TOKEN_COOKIE = "access_token";
     static final String REFRESH_TOKEN_COOKIE = "refresh_token";
-    private static final String REFRESH_TOKEN_COOKIE_PATH = "/api/v2/auth";
+    private static final String REFRESH_TOKEN_COOKIE_PATH = "/";
 
     private final GeohodProperties.Cookie cookieProperties;
     private final GeohodProperties.Jwt jwtProperties;
@@ -65,8 +65,9 @@ public class AuthCookieHelper {
     private ResponseCookie.ResponseCookieBuilder baseCookie(String name, String value, String path) {
         return ResponseCookie.from(name, value)
                 .httpOnly(true)
-                .secure(cookieProperties.secure())
-                .sameSite(cookieProperties.sameSite())
+                // .secure(cookieProperties.secure())
+                .sameSite("None")
+                .secure(true)
                 .path(path);
     }
 
