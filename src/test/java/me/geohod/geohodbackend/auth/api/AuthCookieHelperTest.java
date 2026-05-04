@@ -46,7 +46,7 @@ class AuthCookieHelperTest {
                 .orElseThrow();
         assertTrue(accessCookie.contains("access-token-value"));
         assertTrue(accessCookie.contains("HttpOnly"));
-        assertTrue(accessCookie.contains("SameSite=Lax"));
+        assertTrue(accessCookie.contains("SameSite=None"));
         assertTrue(accessCookie.contains("Path=/"));
 
         String refreshCookie = setCookieHeaders.stream()
@@ -55,7 +55,8 @@ class AuthCookieHelperTest {
                 .orElseThrow();
         assertTrue(refreshCookie.contains("refresh-token-value"));
         assertTrue(refreshCookie.contains("HttpOnly"));
-        assertTrue(refreshCookie.contains("Path=/api/v2/auth"));
+        assertTrue(accessCookie.contains("SameSite=None"));
+        assertTrue(refreshCookie.contains("Path=/"));
     }
 
     @Test
