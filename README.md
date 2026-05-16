@@ -69,12 +69,14 @@ Env vars must be set in your shell or IDE run configuration. The ones required a
 
 ## VPS deployment
 
-The CI/CD pipeline builds images and deploys automatically via Podman Quadlet (systemd-native container management):
+The CI/CD pipeline follows **build-once, promote-by-digest**:
 
-- Push to `main` → builds `:dev-latest` → deploys to dev
-- Push tag `v*` → builds `:v1.2.3` → requires manual approval → deploys to prod
+- **PR → `main`** — runs tests (`ci.yml`).
+- **Push to `main`** — runs tests → builds image, tagged `sha-<commit>` + `dev-latest` → deploys to dev.
+- **Push tag `v*`** — retags the existing `sha-<commit>` image as `v1.2.3` + `latest` (no rebuild from source) → requires manual approval → deploys to prod. Same bytes that ran in dev ship to prod.
+- **Manual `Release` dispatch** — retags an existing `v*` image as `latest` and redeploys prod. Use for rollback.
 
-On every deploy, CI copies the Quadlet unit files from `deployments/` to the VPS and reloads systemd. Containers start automatically on VPS reboot — no manual service management needed.
+All deploy steps live in a single reusable workflow (`_deploy.yml`): SCP Quadlet units, render `postgres.env` + `app.env`, `podman pull`, `systemctl --user restart`, wait for health. Deploys are serialized per environment via concurrency groups.
 
 ### Required GitHub configuration
 
@@ -101,33 +103,31 @@ podman login ghcr.io -u <github-username> -p <PAT>
 
 After that, trigger a deploy (push to `main` for dev, push a tag for prod). CI writes `postgres.env` and `app.env` on the VPS automatically — no manual file creation needed.
 
-### nginx
+### Caddy
 
-Backend ports are bound to localhost only (`127.0.0.1`). Configure nginx to proxy inbound traffic:
+Backend ports are bound to localhost only (`127.0.0.1`). [Caddy](https://caddyserver.com) proxies inbound traffic and handles TLS automatically via Let's Encrypt.
 
-```nginx
-# prod
-server {
-    listen 80;
-    server_name yourdomain.com;
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+Install Caddy via the [official packages](https://caddyserver.com/docs/install), then configure `/etc/caddy/Caddyfile`:
+
+```caddy
+{
+    email your@email.com
 }
 
-# dev
-server {
-    listen 80;
-    server_name dev.yourdomain.com;
-    location / {
-        proxy_pass http://127.0.0.1:8081;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+yourdomain.com {
+    reverse_proxy localhost:8080
+}
+
+dev.yourdomain.com {
+    reverse_proxy localhost:8081
 }
 ```
+
+```bash
+sudo systemctl enable --now caddy
+```
+
+No certificate management needed — Caddy issues and renews certs automatically.
 
 ### Rollback
 

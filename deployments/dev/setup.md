@@ -8,6 +8,8 @@ sudo loginctl enable-linger geohod
 # Add VPS_SSH_KEY public key to ~/.ssh/authorized_keys for the geohod user
 ```
 
+Install [Caddy](https://caddyserver.com/docs/install) and configure `/etc/caddy/Caddyfile` to proxy `dev.yourdomain.com → 127.0.0.1:8081`. Caddy handles TLS automatically.
+
 ## GitHub Environment: `development`
 
 Go to **Settings → Environments → development** and configure:
