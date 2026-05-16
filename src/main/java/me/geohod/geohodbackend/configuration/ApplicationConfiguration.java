@@ -7,7 +7,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
@@ -17,7 +16,6 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @RequiredArgsConstructor
 @Configuration
 @EnableAsync
-@EnableScheduling
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 @EnableConfigurationProperties(GeohodProperties.class)
 @ConfigurationPropertiesScan("me.geohod.geohodbackend.configuration.properties")

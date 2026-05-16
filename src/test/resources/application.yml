@@ -1,4 +1,6 @@
 geohod:
+  scheduling:
+    enabled: false
   telegram-bot:
     token: test-token
     username: test_bot
