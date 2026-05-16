@@ -35,7 +35,7 @@ class TelegramOidcClientTest {
     }
 
     @Test
-    void extractUserInfo_validClaims_returnsOidcUserInfo() {
+    void extractUserInfo_numericIdClaim_returnsOidcUserInfo() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer(ISSUER_URI)
                 .audience(CLIENT_ID)
@@ -54,6 +54,43 @@ class TelegramOidcClientTest {
         assertEquals("John Doe", result.name());
         assertEquals("johndoe", result.username());
         assertEquals("https://photo.url", result.photoUrl());
+    }
+
+    @Test
+    void extractUserInfo_stringIdClaim_returnsOidcUserInfo() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .claim("id", "987654321")
+                .claim("name", "John Doe")
+                .claim("preferred_username", "johndoe")
+                .claim("picture", "https://photo.url")
+                .build();
+
+        OidcUserInfo result = oidcClient.extractUserInfo(claims);
+
+        assertEquals("987654321", result.telegramUserId());
+        assertEquals("John Doe", result.name());
+        assertEquals("johndoe", result.username());
+        assertEquals("https://photo.url", result.photoUrl());
+    }
+
+    @Test
+    void extractUserInfo_stringIdWithWhitespace_returnsTrimmedId() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .claim("id", "  123456  ")
+                .build();
+
+        OidcUserInfo result = oidcClient.extractUserInfo(claims);
+
+        assertEquals("123456", result.telegramUserId());
+    }
+
+    @Test
+    void extractUserInfo_blankStringIdClaim_throwsSecurityException() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .claim("id", "   ")
+                .build();
+
+        assertThrows(SecurityException.class, () -> oidcClient.extractUserInfo(claims));
     }
 
     @Test
@@ -117,12 +154,14 @@ class TelegramOidcClientTest {
     }
 
     @Test
-    void extractUserInfo_nonNumericIdClaim_throwsSecurityException() {
+    void extractUserInfo_unexpectedIdClaimType_throwsSecurityExceptionWithTypeName() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject("oauth-sub-identifier")
-                .claim("id", "not-a-number")
+                .claim("id", true)
                 .build();
 
-        assertThrows(SecurityException.class, () -> oidcClient.extractUserInfo(claims));
+        SecurityException ex = assertThrows(SecurityException.class,
+                () -> oidcClient.extractUserInfo(claims));
+        assertTrue(ex.getMessage().contains("Boolean"));
     }
 }

@@ -65,9 +65,8 @@ public class AuthCookieHelper {
     private ResponseCookie.ResponseCookieBuilder baseCookie(String name, String value, String path) {
         return ResponseCookie.from(name, value)
                 .httpOnly(true)
-                // .secure(cookieProperties.secure())
-                .sameSite("None")
-                .secure(true)
+                .secure(cookieProperties.secure())
+                .sameSite(cookieProperties.sameSite())
                 .path(path);
     }
 

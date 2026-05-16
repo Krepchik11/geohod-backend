@@ -136,12 +136,17 @@ public class TelegramOidcClient {
 
     OidcUserInfo extractUserInfo(JWTClaimsSet claims) {
         Object idClaim = claims.getClaim("id");
-        if (!(idClaim instanceof String)) {
-            throw new SecurityException("'id' claim in ID token must be a string");
-        }
-        String telegramUserId = ((String) idClaim).trim();
-        if (telegramUserId.isEmpty()) {
-            throw new SecurityException("'id' claim in ID token must not be empty");
+        String telegramUserId;
+        if (idClaim instanceof Number n) {
+            telegramUserId = String.valueOf(n.longValue());
+        } else if (idClaim instanceof String s) {
+            telegramUserId = s.strip();
+            if (telegramUserId.isEmpty()) {
+                throw new SecurityException("'id' claim in ID token must not be empty");
+            }
+        } else {
+            throw new SecurityException("'id' claim in ID token is missing or has unexpected type: " +
+                    (idClaim == null ? "null" : idClaim.getClass().getSimpleName()));
         }
         String name = (String) claims.getClaim("name");
         String username = (String) claims.getClaim("preferred_username");
