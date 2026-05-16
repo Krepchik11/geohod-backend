@@ -97,7 +97,7 @@ geohod:
     legacy-telegram-auth:
       enabled: true
     cookie:
-      same-site: Lax
+      same-site: None
       secure: true
     email-otp:
       code-length: 6

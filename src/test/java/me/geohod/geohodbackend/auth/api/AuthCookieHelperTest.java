@@ -4,10 +4,6 @@ import jakarta.servlet.http.Cookie;
 import me.geohod.geohodbackend.configuration.properties.GeohodProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -15,9 +11,7 @@ import java.time.Duration;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class AuthCookieHelperTest {
 
     private AuthCookieHelper cookieHelper;
@@ -25,7 +19,7 @@ class AuthCookieHelperTest {
     @BeforeEach
     void setUp() {
         var jwt = new GeohodProperties.Jwt("secret", Duration.ofMinutes(15), Duration.ofDays(30));
-        var cookie = new GeohodProperties.Cookie("Lax", false);
+        var cookie = new GeohodProperties.Cookie("None", true);
         var security = new GeohodProperties.Security(jwt, null, null, null, null, cookie);
         var properties = new GeohodProperties(null, null, null, security);
         cookieHelper = new AuthCookieHelper(properties);
@@ -46,7 +40,8 @@ class AuthCookieHelperTest {
                 .orElseThrow();
         assertTrue(accessCookie.contains("access-token-value"));
         assertTrue(accessCookie.contains("HttpOnly"));
-        assertTrue(accessCookie.contains("SameSite=Lax"));
+        assertTrue(accessCookie.contains("SameSite=None"));
+        assertTrue(accessCookie.contains("Secure"));
         assertTrue(accessCookie.contains("Path=/"));
 
         String refreshCookie = setCookieHeaders.stream()
@@ -55,7 +50,9 @@ class AuthCookieHelperTest {
                 .orElseThrow();
         assertTrue(refreshCookie.contains("refresh-token-value"));
         assertTrue(refreshCookie.contains("HttpOnly"));
-        assertTrue(refreshCookie.contains("Path=/api/v2/auth"));
+        assertTrue(refreshCookie.contains("SameSite=None"));
+        assertTrue(refreshCookie.contains("Secure"));
+        assertTrue(refreshCookie.contains("Path=/"));
     }
 
     @Test
