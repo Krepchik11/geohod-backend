@@ -4,10 +4,11 @@ After=geohod-postgres.service network-online.target
 Wants=network-online.target
 
 [Container]
-Image=ghcr.io/krepchik11/geohod-backend:v0.0.1
+Image=ghcr.io/krepchik11/geohod-backend:latest
 ContainerName=geohod-backend
 EnvironmentFile=%h/geohod-backend/app.env
 Network=geohod-net.network
+PublishPort=127.0.0.1:8080:8080
 HealthCmd=wget -qO- http://localhost:8080/actuator/health
 HealthInterval=30s
 HealthTimeout=5s

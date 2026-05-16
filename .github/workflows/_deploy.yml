@@ -1,0 +1,174 @@
+name: Reusable Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'GitHub environment (development | production)'
+        required: true
+        type: string
+      image_tag:
+        description: 'Image tag Quadlet pulls from GHCR (informational + manifest check)'
+        required: true
+        type: string
+      deploy_dir:
+        description: 'Repo path holding Quadlet files (e.g. deployments/dev)'
+        required: true
+        type: string
+      host_dir:
+        description: '$HOME subdirectory on VPS used for env files'
+        required: true
+        type: string
+      app_container:
+        description: 'Backend container name / systemd unit'
+        required: true
+        type: string
+      pg_container:
+        description: 'Postgres container name / systemd unit'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute lowercase owner
+        id: owner
+        run: echo "name=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify image manifest exists
+        run: |
+          IMAGE="ghcr.io/${{ steps.owner.outputs.name }}/geohod-backend:${{ inputs.image_tag }}"
+          echo "Checking $IMAGE ..."
+          docker buildx imagetools inspect "$IMAGE" >/dev/null
+          echo "Manifest OK"
+
+      - name: Stage Quadlet files on VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "${{ inputs.deploy_dir }}/*.container,${{ inputs.deploy_dir }}/*.network,${{ inputs.deploy_dir }}/*.volume"
+          target: "/tmp/geohod-deploy-${{ inputs.environment }}/"
+          strip_components: 2
+
+      - name: Render env files on VPS
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          HOST_DIR: ${{ inputs.host_dir }}
+          PG_HOST: ${{ inputs.pg_container }}
+          DB_USER: ${{ vars.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ vars.DB_NAME }}
+          SPRING_MAIL_HOST: ${{ vars.SPRING_MAIL_HOST }}
+          SPRING_MAIL_PORT: ${{ vars.SPRING_MAIL_PORT }}
+          SPRING_MAIL_USERNAME: ${{ vars.SPRING_MAIL_USERNAME }}
+          SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
+          GEOHOD_TELEGRAM_BOT_TOKEN: ${{ secrets.GEOHOD_TELEGRAM_BOT_TOKEN }}
+          GEOHOD_TELEGRAM_BOT_USERNAME: ${{ vars.GEOHOD_TELEGRAM_BOT_USERNAME }}
+          GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID: ${{ secrets.GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID }}
+          GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET: ${{ secrets.GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET }}
+          GEOHOD_SECURITY_JWT_SECRET: ${{ secrets.GEOHOD_SECURITY_JWT_SECRET }}
+          GEOHOD_CORS_ALLOWED_ORIGINS: ${{ vars.GEOHOD_CORS_ALLOWED_ORIGINS }}
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: HOST_DIR,PG_HOST,DB_USER,DB_PASSWORD,DB_NAME,SPRING_MAIL_HOST,SPRING_MAIL_PORT,SPRING_MAIL_USERNAME,SPRING_MAIL_PASSWORD,GEOHOD_TELEGRAM_BOT_TOKEN,GEOHOD_TELEGRAM_BOT_USERNAME,GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID,GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET,GEOHOD_SECURITY_JWT_SECRET,GEOHOD_CORS_ALLOWED_ORIGINS
+          script: |
+            set -euo pipefail
+            DIR="$HOME/${HOST_DIR}"
+            mkdir -p "$DIR"
+            umask 077
+
+            {
+              printf 'POSTGRES_USER=%s\n'     "$DB_USER"
+              printf 'POSTGRES_PASSWORD=%s\n' "$DB_PASSWORD"
+              printf 'POSTGRES_DB=%s\n'       "$DB_NAME"
+            } > "$DIR/postgres.env"
+
+            {
+              printf 'SPRING_DATASOURCE_URL=%s\n'                        "jdbc:postgresql://${PG_HOST}:5432/${DB_NAME}"
+              printf 'SPRING_DATASOURCE_USERNAME=%s\n'                   "$DB_USER"
+              printf 'SPRING_DATASOURCE_PASSWORD=%s\n'                   "$DB_PASSWORD"
+              printf 'SPRING_MAIL_HOST=%s\n'                             "$SPRING_MAIL_HOST"
+              printf 'SPRING_MAIL_PORT=%s\n'                             "$SPRING_MAIL_PORT"
+              printf 'SPRING_MAIL_USERNAME=%s\n'                         "$SPRING_MAIL_USERNAME"
+              printf 'SPRING_MAIL_PASSWORD=%s\n'                         "$SPRING_MAIL_PASSWORD"
+              printf 'GEOHOD_TELEGRAM_BOT_TOKEN=%s\n'                    "$GEOHOD_TELEGRAM_BOT_TOKEN"
+              printf 'GEOHOD_TELEGRAM_BOT_USERNAME=%s\n'                 "$GEOHOD_TELEGRAM_BOT_USERNAME"
+              printf 'GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID=%s\n'      "$GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID"
+              printf 'GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET=%s\n'  "$GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET"
+              printf 'GEOHOD_SECURITY_JWT_SECRET=%s\n'                   "$GEOHOD_SECURITY_JWT_SECRET"
+              printf 'GEOHOD_CORS_ALLOWED_ORIGINS=%s\n'                  "$GEOHOD_CORS_ALLOWED_ORIGINS"
+            } > "$DIR/app.env"
+
+            echo "--> env files written to $DIR"
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          APP_CONTAINER: ${{ inputs.app_container }}
+          PG_CONTAINER: ${{ inputs.pg_container }}
+          OWNER: ${{ steps.owner.outputs.name }}
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: ENVIRONMENT,IMAGE_TAG,APP_CONTAINER,PG_CONTAINER,OWNER
+          script: |
+            set -euo pipefail
+            IMAGE="ghcr.io/${OWNER}/geohod-backend:${IMAGE_TAG}"
+            QUADLET_DIR="$HOME/.config/containers/systemd"
+            STAGE="/tmp/geohod-deploy-${ENVIRONMENT}"
+
+            echo "--> Installing Quadlet files from ${STAGE}..."
+            mkdir -p "$QUADLET_DIR"
+            cp ${STAGE}/*.container "$QUADLET_DIR/"
+            cp ${STAGE}/*.network   "$QUADLET_DIR/"
+            cp ${STAGE}/*.volume    "$QUADLET_DIR/"
+            rm -rf "$STAGE"
+
+            echo "--> Pulling ${IMAGE}..."
+            podman pull "$IMAGE"
+
+            echo "--> Reloading systemd, starting postgres, restarting backend..."
+            systemctl --user daemon-reload
+            systemctl --user start "${PG_CONTAINER}"
+            systemctl --user restart "${APP_CONTAINER}"
+
+            echo "--> Waiting for container to become healthy..."
+            for i in $(seq 1 24); do
+              sleep 5
+              STATUS=$(podman inspect "${APP_CONTAINER}" --format='{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+              echo "  health-check ${i}/24: ${STATUS}"
+              if [ "$STATUS" = "healthy" ]; then
+                DIGEST=$(podman inspect "${APP_CONTAINER}" --format='{{.ImageDigest}}' 2>/dev/null || echo "?")
+                echo "Deploy OK (tag=${IMAGE_TAG}, digest=${DIGEST})"
+                exit 0
+              fi
+            done
+            echo "Health check timed out — deployment FAILED"
+            exit 1

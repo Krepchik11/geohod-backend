@@ -1,31 +1,55 @@
 name: Release
 
+# Production release follows "build once, promote by digest":
+#   - on tag push: retag the existing sha-<commit> image (already validated in dev) as v* + latest
+#   - on manual dispatch: retag an existing v* image as latest (used for rollback)
+# Source is never rebuilt for prod — identical bytes ship from dev → prod.
+
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing image tag to deploy (e.g. v1.2.3) — skips build, use for rollback'
+        description: 'Existing image tag to deploy (e.g. v1.2.3). Use for rollback.'
         required: true
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  build:
-    name: Build and Push Release Image
+  promote:
+    name: Promote image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
 
     permissions:
       contents: read
       packages: write
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    outputs:
+      tag: ${{ steps.compute.outputs.tag }}
 
-      - name: Compute lowercase owner
-        id: vars
-        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+    steps:
+      - name: Resolve source and target tags
+        id: compute
+        run: |
+          OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          echo "owner=$OWNER" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+            SRC="$TAG"
+          else
+            TAG="${{ github.ref_name }}"
+            SHA7=$(echo '${{ github.sha }}' | cut -c1-7)
+            SRC="sha-${SHA7}"
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "src=$SRC" >> "$GITHUB_OUTPUT"
+          echo "Source: ghcr.io/${OWNER}/geohod-backend:${SRC}"
+          echo "Target: ghcr.io/${OWNER}/geohod-backend:${TAG} + latest"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -37,156 +61,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push release image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ steps.vars.outputs.owner }}/geohod-backend:${{ github.ref_name }}
-            ghcr.io/${{ steps.vars.outputs.owner }}/geohod-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Verify source image exists in GHCR
+        run: |
+          REPO="ghcr.io/${{ steps.compute.outputs.owner }}/geohod-backend"
+          SRC="${{ steps.compute.outputs.src }}"
+          if ! docker buildx imagetools inspect "${REPO}:${SRC}" >/dev/null 2>&1; then
+            echo "::error::Source image ${REPO}:${SRC} not found in GHCR."
+            echo "::error::For tag pushes: the sha-<commit> image must already exist (built by the dev workflow on main)."
+            echo "::error::For dispatch rollback: the tag input must reference an existing image."
+            exit 1
+          fi
+          echo "Source image present."
+
+      - name: Retag source → target + latest
+        run: |
+          REPO="ghcr.io/${{ steps.compute.outputs.owner }}/geohod-backend"
+          docker buildx imagetools create \
+            --tag "${REPO}:${{ steps.compute.outputs.tag }}" \
+            --tag "${REPO}:latest" \
+            "${REPO}:${{ steps.compute.outputs.src }}"
+          echo "Retagged successfully."
 
   deploy:
-    name: Deploy to Prod
-    runs-on: ubuntu-latest
-    needs: [build]
-    # Run if build succeeded (tag push) OR build was skipped (manual dispatch/rollback)
-    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
-    environment: production
-    permissions: {}
-
-    steps:
-      - name: Resolve tag
-        id: resolve_tag
-        run: |
-          # On workflow_dispatch: inputs.tag is set; github.ref_name is the branch ("main")
-          # On push: inputs.tag is empty; github.ref_name is the pushed tag (e.g. "v1.2.3")
-          TAG="${{ inputs.tag }}"
-          [ -z "$TAG" ] && TAG="${{ github.ref_name }}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Deploying tag: $TAG"
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Copy Quadlet files to VPS
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ vars.VPS_HOST }}
-          username: ${{ vars.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "deployments/prod/*.container,deployments/prod/*.network,deployments/prod/*.volume"
-          target: "/tmp/geohod-deploy-prod/"
-          strip_components: 2
-
-      - name: Write postgres.env on VPS
-        uses: appleboy/ssh-action@v1.2.5
-        env:
-          DB_USER: ${{ vars.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ vars.DB_NAME }}
-        with:
-          host: ${{ vars.VPS_HOST }}
-          username: ${{ vars.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          envs: DB_USER,DB_PASSWORD,DB_NAME
-          script: |
-            set -euo pipefail
-            mkdir -p "$HOME/geohod-backend"
-            {
-              printf 'POSTGRES_USER=%s\n'     "$DB_USER"
-              printf 'POSTGRES_PASSWORD=%s\n' "$DB_PASSWORD"
-              printf 'POSTGRES_DB=%s\n'       "$DB_NAME"
-            } > "$HOME/geohod-backend/postgres.env"
-            chmod 600 "$HOME/geohod-backend/postgres.env"
-            echo "--> postgres.env written"
-
-      - name: Write app.env on VPS
-        uses: appleboy/ssh-action@v1.2.5
-        env:
-          DB_USER: ${{ vars.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ vars.DB_NAME }}
-          SPRING_MAIL_HOST: ${{ vars.SPRING_MAIL_HOST }}
-          SPRING_MAIL_PORT: ${{ vars.SPRING_MAIL_PORT }}
-          SPRING_MAIL_USERNAME: ${{ vars.SPRING_MAIL_USERNAME }}
-          SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
-          GEOHOD_TELEGRAM_BOT_TOKEN: ${{ secrets.GEOHOD_TELEGRAM_BOT_TOKEN }}
-          GEOHOD_TELEGRAM_BOT_USERNAME: ${{ vars.GEOHOD_TELEGRAM_BOT_USERNAME }}
-          GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID: ${{ secrets.GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID }}
-          GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET: ${{ secrets.GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET }}
-          GEOHOD_SECURITY_JWT_SECRET: ${{ secrets.GEOHOD_SECURITY_JWT_SECRET }}
-          GEOHOD_CORS_ALLOWED_ORIGINS: ${{ vars.GEOHOD_CORS_ALLOWED_ORIGINS }}
-        with:
-          host: ${{ vars.VPS_HOST }}
-          username: ${{ vars.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          envs: DB_USER,DB_PASSWORD,DB_NAME,SPRING_MAIL_HOST,SPRING_MAIL_PORT,SPRING_MAIL_USERNAME,SPRING_MAIL_PASSWORD,GEOHOD_TELEGRAM_BOT_TOKEN,GEOHOD_TELEGRAM_BOT_USERNAME,GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID,GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET,GEOHOD_SECURITY_JWT_SECRET,GEOHOD_CORS_ALLOWED_ORIGINS
-          script: |
-            set -euo pipefail
-            mkdir -p "$HOME/geohod-backend"
-            {
-              printf 'SPRING_DATASOURCE_URL=%s\n'                        "jdbc:postgresql://geohod-postgres:5432/$DB_NAME"
-              printf 'SPRING_DATASOURCE_USERNAME=%s\n'                   "$DB_USER"
-              printf 'SPRING_DATASOURCE_PASSWORD=%s\n'                   "$DB_PASSWORD"
-              printf 'SPRING_MAIL_HOST=%s\n'                             "$SPRING_MAIL_HOST"
-              printf 'SPRING_MAIL_PORT=%s\n'                             "$SPRING_MAIL_PORT"
-              printf 'SPRING_MAIL_USERNAME=%s\n'                         "$SPRING_MAIL_USERNAME"
-              printf 'SPRING_MAIL_PASSWORD=%s\n'                         "$SPRING_MAIL_PASSWORD"
-              printf 'GEOHOD_TELEGRAM_BOT_TOKEN=%s\n'                    "$GEOHOD_TELEGRAM_BOT_TOKEN"
-              printf 'GEOHOD_TELEGRAM_BOT_USERNAME=%s\n'                 "$GEOHOD_TELEGRAM_BOT_USERNAME"
-              printf 'GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID=%s\n'      "$GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_ID"
-              printf 'GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET=%s\n'  "$GEOHOD_SECURITY_TELEGRAM_OIDC_CLIENT_SECRET"
-              printf 'GEOHOD_SECURITY_JWT_SECRET=%s\n'                   "$GEOHOD_SECURITY_JWT_SECRET"
-              printf 'GEOHOD_CORS_ALLOWED_ORIGINS=%s\n'                  "$GEOHOD_CORS_ALLOWED_ORIGINS"
-            } > "$HOME/geohod-backend/app.env"
-            chmod 600 "$HOME/geohod-backend/app.env"
-            echo "--> app.env written"
-
-      - name: Deploy to prod VPS
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ vars.VPS_HOST }}
-          username: ${{ vars.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -euo pipefail
-            OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-            TAG="${{ steps.resolve_tag.outputs.tag }}"
-            IMAGE="ghcr.io/${OWNER}/geohod-backend:${TAG}"
-            QUADLET_DIR="$HOME/.config/containers/systemd"
-
-            echo "--> Installing Quadlet files..."
-            mkdir -p "$QUADLET_DIR"
-            cp /tmp/geohod-deploy-prod/*.container "$QUADLET_DIR/"
-            cp /tmp/geohod-deploy-prod/*.network "$QUADLET_DIR/"
-            cp /tmp/geohod-deploy-prod/*.volume "$QUADLET_DIR/"
-            rm -rf /tmp/geohod-deploy-prod/
-
-            echo "--> Updating image to ${IMAGE}..."
-            sed -i "s|^Image=ghcr\.io/.*/geohod-backend:.*|Image=${IMAGE}|" "$QUADLET_DIR/geohod-backend.container"
-
-            echo "--> Pulling image..."
-            podman pull "$IMAGE"
-
-            echo "--> Reloading systemd and restarting backend..."
-            systemctl --user daemon-reload
-            systemctl --user start geohod-postgres
-            systemctl --user restart geohod-backend
-
-            echo "--> Waiting for container to become healthy..."
-            for i in $(seq 1 24); do
-              sleep 5
-              echo "Health check $i/24..."
-              STATUS=$(podman inspect geohod-backend --format='{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
-              echo "Container status: $STATUS"
-              if [ "$STATUS" = "healthy" ]; then
-                echo "Deployment successful"
-                exit 0
-              fi
-            done
-            echo "Health check timed out — deployment FAILED"
-            exit 1
+    name: Deploy
+    needs: promote
+    uses: ./.github/workflows/_deploy.yml
+    secrets: inherit
+    with:
+      environment: production
+      image_tag: latest
+      deploy_dir: deployments/prod
+      host_dir: geohod-backend
+      app_container: geohod-backend
+      pg_container: geohod-postgres
